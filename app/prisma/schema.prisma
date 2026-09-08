@@ -20,7 +20,7 @@ enum LifecycleStatus {
 }
 
 model Location {
-  id               String          @id // UUIDv7 asignado en capa de aplicación
+  id               String          @id // UUIDv7
   name             String
   lifecycle_status LifecycleStatus @default(ACTIVE)
   created_at       DateTime        @default(now())
@@ -32,7 +32,7 @@ model Location {
 }
 
 model PlantReference {
-  id              String   @id // UUIDv7 asignado en capa de aplicación
+  id              String   @id // UUIDv7
   provider        String   // Ej: OPEN_PLANTBOOK
   external_id     String   // Identificador externo (ej: pid)
   scientific_name String
@@ -50,21 +50,21 @@ model PlantReference {
 }
 
 model Plant {
-  id               String                   @id // UUIDv7 asignado en capa de aplicación
+  id               String                   @id // UUIDv7
   permanent_code   String                   @unique // Código secuencial permanente humano (AT-PL-XXX)
   common_name      String                   // Nombre común asignado (obligatorio)
   scientific_name  String?                  // Especie botánica (opcional)
   cultivar         String?                  // Variedad botánica (opcional)
   health_status    HealthStatus             @default(UNKNOWN)
   lifecycle_status LifecycleStatus          @default(ACTIVE)
-  acquisition_date DateTime                 @default(now())
+  acquisition_date DateTime?                // Fecha de incorporación física (nullable para desconocida)
   notes            String?                  @db.Text
   location_id      String?
   reference_id     String?
   created_at       DateTime                 @default(now())
   updated_at       DateTime                 @updatedAt
 
-  location         Location?                @relation(fields: [location_id], references: [id], onDelete: SetNull)
+  location         Location?                @relation(fields: [location_id], references: [id], onDelete: Restrict)
   reference        PlantReference?          @relation(fields: [reference_id], references: [id], onDelete: SetNull)
   photos           Photo[]
   profile          PlantCultivationProfile?
@@ -77,7 +77,7 @@ model Plant {
 }
 
 model PlantCultivationProfile {
-  id               String   @id // UUIDv7 asignado en capa de aplicación
+  id               String   @id // UUIDv7
   plant_id         String   @unique
   pot_info         String?  // Tipo, material, tamaño de maceta
   substrate_info   String?  // Sustrato real colocado
@@ -92,17 +92,17 @@ model PlantCultivationProfile {
 }
 
 model Photo {
-  id          String   @id // UUIDv7 asignado en capa de aplicación
+  id          String    @id // UUIDv7
   plant_id    String
-  file_path   String   // Storage key: photos/{permanent_code}/{unique_file}.webp
-  file_name   String   // Nombre original del archivo cargado
-  mime_type   String   // Formato MIME (image/webp, etc.)
-  file_size   Int?     // Tamaño en bytes
-  is_primary  Boolean  @default(false)
+  file_path   String    // Storage key: photos/{permanent_code}/{unique_file}.webp
+  file_name   String    // Nombre original del archivo cargado
+  mime_type   String    // Formato MIME (image/webp, etc.)
+  file_size   Int?      // Tamaño en bytes
+  is_primary  Boolean   @default(false)
   captured_at DateTime?
-  created_at  DateTime @default(now())
+  created_at  DateTime  @default(now())
 
-  plant       Plant    @relation(fields: [plant_id], references: [id], onDelete: Cascade)
+  plant       Plant     @relation(fields: [plant_id], references: [id], onDelete: Cascade)
 
   @@index([plant_id])
   @@index([is_primary])

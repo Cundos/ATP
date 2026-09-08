@@ -19,6 +19,9 @@ CREATE TABLE "locations" (
     CONSTRAINT "locations_pkey" PRIMARY KEY ("id")
 );
 
+-- Partial unique index para Location: evita nombres duplicados (case-insensitive) entre ubicaciones ACTIVE
+CREATE UNIQUE INDEX "locations_active_name_key" ON "locations"(LOWER("name")) WHERE "lifecycle_status" = 'ACTIVE';
+
 -- CreateTable plant_references
 CREATE TABLE "plant_references" (
     "id" TEXT NOT NULL,
@@ -44,7 +47,7 @@ CREATE TABLE "plants" (
     "cultivar" TEXT,
     "health_status" "HealthStatus" NOT NULL DEFAULT 'UNKNOWN',
     "lifecycle_status" "LifecycleStatus" NOT NULL DEFAULT 'ACTIVE',
-    "acquisition_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "acquisition_date" TIMESTAMP(3),
     "notes" TEXT,
     "location_id" TEXT,
     "reference_id" TEXT,
@@ -94,8 +97,11 @@ CREATE UNIQUE INDEX "plant_cultivation_profiles_plant_id_key" ON "plant_cultivat
 CREATE INDEX "photos_plant_id_idx" ON "photos"("plant_id");
 CREATE INDEX "photos_is_primary_idx" ON "photos"("is_primary");
 
+-- Partial unique index para Photo: máximo una foto con is_primary = true por planta
+CREATE UNIQUE INDEX "photos_single_primary_per_plant_idx" ON "photos"("plant_id") WHERE "is_primary" = true;
+
 -- AddForeignKey
-ALTER TABLE "plants" ADD CONSTRAINT "plants_location_id_fkey" FOREIGN KEY ("location_id") REFERENCES "locations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "plants" ADD CONSTRAINT "plants_location_id_fkey" FOREIGN KEY ("location_id") REFERENCES "locations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "plants" ADD CONSTRAINT "plants_reference_id_fkey" FOREIGN KEY ("reference_id") REFERENCES "plant_references"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE "plant_cultivation_profiles" ADD CONSTRAINT "plant_cultivation_profiles_plant_id_fkey" FOREIGN KEY ("plant_id") REFERENCES "plants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "photos" ADD CONSTRAINT "photos_plant_id_fkey" FOREIGN KEY ("plant_id") REFERENCES "plants"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -162,7 +162,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Archivo `prisma/schema.prisma` sintácticamente válido y compatible con PostgreSQL.
 
 #### `ATP-IMP-004` — Secuencia Nativa PostgreSQL para `permanent_code` (`AT-PL-XXX`)
-- **Estado:** `COMPLETADO`
+- **Estado:** `IMPLEMENTADO / PENDIENTE DE VALIDACIÓN DE INTEGRACIÓN`
 - **Objetivo:** Implementar la generación atómica server-side del código permanente humano.
 - **Tipo:** `DATA` | **Prioridad:** `MUST` | **Release:** `M0`
 - **Dependencias:** `ATP-IMP-003`.
@@ -174,6 +174,7 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Operación atómica a nivel de motor; segura ante llamadas concurrentes; no sufre colisiones ni reutilización.
   - Los gaps numéricos por transacciones fallidas están formalmente aceptados.
 - **Resultado:** Mecanismo de generación seguro, atómico y desacoplado, probado con tests de concurrencia.
+
 
 #### `ATP-IMP-005` — Capa de Repositorios Base y Modelos de Dominio Aislados
 - **Estado:** `COMPLETADO`

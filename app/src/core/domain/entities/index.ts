@@ -59,7 +59,7 @@ export interface PlantEntity {
   cultivar: string | null;
   health_status: HealthStatus;
   lifecycle_status: LifecycleStatus;
-  acquisition_date: Date;
+  acquisition_date: Date | null;
   notes: string | null;
   location_id: string | null;
   reference_id: string | null;

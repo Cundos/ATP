@@ -5,12 +5,13 @@ import {
   LifecycleStatus,
 } from '../entities';
 
-export interface CreatePlantDTO {
+export interface CreatePlantPersistenceDTO {
+  permanent_code: string;
   common_name: string;
   scientific_name?: string | null;
   cultivar?: string | null;
   health_status?: HealthStatus;
-  acquisition_date?: Date;
+  acquisition_date?: Date | null;
   notes?: string | null;
   location_id?: string | null;
   reference_id?: string | null;
@@ -25,7 +26,7 @@ export interface UpdatePlantDTO {
   scientific_name?: string | null;
   cultivar?: string | null;
   health_status?: HealthStatus;
-  acquisition_date?: Date;
+  acquisition_date?: Date | null;
   notes?: string | null;
   location_id?: string | null;
   reference_id?: string | null;
@@ -40,17 +41,18 @@ export interface PlantFilterOptions {
   health_status?: HealthStatus;
   location_id?: string;
   search_query?: string;
+  order_by?: 'permanent_code_asc' | 'created_at_desc';
 }
 
 export interface IPlantRepository {
   findById(id: string): Promise<PlantEntity | null>;
   findByPermanentCode(permanent_code: string): Promise<PlantEntity | null>;
   findAll(filters?: PlantFilterOptions): Promise<PlantEntity[]>;
-  create(dto: CreatePlantDTO): Promise<PlantEntity>;
+  create(dto: CreatePlantPersistenceDTO): Promise<PlantEntity>;
   update(id: string, dto: UpdatePlantDTO): Promise<PlantEntity>;
   archive(id: string): Promise<PlantEntity>;
   restore(id: string): Promise<PlantEntity>;
-  getNextPermanentCode(): Promise<string>;
+  getNextSequenceValue(): Promise<number>;
 }
 
 export interface CreateLocationDTO {
@@ -63,6 +65,7 @@ export interface UpdateLocationDTO {
 
 export interface ILocationRepository {
   findById(id: string): Promise<LocationEntity | null>;
+  findByName(name: string): Promise<LocationEntity | null>;
   findAll(status?: LifecycleStatus): Promise<LocationEntity[]>;
   create(dto: CreateLocationDTO): Promise<LocationEntity>;
   update(id: string, dto: UpdateLocationDTO): Promise<LocationEntity>;

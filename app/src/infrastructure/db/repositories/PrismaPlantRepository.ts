@@ -1,7 +1,7 @@
 import { prisma } from '../prisma';
 import {
   IPlantRepository,
-  CreatePlantDTO,
+  CreatePlantPersistenceDTO,
   UpdatePlantDTO,
   PlantFilterOptions,
 } from '@/core/domain/repositories';
@@ -10,18 +10,15 @@ import { generateUUIDv7 } from '@/core/domain/uuid';
 
 export class PrismaPlantRepository implements IPlantRepository {
   /**
-   * Genera el siguiente código permanente atómico mediante la secuencia nativa de PostgreSQL (ADR-017)
+   * PERSISTENCIA PURA: Obtiene atómicamente el siguiente valor numérico de la secuencia PostgreSQL plant_code_seq (ADR-017).
+   * Lanza una excepción explícita si la secuencia no responde. CERO fallbacks count/max.
    */
-  async getNextPermanentCode(): Promise<string> {
-    try {
-      const result = await prisma.$queryRaw<Array<{ nextval: bigint }>>`SELECT nextval('plant_code_seq');`;
-      const nextNum = Number(result[0].nextval);
-      return `AT-PL-${nextNum.toString().padStart(3, '0')}`;
-    } catch {
-      // Fallback para entornos en memoria o pruebas sin secuencia creada
-      const count = await prisma.plant.count();
-      return `AT-PL-${(count + 1).toString().padStart(3, '0')}`;
+  async getNextSequenceValue(): Promise<number> {
+    const result = await prisma.$queryRaw<Array<{ nextval: bigint }>>`SELECT nextval('plant_code_seq');`;
+    if (!result || result.length === 0 || result[0].nextval === undefined) {
+      throw new Error('Error al invocar nextval sobre plant_code_seq: resultado vacío del motor PostgreSQL');
     }
+    return Number(result[0].nextval);
   }
 
   async findById(id: string): Promise<PlantEntity | null> {
@@ -75,6 +72,10 @@ export class PrismaPlantRepository implements IPlantRepository {
       ];
     }
 
+    const orderByClause = filters?.order_by === 'created_at_desc'
+      ? { created_at: 'desc' as const }
+      : { permanent_code: 'asc' as const };
+
     const records = await prisma.plant.findMany({
       where: whereClause,
       include: {
@@ -86,26 +87,29 @@ export class PrismaPlantRepository implements IPlantRepository {
           take: 1,
         },
       },
-      orderBy: { created_at: 'desc' },
+      orderBy: orderByClause,
     });
 
     return records as unknown as PlantEntity[];
   }
 
-  async create(dto: CreatePlantDTO): Promise<PlantEntity> {
+  /**
+   * PERSISTENCIA PURA: Persiste la planta recibiendo el permanent_code ya formateado desde la capa Application/Domain.
+   * El repositorio NO formatea ni coordina el código.
+   */
+  async create(dto: CreatePlantPersistenceDTO): Promise<PlantEntity> {
     const id = generateUUIDv7();
-    const permanent_code = await this.getNextPermanentCode();
 
     const record = await prisma.plant.create({
       data: {
         id,
-        permanent_code,
+        permanent_code: dto.permanent_code,
         common_name: dto.common_name.trim(),
         scientific_name: dto.scientific_name?.trim() || null,
         cultivar: dto.cultivar?.trim() || null,
         health_status: dto.health_status || 'UNKNOWN',
         lifecycle_status: 'ACTIVE',
-        acquisition_date: dto.acquisition_date || new Date(),
+        acquisition_date: dto.acquisition_date !== undefined ? dto.acquisition_date : null,
         notes: dto.notes?.trim() || null,
         location_id: dto.location_id || null,
         reference_id: dto.reference_id || null,
@@ -141,7 +145,7 @@ export class PrismaPlantRepository implements IPlantRepository {
         scientific_name: dto.scientific_name !== undefined ? dto.scientific_name?.trim() || null : undefined,
         cultivar: dto.cultivar !== undefined ? dto.cultivar?.trim() || null : undefined,
         health_status: dto.health_status,
-        acquisition_date: dto.acquisition_date,
+        acquisition_date: dto.acquisition_date !== undefined ? dto.acquisition_date : undefined,
         notes: dto.notes !== undefined ? dto.notes?.trim() || null : undefined,
         location_id: dto.location_id !== undefined ? dto.location_id : undefined,
         reference_id: dto.reference_id !== undefined ? dto.reference_id : undefined,

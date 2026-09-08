@@ -148,6 +148,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 
 
 #### `ATP-IMP-003` — Esquema Físico Prisma, UUIDv7 y Modelado Relacional
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Diseñar el esquema físico relacional en Prisma y configurar identificadores UUIDv7.
 - **Tipo:** `DATA` | **Prioridad:** `MUST` | **Release:** `M0`
 - **Dependencias:** `ATP-IMP-002`.
@@ -161,6 +162,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Archivo `prisma/schema.prisma` sintácticamente válido y compatible con PostgreSQL.
 
 #### `ATP-IMP-004` — Secuencia Nativa PostgreSQL para `permanent_code` (`AT-PL-XXX`)
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Implementar la generación atómica server-side del código permanente humano.
 - **Tipo:** `DATA` | **Prioridad:** `MUST` | **Release:** `M0`
 - **Dependencias:** `ATP-IMP-003`.
@@ -174,6 +176,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Mecanismo de generación seguro, atómico y desacoplado, probado con tests de concurrencia.
 
 #### `ATP-IMP-005` — Capa de Repositorios Base y Modelos de Dominio Aislados
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Aislar la capa de persistencia mediante el patrón repositorio para proteger al dominio de Prisma.
 - **Tipo:** `BACKEND` | **Prioridad:** `MUST` | **Release:** `M0`
 - **Dependencias:** `ATP-IMP-003`.
@@ -186,6 +189,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Repositorios tipados capaces de realizar operaciones CRUD básicas.
 
 #### `ATP-IMP-006` — Configuración del Framework de Testing (Vitest & Testing Library)
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Establecer la infraestructura de testing automatizado para pruebas unitarias y de integración.
 - **Tipo:** `TEST` | **Prioridad:** `MUST` | **Release:** `M0`
 - **Dependencias:** `ATP-IMP-001`.
@@ -195,6 +199,7 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Scripts en `package.json` (`test`, `test:watch`, `test:coverage`).
   - Test de humo que verifica la compilación de tipos y el entorno de ejecución.
 - **Resultado:** `npm run test` ejecuta la suite en milisegundos.
+
 
 ---
 

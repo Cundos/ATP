@@ -1,0 +1,110 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum HealthStatus {
+  UNKNOWN
+  HEALTHY
+  ATTENTION
+  RECOVERY
+}
+
+enum LifecycleStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+model Location {
+  id               String          @id // UUIDv7 asignado en capa de aplicación
+  name             String
+  lifecycle_status LifecycleStatus @default(ACTIVE)
+  created_at       DateTime        @default(now())
+  updated_at       DateTime        @updatedAt
+
+  plants           Plant[]
+
+  @@map("locations")
+}
+
+model PlantReference {
+  id              String   @id // UUIDv7 asignado en capa de aplicación
+  provider        String   // Ej: OPEN_PLANTBOOK
+  external_id     String   // Identificador externo (ej: pid)
+  scientific_name String
+  common_names    Json?    // Lista de nombres comunes [String]
+  reference_care  Json?    // Objeto JSON con rangos (luz, riego, temp, humedad)
+  image_url       String?  // URL de imagen ilustrativa de catálogo
+  fetched_at      DateTime @default(now())
+  last_sync_at    DateTime @default(now())
+  raw_data        Json     // Payload original devuelto por el proveedor
+
+  plants          Plant[]
+
+  @@unique([provider, external_id], name: "provider_external_id_unique")
+  @@map("plant_references")
+}
+
+model Plant {
+  id               String                   @id // UUIDv7 asignado en capa de aplicación
+  permanent_code   String                   @unique // Código secuencial permanente humano (AT-PL-XXX)
+  common_name      String                   // Nombre común asignado (obligatorio)
+  scientific_name  String?                  // Especie botánica (opcional)
+  cultivar         String?                  // Variedad botánica (opcional)
+  health_status    HealthStatus             @default(UNKNOWN)
+  lifecycle_status LifecycleStatus          @default(ACTIVE)
+  acquisition_date DateTime                 @default(now())
+  notes            String?                  @db.Text
+  location_id      String?
+  reference_id     String?
+  created_at       DateTime                 @default(now())
+  updated_at       DateTime                 @updatedAt
+
+  location         Location?                @relation(fields: [location_id], references: [id], onDelete: SetNull)
+  reference        PlantReference?          @relation(fields: [reference_id], references: [id], onDelete: SetNull)
+  photos           Photo[]
+  profile          PlantCultivationProfile?
+
+  @@index([location_id])
+  @@index([reference_id])
+  @@index([lifecycle_status])
+  @@index([health_status])
+  @@map("plants")
+}
+
+model PlantCultivationProfile {
+  id               String   @id // UUIDv7 asignado en capa de aplicación
+  plant_id         String   @unique
+  pot_info         String?  // Tipo, material, tamaño de maceta
+  substrate_info   String?  // Sustrato real colocado
+  light_conditions String?  // Condiciones reales de luz
+  watering_notes   String?  // Notas y observaciones sobre régimen de riego
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  plant            Plant    @relation(fields: [plant_id], references: [id], onDelete: Cascade)
+
+  @@map("plant_cultivation_profiles")
+}
+
+model Photo {
+  id          String   @id // UUIDv7 asignado en capa de aplicación
+  plant_id    String
+  file_path   String   // Storage key: photos/{permanent_code}/{unique_file}.webp
+  file_name   String   // Nombre original del archivo cargado
+  mime_type   String   // Formato MIME (image/webp, etc.)
+  file_size   Int?     // Tamaño en bytes
+  is_primary  Boolean  @default(false)
+  captured_at DateTime?
+  created_at  DateTime @default(now())
+
+  plant       Plant    @relation(fields: [plant_id], references: [id], onDelete: Cascade)
+
+  @@index([plant_id])
+  @@index([is_primary])
+  @@map("photos")
+}

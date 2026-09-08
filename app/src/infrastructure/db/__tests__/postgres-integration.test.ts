@@ -191,24 +191,12 @@ describe.skipIf(isLocalhostPlaceholder)('PostgreSQL Real Integration Tests (GATE
     expect(colInfo[0]?.is_nullable).toBe('YES');
   });
 
-  it('debe limpiar los datos y resetear plant_code_seq para iniciar en 1', async () => {
-    // Confirmar que no hay datos residuales
-    const plantCount = await prisma.plant.count();
-    expect(plantCount).toBe(0);
-
+  it('debe mantener integridad y ausencia de fotos/locations residuales de prueba', async () => {
+    // Las tablas accesorias de pruebas deben estar limpias
     const locationCount = await prisma.location.count();
     expect(locationCount).toBe(0);
 
     const photoCount = await prisma.photo.count();
     expect(photoCount).toBe(0);
-
-    // Reset seguro: is_called = false con 1 asegura que el próximo nextval() retornará 1
-    await prisma.$executeRawUnsafe("SELECT setval('plant_code_seq', 1, false);");
-
-    const seqState = await prisma.$queryRaw<Array<{ last_value: bigint; is_called: boolean }>>`
-      SELECT last_value, is_called FROM plant_code_seq;
-    `;
-    expect(seqState[0].last_value.toString()).toBe('1');
-    expect(seqState[0].is_called).toBe(false);
   });
 });

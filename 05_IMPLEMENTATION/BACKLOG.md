@@ -207,6 +207,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 ### Milestone 1 — Inventario Base & Catálogo
 
 #### `ATP-IMP-007` — Script de Carga Bootstrap del Inventario Inicial (13 Plantas)
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Poblar la base de datos con el dataset real de los 13 ejemplares físicos existentes.
 - **Tipo:** `DATA` | **Prioridad:** `MUST` | **Release:** `M1`
 - **Dependencias:** `ATP-IMP-004`, `ATP-IMP-005`.
@@ -214,12 +215,12 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Criterios de Aceptación:**
   - Script `prisma/seed.ts` que inserta exactamente las 13 plantas (`AT-PL-001` a `AT-PL-013`) con sus nombres comunes, especies, cultivares y notas textuales.
   - Respeta los códigos e identidades existentes sin regenerarlos; preserva `permanent_code` inmutables.
-  - Respeta los estados sanitarios iniciales: 10 `HEALTHY`, 2 `ATTENTION` (`AT-PL-006`, `AT-PL-012`), 1 `RECOVERY` (`AT-PL-008`).
+  - Respeta los estados sanitarios iniciales según `INITIAL_INVENTORY.md`: 10 `HEALTHY` (`AT-PL-001`, `002`, `005`, `007`, `008`, `009`, `010`, `011`, `012`, `013`), 2 `ATTENTION` (`AT-PL-003`, `AT-PL-006`), 1 `RECOVERY` (`AT-PL-004`), 0 `UNKNOWN`.
   - Solo `AT-PL-013` posee `acquisition_date = 2026-09-05`; las demás 12 poseen `acquisition_date = null`.
   - Todas las 13 plantas tienen `location_id = null`, `reference_id = null`, ausencia de `Photo` y ausencia de `PlantCultivationProfile`.
   - **Alineación de Secuencia:** Tras importar los códigos existentes, la secuencia `plant_code_seq` debe alinearse conceptualmente con el máximo componente numérico histórico ya persistido (en este dataset inicial el máximo es 13), asegurando que el próximo alta genere el valor 14 sin reservar manualmente `AT-PL-014`.
   - El script debe ser seguro y repetible ante ejecuciones controladas de seed.
-- **Resultado:** Base de datos inicializada con el inventario real y la secuencia correctamente sincronizada.
+- **Resultado:** Base de datos inicializada con el inventario real y la secuencia correctamente sincronizada. Testeado y verificado en Neon.
 
 #### `ATP-IMP-008` — Casos de Uso del Dominio Plantas (CRUD & Lifecycle)
 - **Objetivo:** Implementar la lógica de negocio pura para administración de plantas.

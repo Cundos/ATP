@@ -223,17 +223,18 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Base de datos inicializada con el inventario real y la secuencia correctamente sincronizada. Testeado y verificado en Neon.
 
 #### `ATP-IMP-008` — Casos de Uso del Dominio Plantas (CRUD & Lifecycle)
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Implementar la lógica de negocio pura para administración de plantas.
 - **Tipo:** `BACKEND` | **Prioridad:** `MUST` | **Release:** `M1`
 - **Dependencias:** `ATP-IMP-005`.
 - **Trazabilidad:** `FR-007`, `FR-009`, `FR-011`, `FR-013`, `FR-014`, `FR-015`, `US-001` a `US-005`, `FLOW-001`, `FLOW-003`, `FLOW-004`.
 - **Criterios de Aceptación:**
-  - `CreatePlantUseCase`: asigna `permanent_code` vía secuencia, estado `UNKNOWN` por defecto (`ADR-009`) si no se indica otro, valida campos requeridos.
-  - `UpdatePlantUseCase`: permite modificar atributos mutables; prohíbe terminantemente alterar `permanent_code`.
-  - `ArchivePlantUseCase`: soft delete cambiando `lifecycle_status = 'ARCHIVED'` (`ADR-004`).
-  - `RestorePlantUseCase`: permite desarchivar una planta retornándola a `lifecycle_status = 'ACTIVE'`.
-  - `ListPlantsUseCase` y `GetPlantUseCase`: consultas con filtros por estado sanitario, ubicación y búsqueda por nombre o código.
-- **Resultado:** Casos de uso desacoplados y cubiertos con tests unitarios.
+  - `CreatePlantUseCase`: asigna `permanent_code` vía secuencia, estado `UNKNOWN` por defecto (`ADR-009`) si no se indica otro, valida campos requeridos (rechaza `common_name` vacío).
+  - `UpdatePlantUseCase`: permite modificar atributos mutables; prohíbe terminantemente alterar `permanent_code`, `id` o `lifecycle_status`.
+  - `ArchivePlantUseCase`: soft delete cambiando `lifecycle_status = 'ARCHIVED'` (`ADR-004`), preservando el código e identidad histórica de forma idempotente.
+  - `RestorePlantUseCase`: permite desarchivar una planta retornándola a `lifecycle_status = 'ACTIVE'` de forma idempotente.
+  - `ListPlantsUseCase` y `GetPlantUseCase`: consultas con filtros por estado sanitario, ubicación y búsqueda por nombre o código, manteniendo orden por defecto `permanent_code ASC`.
+- **Resultado:** Casos de uso 100% desacoplados de Prisma/Next.js, con errores de aplicación dedicados y suite exhaustiva de tests unitarios pasando.
 
 #### `ATP-IMP-009` — Casos de Uso y Gestión del Catálogo de Ubicaciones
 - **Objetivo:** Implementar la administración de ubicaciones físicas sin admitir texto libre.

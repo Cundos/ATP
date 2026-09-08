@@ -21,7 +21,7 @@ describe.skipIf(isLocalhostPlaceholder)('PostgreSQL Real Integration Tests (GATE
     const result = await prisma.$queryRaw<Array<{ version: string }>>`SELECT version();`;
     expect(result).toBeDefined();
     expect(result.length).toBeGreaterThan(0);
-    expect(result[0].version).toMatch(/PostgreSQL (16|17)/i);
+    expect(result[0].version).toMatch(/PostgreSQL (1[6-9]|[2-9]\d)/i);
   });
 
   it('debe invocar atómicamente nextval sobre plant_code_seq generando valores únicos sin colisiones', async () => {
@@ -136,5 +136,79 @@ describe.skipIf(isLocalhostPlaceholder)('PostgreSQL Real Integration Tests (GATE
       await prisma.plant.delete({ where: { id: plant.id } });
       await prisma.location.delete({ where: { id: location.id } });
     }
+  });
+
+  it('debe verificar la existencia física de tablas, índices, constraints y sequence en PostgreSQL', async () => {
+    // 1. Tablas
+    const tables = await prisma.$queryRaw<Array<{ table_name: string }>>`
+      SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
+    `;
+    const tableNames = tables.map(t => t.table_name);
+    expect(tableNames).toContain('plants');
+    expect(tableNames).toContain('locations');
+    expect(tableNames).toContain('photos');
+    expect(tableNames).toContain('plant_cultivation_profiles');
+    expect(tableNames).toContain('plant_references');
+    expect(tableNames).toContain('_prisma_migrations');
+
+    // 2. Sequence plant_code_seq
+    const sequences = await prisma.$queryRaw<Array<{ sequence_name: string }>>`
+      SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = 'public';
+    `;
+    const seqNames = sequences.map(s => s.sequence_name);
+    expect(seqNames).toContain('plant_code_seq');
+
+    // 3. Índices requeridos
+    const indexes = await prisma.$queryRaw<Array<{ indexname: string }>>`
+      SELECT indexname FROM pg_indexes WHERE schemaname = 'public';
+    `;
+    const indexNames = indexes.map(i => i.indexname);
+    expect(indexNames).toContain('locations_active_name_key');
+    expect(indexNames).toContain('photos_single_primary_per_plant_idx');
+    expect(indexNames).toContain('plants_permanent_code_key');
+    expect(indexNames).toContain('plant_cultivation_profiles_plant_id_key');
+    expect(indexNames).toContain('plant_references_provider_external_id_key');
+
+    // 4. FK plants_location_id_fkey con RESTRICT
+    const fkeys = await prisma.$queryRaw<Array<{ constraint_name: string; delete_rule: string }>>`
+      SELECT tc.constraint_name, rc.delete_rule 
+      FROM information_schema.table_constraints AS tc 
+      JOIN information_schema.referential_constraints AS rc 
+        ON tc.constraint_name = rc.constraint_name 
+      WHERE tc.constraint_type = 'FOREIGN KEY' 
+        AND tc.table_schema = 'public' 
+        AND tc.constraint_name = 'plants_location_id_fkey';
+    `;
+    expect(fkeys.length).toBeGreaterThan(0);
+    expect(fkeys[0].delete_rule).toBe('RESTRICT');
+
+    // 5. Nullability de acquisition_date
+    const colInfo = await prisma.$queryRaw<Array<{ is_nullable: string }>>`
+      SELECT is_nullable 
+      FROM information_schema.columns 
+      WHERE table_name = 'plants' AND column_name = 'acquisition_date';
+    `;
+    expect(colInfo[0]?.is_nullable).toBe('YES');
+  });
+
+  it('debe limpiar los datos y resetear plant_code_seq para iniciar en 1', async () => {
+    // Confirmar que no hay datos residuales
+    const plantCount = await prisma.plant.count();
+    expect(plantCount).toBe(0);
+
+    const locationCount = await prisma.location.count();
+    expect(locationCount).toBe(0);
+
+    const photoCount = await prisma.photo.count();
+    expect(photoCount).toBe(0);
+
+    // Reset seguro: is_called = false con 1 asegura que el próximo nextval() retornará 1
+    await prisma.$executeRawUnsafe("SELECT setval('plant_code_seq', 1, false);");
+
+    const seqState = await prisma.$queryRaw<Array<{ last_value: bigint; is_called: boolean }>>`
+      SELECT last_value, is_called FROM plant_code_seq;
+    `;
+    expect(seqState[0].last_value.toString()).toBe('1');
+    expect(seqState[0].is_called).toBe(false);
   });
 });

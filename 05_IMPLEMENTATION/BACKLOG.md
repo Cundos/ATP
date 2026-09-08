@@ -105,10 +105,10 @@ Un Milestone se considera **COMPLETADO** cuando:
 
 ## 3. Gates de Control Obligatorios (Quality Gates)
 
-| Gate | Hito Asociado | Condición Innegociable para Avanzar |
-| :--- | :--- | :--- |
-| **GATE-0** | Cierre Milestone 0 | Contenedores Docker (`app` + `postgres`) inician limpiamente; Prisma migra la base de datos; la secuencia de PostgreSQL genera códigos atómicos; el suite de test básico ejecuta en verde. |
-| **GATE-1** | Cierre Milestone 1 | Las 13 plantas del bootstrap están cargadas con sus estados reales; CRUD de plantas y catálogo de ubicaciones 100% operativo en UI móvil sin recargas forzadas. |
+| Gate | Hito Asociado | Condición Innegociable para Avanzar | Estado |
+| :--- | :--- | :--- | :--- |
+| **GATE-0** | Cierre Milestone 0 | Contenedores Docker / Cloud PostgreSQL (Neon) operativos; Prisma migra la base de datos; la secuencia de PostgreSQL genera códigos atómicos y únicos sin colisiones; el suite completo de tests unitarios y de integración ejecuta en verde. | **APROBADO** |
+| **GATE-1** | Cierre Milestone 1 | Las 13 plantas del bootstrap están cargadas con sus estados reales; CRUD de plantas y catálogo de ubicaciones 100% operativo en UI móvil sin recargas forzadas. | PENDIENTE |
 | **GATE-2** | Cierre Milestone 2 | Las fotos se procesan en servidor a WebP, se guardan en el volumen montado bajo la jerarquía aprobada y se sirven mediante `resolveUrl()` sin errores; reemplazar foto principal preserva el archivo físico previo. |
 | **GATE-3** | Cierre Milestone 3 | Búsqueda botánica funcional en modal; persistencia del snapshot `PlantReference`; la aplicación sigue operando y guardando plantas si Open Plantbook se desconecta o devuelve HTTP 429. |
 | **GATE-4** | Cierre Milestone 4 | Interfaz responsiva mobile-first testeada; suite completa de tests automatizados pasa; guía de instalación local probada en entorno limpio. Release v0.1 lista. |
@@ -162,7 +162,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Archivo `prisma/schema.prisma` sintácticamente válido y compatible con PostgreSQL.
 
 #### `ATP-IMP-004` — Secuencia Nativa PostgreSQL para `permanent_code` (`AT-PL-XXX`)
-- **Estado:** `IMPLEMENTADO / PENDIENTE DE VALIDACIÓN DE INTEGRACIÓN`
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Implementar la generación atómica server-side del código permanente humano.
 - **Tipo:** `DATA` | **Prioridad:** `MUST` | **Release:** `M0`
 - **Dependencias:** `ATP-IMP-003`.
@@ -173,7 +173,7 @@ Un Milestone se considera **COMPLETADO** cuando:
   - La lógica de aplicación/dominio formatea el código como `AT-PL-` + número con padding mínimo de 3 dígitos (ej. `AT-PL-014`).
   - Operación atómica a nivel de motor; segura ante llamadas concurrentes; no sufre colisiones ni reutilización.
   - Los gaps numéricos por transacciones fallidas están formalmente aceptados.
-- **Resultado:** Mecanismo de generación seguro, atómico y desacoplado, probado con tests de concurrencia.
+- **Resultado:** Mecanismo de generación seguro, atómico y desacoplado, validado contra PostgreSQL real (Neon) y testeado en concurrencia sin colisiones. GATE-0 certificado.
 
 
 #### `ATP-IMP-005` — Capa de Repositorios Base y Modelos de Dominio Aislados

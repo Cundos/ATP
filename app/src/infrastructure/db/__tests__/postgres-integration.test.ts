@@ -191,6 +191,71 @@ describe.skipIf(isLocalhostPlaceholder)('PostgreSQL Real Integration Tests (GATE
     expect(colInfo[0]?.is_nullable).toBe('YES');
   });
 
+  it('debe respetar el partial unique index locations_active_name_key (rechazar 2 activas con mismo LOWER(name) pero admitir ACTIVE + ARCHIVED)', async () => {
+    const locId1 = generateUUIDv7();
+    const locId2 = generateUUIDv7();
+    const locName = `Patio Exclusivo ${Date.now()}`;
+
+    // 1. Crear primera ACTIVE
+    const loc1 = await prisma.location.create({
+      data: {
+        id: locId1,
+        name: locName,
+        lifecycle_status: 'ACTIVE',
+      },
+    });
+
+    try {
+      // 2. Intentar crear segunda ACTIVE con mismo LOWER(name) -> DEBE FALLAR
+      let secondActiveFailed = false;
+      try {
+        await prisma.location.create({
+          data: {
+            id: locId2,
+            name: locName.toLowerCase(),
+            lifecycle_status: 'ACTIVE',
+          },
+        });
+      } catch {
+        secondActiveFailed = true;
+      }
+      expect(secondActiveFailed).toBe(true);
+
+      // 3. Archivar la primera Location (ACTIVE -> ARCHIVED)
+      await prisma.location.update({
+        where: { id: loc1.id },
+        data: { lifecycle_status: 'ARCHIVED' },
+      });
+
+      // 4. Con la primera ARCHIVED, crear la segunda como ACTIVE -> DEBE SER PERMITIDO (coexistencia ACTIVE + ARCHIVED)
+      const loc2 = await prisma.location.create({
+        data: {
+          id: locId2,
+          name: locName.toLowerCase(),
+          lifecycle_status: 'ACTIVE',
+        },
+      });
+
+      // 5. Intentar restaurar la primera a ACTIVE mientras existe la segunda ACTIVE -> DEBE FALLAR por el índice físico
+      let restoreConflictFailed = false;
+      try {
+        await prisma.location.update({
+          where: { id: loc1.id },
+          data: { lifecycle_status: 'ACTIVE' },
+        });
+      } catch {
+        restoreConflictFailed = true;
+      }
+      expect(restoreConflictFailed).toBe(true);
+
+      // Limpieza de la segunda
+      await prisma.location.delete({ where: { id: loc2.id } });
+    } finally {
+      // Limpieza de la primera
+      await prisma.location.delete({ where: { id: loc1.id } }).catch(() => {});
+    }
+  });
+
   it('debe mantener integridad y ausencia de fotos/locations residuales de prueba', async () => {
     // Las tablas accesorias de pruebas deben estar limpias
     const locationCount = await prisma.location.count();

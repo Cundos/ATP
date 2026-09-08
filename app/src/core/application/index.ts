@@ -5,3 +5,8 @@ export * from './use-cases/ArchivePlantUseCase';
 export * from './use-cases/RestorePlantUseCase';
 export * from './use-cases/GetPlantUseCase';
 export * from './use-cases/ListPlantsUseCase';
+export * from './use-cases/CreateLocationUseCase';
+export * from './use-cases/RenameLocationUseCase';
+export * from './use-cases/ArchiveLocationUseCase';
+export * from './use-cases/RestoreLocationUseCase';
+export * from './use-cases/ListLocationsUseCase';

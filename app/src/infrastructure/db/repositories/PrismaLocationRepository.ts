@@ -38,38 +38,43 @@ export class PrismaLocationRepository implements ILocationRepository {
   async create(dto: CreateLocationDTO): Promise<LocationEntity> {
     const trimmed = dto.name.trim();
 
-    // Validar unicidad aplicativa preventiva para ambientes activos
-    const existing = await this.findByName(trimmed);
-    if (existing) {
-      throw new Error(`Ya existe una ubicación activa con el nombre: "${trimmed}"`);
+    try {
+      const record = await prisma.location.create({
+        data: {
+          id: generateUUIDv7(),
+          name: trimmed,
+          lifecycle_status: 'ACTIVE',
+        },
+      });
+      return record as LocationEntity;
+    } catch (error: unknown) {
+      // Si ocurre colisión en carrera concurrente contra locations_active_name_key
+      const err = error as { code?: string; message?: string };
+      if (err?.code === 'P2002' || err?.message?.includes('locations_active_name_key')) {
+        throw new Error(`Colisión de nombre activo en persistencia: "${trimmed}"`);
+      }
+      throw error;
     }
-
-    const record = await prisma.location.create({
-      data: {
-        id: generateUUIDv7(),
-        name: trimmed,
-        lifecycle_status: 'ACTIVE',
-      },
-    });
-    return record as LocationEntity;
   }
 
   async update(id: string, dto: UpdateLocationDTO): Promise<LocationEntity> {
     const trimmed = dto.name.trim();
 
-    // Validar colisión de nombre con otra ubicación activa
-    const existing = await this.findByName(trimmed);
-    if (existing && existing.id !== id) {
-      throw new Error(`Ya existe otra ubicación activa con el nombre: "${trimmed}"`);
+    try {
+      const record = await prisma.location.update({
+        where: { id },
+        data: {
+          name: trimmed,
+        },
+      });
+      return record as LocationEntity;
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      if (err?.code === 'P2002' || err?.message?.includes('locations_active_name_key')) {
+        throw new Error(`Colisión de nombre activo en persistencia: "${trimmed}"`);
+      }
+      throw error;
     }
-
-    const record = await prisma.location.update({
-      where: { id },
-      data: {
-        name: trimmed,
-      },
-    });
-    return record as LocationEntity;
   }
 
   async archive(id: string): Promise<LocationEntity> {

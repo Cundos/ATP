@@ -237,16 +237,18 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Casos de uso 100% desacoplados de Prisma/Next.js, con errores de aplicación dedicados y suite exhaustiva de tests unitarios pasando.
 
 #### `ATP-IMP-009` — Casos de Uso y Gestión del Catálogo de Ubicaciones
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Implementar la administración de ubicaciones físicas sin admitir texto libre.
 - **Tipo:** `BACKEND` | **Prioridad:** `MUST` | **Release:** `M1`
 - **Dependencias:** `ATP-IMP-005`.
 - **Trazabilidad:** `FR-016` a `FR-023`, `US-006`, `US-007`, `FLOW-005`, `FLOW-006`, `ADR-007`.
 - **Criterios de Aceptación:**
-  - `CreateLocationUseCase`: valida nombre no vacío (2-50 chars), unicidad insensible a mayúsculas entre activas.
-  - `RenameLocationUseCase`: actualiza nombre validando no colisionar con otra activa.
-  - `ArchiveLocationUseCase`: archiva la ubicación; las plantas históricas la conservan, pero no se ofrece para nuevas asignaciones.
-  - `ListLocationsUseCase`: lista activas (para selectores de formularios) o todas (para pantalla de gestión).
-- **Resultado:** Lógica de catálogo de ubicaciones testeada y protegida contra inconsistencias.
+  - `CreateLocationUseCase`: valida nombre no vacío (2-50 chars con trim), unicidad insensible a mayúsculas entre activas.
+  - `RenameLocationUseCase`: actualiza nombre validando no colisionar con otra activa (permite conservar el propio).
+  - `ArchiveLocationUseCase`: archiva la ubicación (soft delete idempotente); las plantas históricas la conservan pero no se ofrece para nuevas asignaciones.
+  - `RestoreLocationUseCase`: restaura a activa anticipando colisiones de nombre contra otras activas.
+  - `ListLocationsUseCase`: lista activas (para selectores de formularios) o todas (para pantalla de gestión), ordenadas por nombre ASC.
+- **Resultado:** Lógica de catálogo de ubicaciones testeada, desacoplada y protegida contra inconsistencias mediante tests unitarios y de integración física contra PostgreSQL.
 
 #### `ATP-IMP-010` — Shell Mobile-First, Tokens de Diseño y Componentes Base
 - **Objetivo:** Crear la estructura visual responsiva y el sistema de diseño móvil de la aplicación.

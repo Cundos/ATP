@@ -23,6 +23,8 @@ Este documento centraliza las decisiones arquitectónicas y de diseño del produ
 - [ADR-015: Persistencia Relacional con PostgreSQL y Prisma ORM](#adr-015-persistencia-relacional-con-postgresql-y-prisma-orm)
 - [ADR-016: Identificadores Técnicos UUIDv7 y Desacoplamiento de Códigos de Dominio](#adr-016-identificadores-técnicos-uuidv7-y-desacoplamiento-de-códigos-de-dominio)
 - [ADR-017: Generación de permanent_code Mediante Secuencia Dedicada de PostgreSQL](#adr-017-generación-de-permanent_code-mediante-secuencia-dedicada-de-postgresql)
+- [ADR-018: Despliegue en Vercel con PostgreSQL Gestionado en la Nube](#adr-018-despliegue-en-vercel-con-postgresql-gestionado-en-la-nube)
+
 
 ---
 
@@ -247,3 +249,18 @@ Este documento centraliza las decisiones arquitectónicas y de diseño del produ
 - **Consecuencias:**
   - *Positivas:* Operación atómica a nivel de motor de base de datos; total inmunidad contra condiciones de carrera concurrentes sin requerir bloqueos pesimistas de tabla; desacoplada completamente de los UUIDs técnicos y del ciclo de vida (`lifecycle_status`).
   - *Negativas:* Requiere definir la secuencia física nativa en la base de datos durante la inicialización/migración de PostgreSQL, en lugar de depender únicamente de primitivas básicas del esquema Prisma.
+
+---
+
+## ADR-018: Despliegue en Vercel con PostgreSQL Gestionado en la Nube
+
+- **Estado:** Accepted
+- **Contexto:**
+  El repositorio del proyecto fue conectado directamente a la plataforma cloud **Vercel** para integración y despliegue continuo (CI/CD). Por la naturaleza de la arquitectura serverless de Vercel, los endpoints y Server Actions no pueden acceder a instancias locales de Docker en `localhost:5432`. Asimismo, la máquina de desarrollo no dispone de Docker Desktop en PATH, lo que impedía la ejecución local de contenedores sin alterar el avance de las tareas de persistencia.
+- **Decisión:**
+  Atilio Plants adoptará una estrategia de despliegue cloud en **Vercel** respaldada por una instancia de **PostgreSQL gestionada en la nube (PostgreSQL 16+)** accesible mediante cadena de conexión estándar `DATABASE_URL` (ej. Neon Serverless Postgres, Supabase o similar).
+  Se mantiene la compatibilidad con el entorno Docker Compose (`docker-compose.yml`) como opción reproducible para homelab/despliegues locales sin que sea un requisito bloqueante para el ciclo de desarrollo en la nube.
+- **Consecuencias:**
+  - *Positivas:* Despliegue continuo automático e instantáneo en Vercel ante cada push a `main`; alta disponibilidad sin depender de la máquina local encendida; compatibilidad total con Prisma ORM y la secuencia nativa `plant_code_seq` (`ADR-017`); y eliminación del bloqueo por ausencia de Docker en local.
+  - *Negativas:* Requiere conectividad a Internet para interactuar con la base de datos durante el desarrollo y administrar de forma segura los secretos `DATABASE_URL` tanto en Vercel como en el archivo `.env` local.
+

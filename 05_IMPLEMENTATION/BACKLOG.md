@@ -133,17 +133,19 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Proyecto base compila y ejecuta con `npm run dev`.
 
 
-#### `ATP-IMP-002` — Entorno Docker Compose y PostgreSQL Local
-- **Objetivo:** Orquestar el entorno de desarrollo y ejecución local reproducible.
+#### `ATP-IMP-002` — Entorno de Infraestructura: Docker Compose y PostgreSQL (Local / Cloud)
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Orquestar el entorno de ejecución reproducible (Docker Compose multi-stage) y habilitar la infraestructura de PostgreSQL (PostgreSQL 16+ en la nube para despliegue continuo en Vercel o contenedor local).
 - **Tipo:** `DEVOPS` | **Prioridad:** `MUST` | **Release:** `M0`
 - **Dependencias:** `ATP-IMP-001`.
-- **Trazabilidad:** `NFR-001`, `NFR-002`, `ADR-005`.
+- **Trazabilidad:** `NFR-001`, `NFR-002`, `ADR-005`, `ADR-018`.
 - **Criterios de Aceptación:**
-  - Archivo `docker-compose.yml` con servicios `postgres` (`postgres:16-alpine`) y `app`.
+  - Archivo `docker-compose.yml` completo con servicios `postgres` (`postgres:16-alpine`, loopback 127.0.0.1, healthcheck) y `app` (multi-stage `Dockerfile`, Node.js 24 LTS, volumen `./storage:/app/storage`).
   - Volumen persistente para la base de datos (`postgres_data`).
-  - Directorio de almacenamiento de fotos montado como volumen (`./storage:/app/storage`).
-  - Archivo `.env.example` con variables documentadas (`DATABASE_URL`, `STORAGE_LOCAL_PATH`, etc.).
-- **Resultado:** `docker compose up` inicia PostgreSQL y deja la base de datos accesible en el puerto local asignado.
+  - Archivo `.env.example` con variables documentadas y placeholders seguros (`DATABASE_URL`, `POSTGRES_*`, `STORAGE_LOCAL_PATH`).
+  - Soporte de despliegue en Vercel y compatibilidad con PostgreSQL gestionado en la nube (`ADR-018`).
+- **Resultado:** Infraestructura declarada, lista para conexión de Prisma (`ATP-IMP-003`) y pipeline de despliegue en Vercel.
+
 
 #### `ATP-IMP-003` — Esquema Físico Prisma, UUIDv7 y Modelado Relacional
 - **Objetivo:** Diseñar el esquema físico relacional en Prisma y configurar identificadores UUIDv7.

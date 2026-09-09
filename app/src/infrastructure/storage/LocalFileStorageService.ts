@@ -51,8 +51,12 @@ export class LocalFileStorageService implements IFileStorageService {
 
   /**
    * Resolves the public URL/route for accessing the photo.
+   * Validates storageKey against path traversal and invalid key formats.
    */
   resolveUrl(storageKey: string): string {
+    if (!isValidStorageKey(storageKey)) {
+      throw new Error(`Invalid storage key or path traversal detected: "${storageKey}"`);
+    }
     const normalizedKey = storageKey.replace(/\\/g, '/').replace(/^\/+/, '');
     return `/api/photos/view/${normalizedKey}`;
   }

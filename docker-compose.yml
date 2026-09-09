@@ -1,4 +1,4 @@
-﻿services:
+services:
   postgres:
     image: postgres:16-alpine
     container_name: atilio_postgres
@@ -30,7 +30,7 @@
     environment:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL}
-      STORAGE_LOCAL_PATH: ${STORAGE_LOCAL_PATH:-/app/storage/photos}
+      STORAGE_LOCAL_PATH: ${STORAGE_LOCAL_PATH:-/app/storage}
     ports:
       - "${APP_PORT:-3000}:3000"
     volumes:

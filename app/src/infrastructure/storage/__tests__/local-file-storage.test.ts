@@ -23,18 +23,21 @@ describe('LocalFileStorageService', () => {
     expect(storage.getStorageRoot()).toBe(tempDir);
   });
 
-  it('saves a binary buffer and creates parent directories recursively', async () => {
+  it('persists file physically under root + key without duplicating photos/photos directory', async () => {
     const key = 'photos/AT-PL-001/leaf.webp';
     const content = Buffer.from([0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50]);
 
     const returnedKey = await storage.saveFile(key, content);
     expect(returnedKey).toBe(key);
 
-    const exists = await storage.fileExists(key);
-    expect(exists).toBe(true);
+    // Physical path must be exactly tempDir/photos/AT-PL-001/leaf.webp
+    const expectedPhysicalPath = path.join(tempDir, 'photos', 'AT-PL-001', 'leaf.webp');
+    const duplicatedPhotosPath = path.join(tempDir, 'photos', 'photos', 'AT-PL-001', 'leaf.webp');
 
-    const physicalPath = path.join(tempDir, 'photos', 'AT-PL-001', 'leaf.webp');
-    const writtenData = await fs.promises.readFile(physicalPath);
+    expect(fs.existsSync(expectedPhysicalPath)).toBe(true);
+    expect(fs.existsSync(duplicatedPhotosPath)).toBe(false);
+
+    const writtenData = await fs.promises.readFile(expectedPhysicalPath);
     expect(writtenData).toEqual(content);
   });
 
@@ -55,13 +58,32 @@ describe('LocalFileStorageService', () => {
     expect(exists).toBe(false);
   });
 
-  it('resolveUrl generates relative route for viewing photos', () => {
-    const url = storage.resolveUrl('photos/AT-PL-001/a0eebc99.webp');
-    expect(url).toBe('/api/photos/view/photos/AT-PL-001/a0eebc99.webp');
+  describe('resolveUrl', () => {
+    it('generates valid relative route for valid photo storage keys', () => {
+      const url = storage.resolveUrl('photos/AT-PL-001/a0eebc99.webp');
+      expect(url).toBe('/api/photos/view/photos/AT-PL-001/a0eebc99.webp');
 
-    // Normalizes leading slashes and Windows backslashes
-    const urlFromBackslashes = storage.resolveUrl('photos\\AT-PL-001\\a0eebc99.webp');
-    expect(urlFromBackslashes).toBe('/api/photos/view/photos/AT-PL-001/a0eebc99.webp');
+      const urlAlt = storage.resolveUrl('photos/AT-PL-014/photo-123.jpg');
+      expect(urlAlt).toBe('/api/photos/view/photos/AT-PL-014/photo-123.jpg');
+    });
+
+    it('resolveUrl rechaza traversal con error y no genera URL', () => {
+      expect(() => storage.resolveUrl('../secret')).toThrow(/traversal/i);
+      expect(() => storage.resolveUrl('photos/../../secret.txt')).toThrow(/traversal/i);
+      expect(() => storage.resolveUrl('photos/..')).toThrow(/traversal/i);
+    });
+
+    it('resolveUrl rechaza absolute path con error y no genera URL', () => {
+      expect(() => storage.resolveUrl('/etc/passwd')).toThrow(/traversal/i);
+      expect(() => storage.resolveUrl('/photos/AT-PL-001/img.webp')).toThrow(/traversal/i);
+      expect(() => storage.resolveUrl('\\photos\\AT-PL-001\\img.webp')).toThrow(/traversal/i);
+    });
+
+    it('resolveUrl rechaza Windows drive path con error y no genera URL', () => {
+      expect(() => storage.resolveUrl('C:\\secret')).toThrow(/traversal/i);
+      expect(() => storage.resolveUrl('C:/photos/img.webp')).toThrow(/traversal/i);
+      expect(() => storage.resolveUrl('D:\\app\\test.png')).toThrow(/traversal/i);
+    });
   });
 
   it('deletes an existing file and subsequent fileExists returns false', async () => {
@@ -115,7 +137,7 @@ describe('LocalFileStorageService', () => {
       expect(exists).toBe(false);
     });
 
-    it('rejects absolute paths and drive letters', async () => {
+    it('rejects absolute paths and drive letters on save', async () => {
       await expect(storage.saveFile('/root/exploit.txt', Buffer.from('exploit'))).rejects.toThrow();
       await expect(storage.saveFile('C:/exploit.txt', Buffer.from('exploit'))).rejects.toThrow();
     });

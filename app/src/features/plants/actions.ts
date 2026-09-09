@@ -1,0 +1,241 @@
+﻿'use server';
+
+import { revalidatePath } from 'next/cache';
+import { PrismaPlantRepository } from '@/infrastructure/db/repositories/PrismaPlantRepository';
+import { PrismaLocationRepository } from '@/infrastructure/db/repositories/PrismaLocationRepository';
+import { CreatePlantUseCase } from '@/core/application/use-cases/CreatePlantUseCase';
+import { UpdatePlantUseCase } from '@/core/application/use-cases/UpdatePlantUseCase';
+import { PlantFormInputSchema, PlantFormRawInput } from './schemas/plant-form.schema';
+
+export interface PlantActionResult {
+  success: boolean;
+  permanent_code?: string;
+  message?: string;
+  errors?: Record<string, string>;
+}
+
+/**
+ * SERVER ACTION: Alta de Planta (SCR-004)
+ * Parsea FormData, valida con Zod, comprueba validez de Location ACTIVE,
+ * ejecuta CreatePlantUseCase y revalida los paths afectados.
+ */
+export async function createPlantAction(
+  _prevState: PlantActionResult | null,
+  formData: FormData
+): Promise<PlantActionResult> {
+  try {
+    const rawData: PlantFormRawInput = {
+      common_name: (formData.get('common_name') as string) || '',
+      scientific_name: (formData.get('scientific_name') as string) || '',
+      cultivar: (formData.get('cultivar') as string) || '',
+      health_status: (formData.get('health_status') as string) || 'UNKNOWN',
+      acquisition_date: (formData.get('acquisition_date') as string) || '',
+      location_id: (formData.get('location_id') as string) || '',
+      notes: (formData.get('notes') as string) || '',
+      pot_info: (formData.get('pot_info') as string) || '',
+      substrate_info: (formData.get('substrate_info') as string) || '',
+      light_conditions: (formData.get('light_conditions') as string) || '',
+      watering_notes: (formData.get('watering_notes') as string) || '',
+    };
+
+    // 1. Validación de esquema con Zod
+    const validationResult = PlantFormInputSchema.safeParse(rawData);
+    if (!validationResult.success) {
+      const fieldErrors: Record<string, string> = {};
+      for (const issue of validationResult.error.issues) {
+        const fieldName = issue.path[0] as string;
+        if (fieldName && !fieldErrors[fieldName]) {
+          fieldErrors[fieldName] = issue.message;
+        }
+      }
+      return {
+        success: false,
+        errors: fieldErrors,
+        message: 'Por favor corregí los campos marcados.',
+      };
+    }
+
+    const validatedData = validationResult.data;
+
+    // 2. Validación de Location (debe existir y estar ACTIVE)
+    if (validatedData.location_id) {
+      const locationRepository = new PrismaLocationRepository();
+      const location = await locationRepository.findById(validatedData.location_id);
+      if (!location || location.lifecycle_status !== 'ACTIVE') {
+        return {
+          success: false,
+          errors: {
+            location_id: 'La ubicación seleccionada no es válida o se encuentra archivada.',
+          },
+          message: 'Ubicación no disponible para nueva asignación.',
+        };
+      }
+    }
+
+    // 3. Ejecución del Caso de Uso
+    const plantRepository = new PrismaPlantRepository();
+    const createPlantUseCase = new CreatePlantUseCase(plantRepository);
+
+    const createdPlant = await createPlantUseCase.execute({
+      common_name: validatedData.common_name,
+      scientific_name: validatedData.scientific_name,
+      cultivar: validatedData.cultivar,
+      health_status: validatedData.health_status,
+      acquisition_date: validatedData.acquisition_date,
+      location_id: validatedData.location_id,
+      notes: validatedData.notes,
+      pot_info: validatedData.pot_info,
+      substrate_info: validatedData.substrate_info,
+      light_conditions: validatedData.light_conditions,
+      watering_notes: validatedData.watering_notes,
+    });
+
+    // 4. Revalidar cache de Next.js
+    revalidatePath('/');
+    revalidatePath('/inventory');
+    revalidatePath(`/plants/${createdPlant.permanent_code}`);
+
+    return {
+      success: true,
+      permanent_code: createdPlant.permanent_code,
+      message: 'Planta registrada correctamente',
+    };
+  } catch (error: unknown) {
+    const err = error as { name?: string; message?: string };
+    if (err?.name === 'PlantValidationError') {
+      return {
+        success: false,
+        errors: { common_name: err.message || 'Datos de planta inválidos.' },
+        message: err.message || 'Error de validación.',
+      };
+    }
+
+    // Log en servidor sin exponer stack ni credenciales al cliente
+    console.error('[createPlantAction] Error inesperado:', error);
+    return {
+      success: false,
+      message: 'Algo salió mal al guardar los cambios.',
+    };
+  }
+}
+
+/**
+ * SERVER ACTION: Edición de Planta (SCR-005)
+ * Parsea FormData, valida con Zod, comprueba validez de Location ACTIVE (si fue modificada),
+ * ejecuta UpdatePlantUseCase y revalida los paths afectados.
+ */
+export async function updatePlantAction(
+  plantId: string,
+  _prevState: PlantActionResult | null,
+  formData: FormData
+): Promise<PlantActionResult> {
+  try {
+    if (!plantId || plantId.trim() === '') {
+      return {
+        success: false,
+        message: 'Identificador de ejemplar no proporcionado.',
+      };
+    }
+
+    const rawData: PlantFormRawInput = {
+      common_name: (formData.get('common_name') as string) || '',
+      scientific_name: (formData.get('scientific_name') as string) || '',
+      cultivar: (formData.get('cultivar') as string) || '',
+      health_status: (formData.get('health_status') as string) || 'UNKNOWN',
+      acquisition_date: (formData.get('acquisition_date') as string) || '',
+      location_id: (formData.get('location_id') as string) || '',
+      notes: (formData.get('notes') as string) || '',
+      pot_info: (formData.get('pot_info') as string) || '',
+      substrate_info: (formData.get('substrate_info') as string) || '',
+      light_conditions: (formData.get('light_conditions') as string) || '',
+      watering_notes: (formData.get('watering_notes') as string) || '',
+    };
+
+    // 1. Validación de esquema con Zod
+    const validationResult = PlantFormInputSchema.safeParse(rawData);
+    if (!validationResult.success) {
+      const fieldErrors: Record<string, string> = {};
+      for (const issue of validationResult.error.issues) {
+        const fieldName = issue.path[0] as string;
+        if (fieldName && !fieldErrors[fieldName]) {
+          fieldErrors[fieldName] = issue.message;
+        }
+      }
+      return {
+        success: false,
+        errors: fieldErrors,
+        message: 'Por favor corregí los campos marcados.',
+      };
+    }
+
+    const validatedData = validationResult.data;
+
+    // 2. Validación de Location (si se asigna una nueva, debe existir y estar ACTIVE)
+    if (validatedData.location_id) {
+      const locationRepository = new PrismaLocationRepository();
+      const location = await locationRepository.findById(validatedData.location_id);
+      if (!location || location.lifecycle_status !== 'ACTIVE') {
+        return {
+          success: false,
+          errors: {
+            location_id: 'La ubicación seleccionada no es válida o se encuentra archivada.',
+          },
+          message: 'Ubicación no disponible para asignación.',
+        };
+      }
+    }
+
+    // 3. Ejecución del Caso de Uso
+    const plantRepository = new PrismaPlantRepository();
+    const updatePlantUseCase = new UpdatePlantUseCase(plantRepository);
+
+    const updatedPlant = await updatePlantUseCase.execute(plantId, {
+      common_name: validatedData.common_name,
+      scientific_name: validatedData.scientific_name,
+      cultivar: validatedData.cultivar,
+      health_status: validatedData.health_status,
+      acquisition_date: validatedData.acquisition_date,
+      location_id: validatedData.location_id,
+      notes: validatedData.notes,
+      pot_info: validatedData.pot_info,
+      substrate_info: validatedData.substrate_info,
+      light_conditions: validatedData.light_conditions,
+      watering_notes: validatedData.watering_notes,
+    });
+
+    // 4. Revalidar cache de Next.js
+    revalidatePath('/');
+    revalidatePath('/inventory');
+    revalidatePath(`/plants/${updatedPlant.permanent_code}`);
+    revalidatePath(`/plants/${updatedPlant.permanent_code}/edit`);
+    revalidatePath(`/plants/${updatedPlant.id}`);
+
+    return {
+      success: true,
+      permanent_code: updatedPlant.permanent_code,
+      message: 'Cambios guardados correctamente',
+    };
+  } catch (error: unknown) {
+    const err = error as { name?: string; message?: string };
+    if (err?.name === 'PlantValidationError') {
+      return {
+        success: false,
+        errors: { common_name: err.message || 'Datos de planta inválidos.' },
+        message: err.message || 'Error de validación.',
+      };
+    }
+    if (err?.name === 'PlantNotFoundError') {
+      return {
+        success: false,
+        message: 'El ejemplar no fue encontrado.',
+      };
+    }
+
+    // Log en servidor sin exponer stack ni credenciales al cliente
+    console.error('[updatePlantAction] Error inesperado:', error);
+    return {
+      success: false,
+      message: 'Algo salió mal al guardar los cambios.',
+    };
+  }
+}

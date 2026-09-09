@@ -310,6 +310,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Ficha individual completa y responsive implementada en `src/features/plants/components/PlantDetailView.tsx` y ruta dinámica `src/app/plants/[id]/page.tsx` con estados de carga (`loading.tsx`), no encontrado (`not-found.tsx`) y error (`error.tsx`). Cobertura de tests unitarios y de integración 100% pasando.
 
 #### `ATP-IMP-014` — Formularios de Alta (`SCR-004`) y Edición (`SCR-005`)
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Implementar los flujos de creación y actualización de plantas mediante Server Actions.
 - **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M1`
 - **Dependencias:** `ATP-IMP-008`, `ATP-IMP-009`, `ATP-IMP-010`.
@@ -319,7 +320,7 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Campos de cultivo opcionales (maceta, sustrato, notas de luz/riego).
   - Formulario de edición (`SCR-005`): precarga datos existentes; campo `permanent_code` mostrado en solo lectura o bloqueado; permite actualizar ubicación o removerla.
   - Retroalimentación con toast tras éxito y redirección a la ficha del ejemplar (`SCR-003`).
-- **Resultado:** Flujos de alta y edición 100% operativos en mobile.
+- **Resultado:** Flujos de alta (`/plants/new`) y edición (`/plants/[id]/edit`) implementados con Server Actions (`createPlantAction`, `updatePlantAction`), validación Zod robusta en servidor/cliente, preservación de inmutabilidad en claves y código permanente, y 100% de tests automatizados pasando.
 
 #### `ATP-IMP-015` — Pantallas de Plantas Archivadas (`SCR-006`) y Catálogo de Ubicaciones (`SCR-007`)
 - **Objetivo:** Proveer la interfaz para consulta de histórico archivado y administración de las ubicaciones del hogar.

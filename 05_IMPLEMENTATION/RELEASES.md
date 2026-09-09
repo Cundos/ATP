@@ -10,11 +10,8 @@
 | Release / Milestone | Enfoque Principal | Entregables Clave | Gate de Calidad | Estado |
 | :--- | :--- | :--- | :--- | :--- |
 | **Milestone 0: Bootstrap Técnico** (`v0.0.1-bootstrap`) | Fundaciones de Entorno & Persistencia | Next.js/TS, Docker Compose, PostgreSQL (Neon / Local), Prisma ORM, UUIDv7, secuencia nativa `permanent_code`, repositorios base y framework de tests. | `GATE-0` | **COMPLETADO (GATE-0 APROBADO)** |
-| **Milestone 1: Inventario Base** (`v0.0.2-inventory`) | Núcleo de Dominio & Catálogo UI | Importación bootstrap de 13 plantas (`AT-PL-001` a `013`), CRUD completo de ejemplares, archivo/restauración, catálogo de ubicaciones, Dashboard, listado mobile-first, Ficha Individual (`SCR-003`), Formularios de Alta/Edición (`SCR-004`/`SCR-005`), Plantas Archivadas (`SCR-006`) y Administración de Ubicaciones (`SCR-007`). | `GATE-1` | **COMPLETADO (GATE-1 APROBADO)** |
-
-
-
-| **Milestone 2: Fotos** (`v0.0.3-photos`) | Almacenamiento & Multimedia | `LocalFileStorageService`, preprocesamiento con `sharp` a WebP, streaming seguro `/api/photos/view/`, reemplazo de foto principal preservando histórico en disco. | `GATE-2` | **PLANIFICADO** |
+| **Milestone 1: Inventario Base** (`v0.0.2-inventory`) | Núcleo de Dominio & Catálogo UI | Importación bootstrap de 13 plantas (`AT-PL-001` a `013`), CRUD completo de ejemplares, archivo/restauración, catálogo de ubicaciones, Dashboard y listado mobile-first. | `GATE-1` | **COMPLETADO (GATE-1 APROBADO)** |
+| **Milestone 2: Fotos** (`v0.0.3-photos`) | Almacenamiento & Multimedia | `LocalFileStorageService`, preprocesamiento con `sharp` a WebP, streaming seguro `/api/photos/view/`, reemplazo de foto principal preservando histórico en disco. | `GATE-2` | **EN PROGRESO (ATP-IMP-016 completado, GATE-2 PENDIENTE)** |
 | **Milestone 3: Open Plantbook** (`v0.0.4-plantbook`) | Conocimiento Botánico Asistido | OAuth2 server-side, `OpenPlantbookClient` resiliente (429/timeout), snapshot persistente `PlantReference`, modal de búsqueda asistida no bloqueante. | `GATE-3` | **PLANIFICADO** |
 | **Milestone 4: Hardening** (`v0.0.5-rc`) | Estabilidad, A11y & Testing | Hardening de navegación móvil, contrastes WCAG AA, suite de pruebas automatizadas (unit, integration, E2E), logging estructurado y manejo de errores. | `GATE-4` | **PLANIFICADO** |
 | **RELEASE v0.1: MVP** (`v0.1.0-mvp`) | Versión Final Lista para Producción Local | Sistema 100% operativo en entorno local, documentación técnica de instalación (`README.md`), dataset inicial operativo y verificación integral. | `RELEASE-GATE` | **PLANIFICADO** |
@@ -39,41 +36,7 @@ Atilio Plants v0.1 se considerará formalmente **LIBERADA** y apta para uso coti
 
 ---
 
-## 3. Despliegue en Producción (Vercel + Neon Cloud)
-
-| Campo | Valor |
-| :--- | :--- |
-| **URL oficial de producción** | **https://atp-sigma.vercel.app** |
-| **Proyecto Vercel** | `teresita-0157fbe4/atp` |
-| **Repositorio** | `Cundos/ATP` (branch `main`) |
-| **Root Directory** | `app` |
-| **Framework** | Next.js (auto-detected) |
-| **Base de datos** | Neon Cloud PostgreSQL (runtime, lectura real) |
-| **Deployment Protection** | Producción: **pública** (sin SSO). Previews: SSO protegido. |
-| **Commit desplegado** | `5854d49` (`feat: implement archived plants and location management`) |
-| **Deployment ID** | `dpl_49qtTDTpBBogbtgA16Uke2s1WGqG` |
-| **Estado** | ● **READY** |
-| **Fecha de validación** | 2026-09-09T20:40 UTC |
-| **Acceso público confirmado** | ✅ Validado sin sesión autenticada |
-
-### Rutas verificadas en producción (GATE-1 Auditado)
-
-| Ruta | Status | Validación |
-| :--- | :--- | :--- |
-| `/` (Dashboard) | 200 OK | Total 13, HEALTHY 10, ATTENTION 2, RECOVERY 1, UNKNOWN 0 |
-| `/inventory` | 200 OK | Catálogo de los 13 ejemplares activos |
-| `/plants/new` | 200 OK | Formulario de alta con validación Zod y secuencia |
-| `/plants/AT-PL-001` | 200 OK | Gomero, Saludable, modal de archivo funcional |
-| `/plants/AT-PL-001/edit` | 200 OK | Formulario de edición precargado con código inmutable |
-| `/plants/AT-PL-003` | 200 OK | Monstera adansonii, Atención |
-| `/plants/AT-PL-013` | 200 OK | Croton, acquisition_date 05/09/2026 |
-| `/plants/archived` | 200 OK | Plantas archivadas (EmptyState ante 0 archivadas) |
-| `/locations` | 200 OK | Catálogo de ubicaciones con pestañas y modales CRUD |
-| `/plants/AT-PL-999` | 200 (not-found) | "Ejemplar No Encontrado" renderizado (deuda soft-404) |
-
----
-
-## 4. Releases Futuras (Roadmap Post-MVP)
+## 3. Releases Futuras (Roadmap Post-MVP)
 
 Las etapas posteriores del roadmap continuarán con la siguiente proyección:
 - **v0.2.x (Etapa 2):** Bitácora de intervenciones (riegos, fertilizaciones, podas, trasplantes) y timeline interactivo.

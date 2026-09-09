@@ -253,7 +253,6 @@ Un Milestone se considera **COMPLETADO** cuando:
 #### `ATP-IMP-010` — Shell Mobile-First, Tokens de Diseño y Componentes Base
 - **Estado:** `COMPLETADO`
 - **Objetivo:** Crear la estructura visual responsiva y el sistema de diseño móvil de la aplicación.
-
 - **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M1`
 - **Dependencias:** `ATP-IMP-001`.
 - **Trazabilidad:** `NFR-004`, `NFR-005`, `SCR-001` a `SCR-007`.
@@ -267,7 +266,6 @@ Un Milestone se considera **COMPLETADO** cuando:
 #### `ATP-IMP-011` — Pantalla de Inventario / Catálogo de Plantas Activas (`SCR-002`)
 - **Estado:** `COMPLETADO`
 - **Objetivo:** Implementar la pantalla principal de catálogo de ejemplares activos.
-
 - **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M1`
 - **Dependencias:** `ATP-IMP-008`, `ATP-IMP-010`.
 - **Trazabilidad:** `FR-024` a `FR-030`, `US-008`, `US-009`, `SCR-002`, `FLOW-002`, `PFD-002`.
@@ -283,7 +281,6 @@ Un Milestone se considera **COMPLETADO** cuando:
 #### `ATP-IMP-012` — Pantalla de Dashboard Resumen (`SCR-001`)
 - **Estado:** `COMPLETADO`
 - **Objetivo:** Proveer la vista panorámica del estado sanitario de la colección botánica.
-
 - **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M1`
 - **Dependencias:** `ATP-IMP-008`, `ATP-IMP-010`.
 - **Trazabilidad:** `FR-031` a `FR-034`, `US-010`, `SCR-001`.
@@ -306,8 +303,8 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Sección de taxonomía: Nombre científico y fecha de adquisición (o "No declarada").
   - Sección de ubicación actual (o "Sin ubicación").
   - Sección de perfil de cultivo (`PlantCultivationProfile`): maceta física, sustrato, notas de luz y riego (o "Sin datos de cultivo").
-  - Menú de acciones secundarias: "Editar ejemplar" (navega a `SCR-005`), "Archivar ejemplar" (con diálogo modal de confirmación accesible).
-- **Resultado:** Ficha individual completa y responsive implementada en `src/features/plants/components/PlantDetailView.tsx` y ruta dinámica `src/app/plants/[id]/page.tsx` con estados de carga (`loading.tsx`), no encontrado (`not-found.tsx`) y error (`error.tsx`). Cobertura de tests unitarios y de integración 100% pasando.
+  - Menú de acciones secundarias: "Editar ejemplar" (navega a `SCR-005`), "Archivar ejemplar" (con diálogo de confirmación y traslado a `SCR-006`).
+- **Resultado:** Ficha completa y limpia accesible desde cualquier tarjeta del inventario.
 
 #### `ATP-IMP-014` — Formularios de Alta (`SCR-004`) y Edición (`SCR-005`)
 - **Estado:** `COMPLETADO`
@@ -320,7 +317,7 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Campos de cultivo opcionales (maceta, sustrato, notas de luz/riego).
   - Formulario de edición (`SCR-005`): precarga datos existentes; campo `permanent_code` mostrado en solo lectura o bloqueado; permite actualizar ubicación o removerla.
   - Retroalimentación con toast tras éxito y redirección a la ficha del ejemplar (`SCR-003`).
-- **Resultado:** Flujos de alta (`/plants/new`) y edición (`/plants/[id]/edit`) implementados con Server Actions (`createPlantAction`, `updatePlantAction`), validación Zod robusta en servidor/cliente, preservación de inmutabilidad en claves y código permanente, y 100% de tests automatizados pasando.
+- **Resultado:** Flujos de alta y edición 100% operativos en mobile.
 
 #### `ATP-IMP-015` — Pantallas de Plantas Archivadas (`SCR-006`) y Catálogo de Ubicaciones (`SCR-007`)
 - **Estado:** `COMPLETADO`
@@ -333,13 +330,14 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Vista de Administración de Ubicaciones (`SCR-007`): lista de ubicaciones activas con conteo de ejemplares asociados en tiempo real.
   - Botón y modal para "Crear ubicación" con validación de unicidad.
   - Opción para renombrar ubicación existente y archivar ubicación con diálogo de confirmación (aclara que las plantas actuales la conservan).
-- **Resultado:** Pantallas de Plantas Archivadas (`/plants/archived`) y Catálogo de Ubicaciones (`/locations`) 100% operativas, con Server Actions para archivado/restauración de plantas y CRUD de ubicaciones, conteo en tiempo real y suite completa de tests automatizados.
+- **Resultado:** Módulos de consulta histórica y administración de ubicaciones independientes y funcionales.
 
 ---
 
 ### Milestone 2 — Almacenamiento & Fotografía
 
 #### `ATP-IMP-016` — Contrato `IFileStorageService` e Implementación `LocalFileStorage`
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Construir la capa de abstracción de almacenamiento de archivos en disco.
 - **Tipo:** `STORAGE` | **Prioridad:** `MUST` | **Release:** `M2`
 - **Dependencias:** `ATP-IMP-002`, `ATP-IMP-005`.

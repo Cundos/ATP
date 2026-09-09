@@ -1,4 +1,4 @@
-﻿# dependencies
+# dependencies
 node_modules/
 **/node_modules/
 /.pnp
@@ -24,9 +24,10 @@ yarn-error.log*
 !.env*.example
 
 # storage runtime
-storage/
-**/storage/
-!storage/photos/.gitkeep
+/storage/
+/app/storage/
+!/storage/photos/.gitkeep
+!/app/storage/photos/.gitkeep
 
 # misc & OS / editor
 .DS_Store
@@ -37,4 +38,3 @@ Thumbs.db
 .idea/
 .vscode/
 *.log
-.vercel

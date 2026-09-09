@@ -39,7 +39,37 @@ Atilio Plants v0.1 se considerará formalmente **LIBERADA** y apta para uso coti
 
 ---
 
-## 3. Releases Futuras (Roadmap Post-MVP)
+## 3. Despliegue en Producción (Vercel + Neon Cloud)
+
+| Campo | Valor |
+| :--- | :--- |
+| **URL oficial de producción** | **https://atp-sigma.vercel.app** |
+| **Proyecto Vercel** | `teresita-0157fbe4/atp` |
+| **Repositorio** | `Cundos/ATP` (branch `main`) |
+| **Root Directory** | `app` |
+| **Framework** | Next.js (auto-detected) |
+| **Base de datos** | Neon Cloud PostgreSQL (runtime, lectura real) |
+| **Deployment Protection** | Producción: **pública** (sin SSO). Previews: SSO protegido. |
+| **Commit desplegado** | `ca19984` (`feat: implement individual plant detail screen (SCR-003)`) |
+| **Deployment ID** | `dpl_8jY6VaL8ixkX7XBM66NNdjrUJeQK` |
+| **Estado** | ● **READY** |
+| **Fecha de validación** | 2026-09-09T02:33 UTC |
+| **Acceso público confirmado** | ✅ Validado sin sesión autenticada |
+
+### Rutas verificadas en producción
+
+| Ruta | Status | Validación |
+| :--- | :--- | :--- |
+| `/` (Dashboard) | 200 OK | Total 13, HEALTHY 10, ATTENTION 2, RECOVERY 1, UNKNOWN 0 |
+| `/inventory` | 200 OK | Lista de 13 ejemplares activos |
+| `/plants/AT-PL-001` | 200 OK | Gomero, Saludable, acquisition_date "No declarada" |
+| `/plants/AT-PL-003` | 200 OK | Monstera adansonii, Atención |
+| `/plants/AT-PL-013` | 200 OK | Croton, acquisition_date 05/09/2026 |
+| `/plants/AT-PL-999` | 200 (not-found) | "Ejemplar No Encontrado" renderizado correctamente |
+
+---
+
+## 4. Releases Futuras (Roadmap Post-MVP)
 
 Las etapas posteriores del roadmap continuarán con la siguiente proyección:
 - **v0.2.x (Etapa 2):** Bitácora de intervenciones (riegos, fertilizaciones, podas, trasplantes) y timeline interactivo.

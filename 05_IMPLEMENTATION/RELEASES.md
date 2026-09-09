@@ -10,7 +10,7 @@
 | Release / Milestone | Enfoque Principal | Entregables Clave | Gate de Calidad | Estado |
 | :--- | :--- | :--- | :--- | :--- |
 | **Milestone 0: Bootstrap Técnico** (`v0.0.1-bootstrap`) | Fundaciones de Entorno & Persistencia | Next.js/TS, Docker Compose, PostgreSQL (Neon / Local), Prisma ORM, UUIDv7, secuencia nativa `permanent_code`, repositorios base y framework de tests. | `GATE-0` | **COMPLETADO (GATE-0 APROBADO)** |
-| **Milestone 1: Inventario Base** (`v0.0.2-inventory`) | Núcleo de Dominio & Catálogo UI | Importación bootstrap de 13 plantas (`AT-PL-001` a `013`), CRUD completo de ejemplares, archivo/restauración, catálogo de ubicaciones, Dashboard, listado mobile-first, Ficha Individual (`SCR-003`), Formularios de Alta/Edición (`SCR-004`/`SCR-005`), Plantas Archivadas (`SCR-006`) y Administración de Ubicaciones (`SCR-007`). | `GATE-1` | **EN PROGRESO (Implementación funcional M1 completa — pendiente auditoría GATE-1)** |
+| **Milestone 1: Inventario Base** (`v0.0.2-inventory`) | Núcleo de Dominio & Catálogo UI | Importación bootstrap de 13 plantas (`AT-PL-001` a `013`), CRUD completo de ejemplares, archivo/restauración, catálogo de ubicaciones, Dashboard, listado mobile-first, Ficha Individual (`SCR-003`), Formularios de Alta/Edición (`SCR-004`/`SCR-005`), Plantas Archivadas (`SCR-006`) y Administración de Ubicaciones (`SCR-007`). | `GATE-1` | **COMPLETADO (GATE-1 APROBADO)** |
 
 
 
@@ -50,22 +50,26 @@ Atilio Plants v0.1 se considerará formalmente **LIBERADA** y apta para uso coti
 | **Framework** | Next.js (auto-detected) |
 | **Base de datos** | Neon Cloud PostgreSQL (runtime, lectura real) |
 | **Deployment Protection** | Producción: **pública** (sin SSO). Previews: SSO protegido. |
-| **Commit desplegado** | `ca19984` (`feat: implement individual plant detail screen (SCR-003)`) |
-| **Deployment ID** | `dpl_8jY6VaL8ixkX7XBM66NNdjrUJeQK` |
+| **Commit desplegado** | `5854d49` (`feat: implement archived plants and location management`) |
+| **Deployment ID** | `dpl_49qtTDTpBBogbtgA16Uke2s1WGqG` |
 | **Estado** | ● **READY** |
-| **Fecha de validación** | 2026-09-09T02:33 UTC |
+| **Fecha de validación** | 2026-09-09T20:40 UTC |
 | **Acceso público confirmado** | ✅ Validado sin sesión autenticada |
 
-### Rutas verificadas en producción
+### Rutas verificadas en producción (GATE-1 Auditado)
 
 | Ruta | Status | Validación |
 | :--- | :--- | :--- |
 | `/` (Dashboard) | 200 OK | Total 13, HEALTHY 10, ATTENTION 2, RECOVERY 1, UNKNOWN 0 |
-| `/inventory` | 200 OK | Lista de 13 ejemplares activos |
-| `/plants/AT-PL-001` | 200 OK | Gomero, Saludable, acquisition_date "No declarada" |
+| `/inventory` | 200 OK | Catálogo de los 13 ejemplares activos |
+| `/plants/new` | 200 OK | Formulario de alta con validación Zod y secuencia |
+| `/plants/AT-PL-001` | 200 OK | Gomero, Saludable, modal de archivo funcional |
+| `/plants/AT-PL-001/edit` | 200 OK | Formulario de edición precargado con código inmutable |
 | `/plants/AT-PL-003` | 200 OK | Monstera adansonii, Atención |
 | `/plants/AT-PL-013` | 200 OK | Croton, acquisition_date 05/09/2026 |
-| `/plants/AT-PL-999` | 200 (not-found) | "Ejemplar No Encontrado" renderizado correctamente |
+| `/plants/archived` | 200 OK | Plantas archivadas (EmptyState ante 0 archivadas) |
+| `/locations` | 200 OK | Catálogo de ubicaciones con pestañas y modales CRUD |
+| `/plants/AT-PL-999` | 200 (not-found) | "Ejemplar No Encontrado" renderizado (deuda soft-404) |
 
 ---
 

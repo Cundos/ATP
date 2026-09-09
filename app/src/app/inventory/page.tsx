@@ -1,12 +1,29 @@
 import React from 'react';
-import Link from 'next/link';
-import { Trees, Plus } from 'lucide-react';
-import { Button, EmptyState } from '@/components/ui';
+import { PrismaPlantRepository } from '@/infrastructure/db/repositories/PrismaPlantRepository';
+import { PrismaLocationRepository } from '@/infrastructure/db/repositories/PrismaLocationRepository';
+import { ListPlantsUseCase } from '@/core/application/use-cases/ListPlantsUseCase';
+import { ListLocationsUseCase } from '@/core/application/use-cases/ListLocationsUseCase';
+import { PlantCatalogView } from '@/features/plants/components';
 
-export default function InventoryPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function InventoryPage() {
+  // Instanciación de repositorios y casos de uso en el servidor
+  const plantRepository = new PrismaPlantRepository();
+  const locationRepository = new PrismaLocationRepository();
+
+  const listPlantsUseCase = new ListPlantsUseCase(plantRepository);
+  const listLocationsUseCase = new ListLocationsUseCase(locationRepository);
+
+  // Ejecutar lecturas server-side: solo plantas ACTIVE y ubicaciones ACTIVE
+  const [plants, locations] = await Promise.all([
+    listPlantsUseCase.execute({ lifecycle_status: 'ACTIVE', order_by: 'permanent_code_asc' }),
+    listLocationsUseCase.execute({ status: 'ACTIVE' }),
+  ]);
+
   return (
     <section>
-      <div style={{ marginBottom: '24px' }}>
+      <div style={{ marginBottom: '20px' }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 6px 0', color: 'var(--text-primary)' }}>
           Inventario de Plantas
         </h1>
@@ -15,16 +32,8 @@ export default function InventoryPage() {
         </p>
       </div>
 
-      <EmptyState
-        icon={<Trees size={28} />}
-        title="Catálogo de Plantas Activas"
-        description="Esta pantalla mostrará las plantas registradas con búsqueda, filtros sanitarios y ordenación en ATP-IMP-011."
-        action={
-          <Link href="/plants/new">
-            <Button leftIcon={<Plus size={18} />}>Registrar Primer Ejemplar</Button>
-          </Link>
-        }
-      />
+      <PlantCatalogView initialPlants={plants} locations={locations} />
     </section>
   );
 }
+

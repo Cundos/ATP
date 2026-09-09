@@ -265,7 +265,9 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Shell móvil funcional y navegable entre pantallas principales.
 
 #### `ATP-IMP-011` — Pantalla de Inventario / Catálogo de Plantas Activas (`SCR-002`)
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Implementar la pantalla principal de catálogo de ejemplares activos.
+
 - **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M1`
 - **Dependencias:** `ATP-IMP-008`, `ATP-IMP-010`.
 - **Trazabilidad:** `FR-024` a `FR-030`, `US-008`, `US-009`, `SCR-002`, `FLOW-002`, `PFD-002`.

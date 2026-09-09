@@ -10,7 +10,8 @@
 | Release / Milestone | Enfoque Principal | Entregables Clave | Gate de Calidad | Estado |
 | :--- | :--- | :--- | :--- | :--- |
 | **Milestone 0: Bootstrap Técnico** (`v0.0.1-bootstrap`) | Fundaciones de Entorno & Persistencia | Next.js/TS, Docker Compose, PostgreSQL (Neon / Local), Prisma ORM, UUIDv7, secuencia nativa `permanent_code`, repositorios base y framework de tests. | `GATE-0` | **COMPLETADO (GATE-0 APROBADO)** |
-| **Milestone 1: Inventario Base** (`v0.0.2-inventory`) | Núcleo de Dominio & Catálogo UI | Importación bootstrap de 13 plantas (`AT-PL-001` a `013`), CRUD completo de ejemplares, archivo/restauración, catálogo de ubicaciones, Dashboard y listado mobile-first. | `GATE-1` | **EN PROGRESO (Bootstrap, CRUD Plantas, Ubicaciones y Shell Mobile-First completados)** |
+| **Milestone 1: Inventario Base** (`v0.0.2-inventory`) | Núcleo de Dominio & Catálogo UI | Importación bootstrap de 13 plantas (`AT-PL-001` a `013`), CRUD completo de ejemplares, archivo/restauración, catálogo de ubicaciones, Dashboard y listado mobile-first. | `GATE-1` | **EN PROGRESO (Bootstrap, CRUD Plantas, Ubicaciones, Shell y Catálogo de Inventario completados)** |
+
 
 | **Milestone 2: Fotos** (`v0.0.3-photos`) | Almacenamiento & Multimedia | `LocalFileStorageService`, preprocesamiento con `sharp` a WebP, streaming seguro `/api/photos/view/`, reemplazo de foto principal preservando histórico en disco. | `GATE-2` | **PLANIFICADO** |
 | **Milestone 3: Open Plantbook** (`v0.0.4-plantbook`) | Conocimiento Botánico Asistido | OAuth2 server-side, `OpenPlantbookClient` resiliente (429/timeout), snapshot persistente `PlantReference`, modal de búsqueda asistida no bloqueante. | `GATE-3` | **PLANIFICADO** |

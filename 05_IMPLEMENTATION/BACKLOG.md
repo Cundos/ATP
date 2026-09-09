@@ -251,7 +251,9 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Lógica de catálogo de ubicaciones testeada, desacoplada y protegida contra inconsistencias mediante tests unitarios y de integración física contra PostgreSQL.
 
 #### `ATP-IMP-010` — Shell Mobile-First, Tokens de Diseño y Componentes Base
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Crear la estructura visual responsiva y el sistema de diseño móvil de la aplicación.
+
 - **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M1`
 - **Dependencias:** `ATP-IMP-001`.
 - **Trazabilidad:** `NFR-004`, `NFR-005`, `SCR-001` a `SCR-007`.

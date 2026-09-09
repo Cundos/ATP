@@ -1,14 +1,148 @@
-﻿/* Base CSS - Atilio Plants */
+/* ==========================================================================
+   ATILIO PLANTS — DESIGN SYSTEM & BASE TOKENS (ATP-IMP-010)
+   Mobile-first, warm domestic botanic aesthetic with WCAG AA compliance.
+   ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Paleta Base & Superficies (Modo Claro Cálido / Botánico) */
+  --bg-app: #f8faf8;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffffff;
+  --bg-surface-subtle: #f0f4f1;
+  --bg-surface-hover: #e8eee9;
+
+  /* Texto */
+  --text-primary: #192b1d;
+  --text-secondary: #4a6350;
+  --text-muted: #738a78;
+  --text-inverse: #ffffff;
+
+  /* Bordes & Separadores */
+  --border-subtle: #e2e8e3;
+  --border-default: #cbd8ce;
+  --border-focus: #2d6a4f;
+
+  /* Colores de Marca & Acento */
+  --brand-primary: #2d6a4f;
+  --brand-primary-hover: #21513c;
+  --brand-primary-active: #183c2c;
+  --brand-primary-subtle: #eaf3ed;
+  --brand-primary-contrast: #ffffff;
+
+  /* Colores Semánticos de Salud (HealthStatus) */
+  /* HEALTHY: Verde calmado y legible */
+  --health-healthy-bg: #e8f5e9;
+  --health-healthy-text: #1b5e20;
+  --health-healthy-border: #a5d6a7;
+  --health-healthy-dot: #2e7d32;
+
+  /* ATTENTION: Ámbar / mostaza equilibrado con contraste AA */
+  --health-attention-bg: #fff8e1;
+  --health-attention-text: #7f5100;
+  --health-attention-border: #ffe082;
+  --health-attention-dot: #b78103;
+
+  /* RECOVERY: Naranja / terracota suave no alarmista */
+  --health-recovery-bg: #fbe9e7;
+  --health-recovery-text: #a83212;
+  --health-recovery-border: #ffccbc;
+  --health-recovery-dot: #d84315;
+
+  /* UNKNOWN: Gris neutral atenuado */
+  --health-unknown-bg: #eceff1;
+  --health-unknown-text: #455a64;
+  --health-unknown-border: #cfd8dc;
+  --health-unknown-dot: #78909c;
+
+  /* Estados de Error / Danger */
+  --danger-bg: #fee2e2;
+  --danger-text: #991b1b;
+  --danger-border: #fca5a5;
+
+  /* Radios */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(25, 43, 29, 0.05);
+  --shadow-md: 0 4px 12px rgba(25, 43, 29, 0.08);
+  --shadow-lg: 0 10px 24px rgba(25, 43, 29, 0.12);
+  --shadow-bottom-nav: 0 -2px 10px rgba(25, 43, 29, 0.06);
+
+  /* Espaciados & Dimensiones */
+  --topbar-height: 56px;
+  --bottomnav-height: 64px;
+  --content-max-width: 640px; /* Ancho óptimo lectura mobile/tablet */
+  --touch-target-min: 44px;
+
+  /* Focus Ring */
+  --focus-ring: 0 0 0 3px rgba(45, 106, 79, 0.25);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg-app: #121813;
+    --bg-surface: #1a221c;
+    --bg-surface-elevated: #232d26;
+    --bg-surface-subtle: #202a22;
+    --bg-surface-hover: #29362c;
+
+    --text-primary: #e6efe8;
+    --text-secondary: #a9beae;
+    --text-muted: #748979;
+    --text-inverse: #121813;
+
+    --border-subtle: #2a382d;
+    --border-default: #394d3e;
+    --border-focus: #52b788;
+
+    --brand-primary: #52b788;
+    --brand-primary-hover: #74c69d;
+    --brand-primary-active: #95d5b2;
+    --brand-primary-subtle: #192e22;
+    --brand-primary-contrast: #101c13;
+
+    --health-healthy-bg: #142a17;
+    --health-healthy-text: #81c784;
+    --health-healthy-border: #2e5934;
+    --health-healthy-dot: #66bb6a;
+
+    --health-attention-bg: #2d240e;
+    --health-attention-text: #ffd54f;
+    --health-attention-border: #5d4a1b;
+    --health-attention-dot: #ffca28;
+
+    --health-recovery-bg: #2d1814;
+    --health-recovery-text: #ff8a65;
+    --health-recovery-border: #5d2e24;
+    --health-recovery-dot: #ff7043;
+
+    --health-unknown-bg: #1e262a;
+    --health-unknown-text: #b0bec5;
+    --health-unknown-border: #37474f;
+    --health-unknown-dot: #90a4ae;
+
+    --danger-bg: #3a1515;
+    --danger-text: #fca5a5;
+    --danger-border: #6b2121;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.6);
+    --shadow-bottom-nav: 0 -2px 10px rgba(0, 0, 0, 0.4);
+
+    --focus-ring: 0 0 0 3px rgba(82, 183, 136, 0.35);
   }
+}
+
+/* Reset & Box Sizing Global */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 html,
@@ -17,7 +151,44 @@ body {
   overflow-x: hidden;
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: var(--background);
-  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+/* Clases Utilitarias del Shell */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-app);
+}
+
+.main-content {
+  flex: 1;
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: 16px 16px calc(var(--bottomnav-height) + 24px) 16px;
+}
+
+@media (min-width: 768px) {
+  .main-content {
+    padding: 24px 24px calc(var(--bottomnav-height) + 32px) 24px;
+  }
 }

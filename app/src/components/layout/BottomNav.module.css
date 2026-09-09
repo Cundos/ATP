@@ -1,0 +1,120 @@
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--bottomnav-height);
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-bottom-nav);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  max-width: var(--content-max-width);
+  height: 100%;
+  padding: 0 16px;
+  position: relative;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--text-muted);
+  text-decoration: none;
+  min-width: 68px;
+  min-height: var(--touch-target-min);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease;
+  user-select: none;
+}
+
+.item:hover {
+  color: var(--brand-primary);
+}
+
+.item:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.active {
+  color: var(--brand-primary);
+  font-weight: 600;
+}
+
+.iconWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.label {
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+}
+
+/* Center Highlighted Action */
+.centerAction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-decoration: none;
+  transform: translateY(-8px);
+  user-select: none;
+}
+
+.centerIconWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--brand-primary);
+  color: var(--brand-primary-contrast);
+  box-shadow: var(--shadow-md);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.centerAction:hover .centerIconWrapper {
+  background-color: var(--brand-primary-hover);
+  transform: scale(1.05);
+}
+
+.centerAction:active .centerIconWrapper {
+  background-color: var(--brand-primary-active);
+  transform: scale(0.95);
+}
+
+.centerAction:focus-visible {
+  outline: none;
+}
+
+.centerAction:focus-visible .centerIconWrapper {
+  box-shadow: var(--focus-ring), var(--shadow-md);
+}
+
+.centerLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--brand-primary);
+}
+
+.centerActionActive .centerIconWrapper {
+  background-color: var(--brand-primary-hover);
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.35);
+}

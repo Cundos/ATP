@@ -351,6 +351,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Servicio desacoplado capaz de persistir y resolver URLs sin depender de paths absolutos del host.
 
 #### `ATP-IMP-017` — Pipeline de Preprocesamiento de Imágenes Server-Side (`sharp`)
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Normalizar y optimizar fotografías tomadas desde dispositivos móviles.
 - **Tipo:** `BACKEND` | **Prioridad:** `MUST` | **Release:** `M2`
 - **Dependencias:** `ATP-IMP-016`.

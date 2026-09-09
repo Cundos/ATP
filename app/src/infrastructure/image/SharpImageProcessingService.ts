@@ -48,6 +48,12 @@ export class SharpImageProcessingService implements IImageProcessingService {
       throw new ImageProcessingError(`Invalid quality: ${quality}. Must be between 1 and 100.`);
     }
 
+    if (options?.maxInputBytes !== undefined && options.maxInputBytes <= 0) {
+      throw new ImageProcessingError(
+        `Invalid maxInputBytes: ${options.maxInputBytes}. Must be greater than 0.`
+      );
+    }
+
     // 3. Security check: input size limit to avoid memory exhaustion
     if (inputBuffer.byteLength > maxInputBytes) {
       throw new ImageProcessingError(
@@ -58,7 +64,7 @@ export class SharpImageProcessingService implements IImageProcessingService {
     // 4. Sharp transformation pipeline
     try {
       const pipeline = sharp(inputBuffer, {
-        failOn: 'none',
+        failOn: 'warning',
         // Limit input pixels to ~268 megapixels to guard against decompression bombs
         limitInputPixels: 268402689,
       })

@@ -193,6 +193,13 @@ describe('SharpImageProcessingService (ATP-IMP-017)', () => {
       await expect(service.processImage(input, { maxDimension: 0 })).rejects.toThrow(ImageProcessingError);
       await expect(service.processImage(input, { maxDimension: -50 })).rejects.toThrow(ImageProcessingError);
     });
+
+    it('rejects invalid maxInputBytes (<= 0)', async () => {
+      const input = await createJpeg(100, 100);
+
+      await expect(service.processImage(input, { maxInputBytes: 0 })).rejects.toThrow(ImageProcessingError);
+      await expect(service.processImage(input, { maxInputBytes: -1 })).rejects.toThrow(ImageProcessingError);
+    });
   });
 
   describe('Security and Error Handling', () => {
@@ -210,6 +217,22 @@ describe('SharpImageProcessingService (ATP-IMP-017)', () => {
     it('rejects corrupt binary data with ImageProcessingError', async () => {
       const corruptData = Buffer.from([0xff, 0xd8, 0xff, 0x00, 0x12, 0x34]);
       await expect(service.processImage(corruptData)).rejects.toThrow(ImageProcessingError);
+    });
+
+    it('rejects truncated JPEG binary payload with ImageProcessingError', async () => {
+      const validJpeg = await createJpeg(800, 600);
+      // Cut off 60% of the stream so headers are intact but data is truncated
+      const truncatedJpeg = validJpeg.subarray(0, Math.floor(validJpeg.length * 0.4));
+
+      await expect(service.processImage(truncatedJpeg)).rejects.toThrow(ImageProcessingError);
+    });
+
+    it('rejects truncated PNG binary payload with ImageProcessingError', async () => {
+      const validPng = await createPngWithAlpha(400, 400);
+      // Cut off 70% of PNG chunks
+      const truncatedPng = validPng.subarray(0, Math.floor(validPng.length * 0.3));
+
+      await expect(service.processImage(truncatedPng)).rejects.toThrow(ImageProcessingError);
     });
 
     it('rejects input buffer exceeding maxInputBytes with ImageProcessingError', async () => {

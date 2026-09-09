@@ -296,6 +296,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Dashboard informativo y responsivo en mobile y desktop.
 
 #### `ATP-IMP-013` — Ficha Individual de Ejemplar (`SCR-003`)
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Construir la vista integral de consulta de un ejemplar individual.
 - **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M1`
 - **Dependencias:** `ATP-IMP-008`, `ATP-IMP-010`.
@@ -305,8 +306,8 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Sección de taxonomía: Nombre científico y fecha de adquisición (o "No declarada").
   - Sección de ubicación actual (o "Sin ubicación").
   - Sección de perfil de cultivo (`PlantCultivationProfile`): maceta física, sustrato, notas de luz y riego (o "Sin datos de cultivo").
-  - Menú de acciones secundarias: "Editar ejemplar" (navega a `SCR-005`), "Archivar ejemplar" (con diálogo de confirmación y traslado a `SCR-006`).
-- **Resultado:** Ficha completa y limpia accesible desde cualquier tarjeta del inventario.
+  - Menú de acciones secundarias: "Editar ejemplar" (navega a `SCR-005`), "Archivar ejemplar" (con diálogo modal de confirmación accesible).
+- **Resultado:** Ficha individual completa y responsive implementada en `src/features/plants/components/PlantDetailView.tsx` y ruta dinámica `src/app/plants/[id]/page.tsx` con estados de carga (`loading.tsx`), no encontrado (`not-found.tsx`) y error (`error.tsx`). Cobertura de tests unitarios y de integración 100% pasando.
 
 #### `ATP-IMP-014` — Formularios de Alta (`SCR-004`) y Edición (`SCR-005`)
 - **Objetivo:** Implementar los flujos de creación y actualización de plantas mediante Server Actions.

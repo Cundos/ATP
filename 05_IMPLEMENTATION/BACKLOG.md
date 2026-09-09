@@ -323,6 +323,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Flujos de alta (`/plants/new`) y edición (`/plants/[id]/edit`) implementados con Server Actions (`createPlantAction`, `updatePlantAction`), validación Zod robusta en servidor/cliente, preservación de inmutabilidad en claves y código permanente, y 100% de tests automatizados pasando.
 
 #### `ATP-IMP-015` — Pantallas de Plantas Archivadas (`SCR-006`) y Catálogo de Ubicaciones (`SCR-007`)
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Proveer la interfaz para consulta de histórico archivado y administración de las ubicaciones del hogar.
 - **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M1`
 - **Dependencias:** `ATP-IMP-008`, `ATP-IMP-009`, `ATP-IMP-010`.
@@ -332,7 +333,7 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Vista de Administración de Ubicaciones (`SCR-007`): lista de ubicaciones activas con conteo de ejemplares asociados en tiempo real.
   - Botón y modal para "Crear ubicación" con validación de unicidad.
   - Opción para renombrar ubicación existente y archivar ubicación con diálogo de confirmación (aclara que las plantas actuales la conservan).
-- **Resultado:** Módulos de consulta histórica y administración de ubicaciones independientes y funcionales.
+- **Resultado:** Pantallas de Plantas Archivadas (`/plants/archived`) y Catálogo de Ubicaciones (`/locations`) 100% operativas, con Server Actions para archivado/restauración de plantas y CRUD de ubicaciones, conteo en tiempo real y suite completa de tests automatizados.
 
 ---
 

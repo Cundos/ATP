@@ -1,10 +1,12 @@
-﻿'use server';
+'use server';
 
 import { revalidatePath } from 'next/cache';
 import { PrismaPlantRepository } from '@/infrastructure/db/repositories/PrismaPlantRepository';
 import { PrismaLocationRepository } from '@/infrastructure/db/repositories/PrismaLocationRepository';
 import { CreatePlantUseCase } from '@/core/application/use-cases/CreatePlantUseCase';
 import { UpdatePlantUseCase } from '@/core/application/use-cases/UpdatePlantUseCase';
+import { ArchivePlantUseCase } from '@/core/application/use-cases/ArchivePlantUseCase';
+import { RestorePlantUseCase } from '@/core/application/use-cases/RestorePlantUseCase';
 import { PlantFormInputSchema, PlantFormRawInput } from './schemas/plant-form.schema';
 
 export interface PlantActionResult {
@@ -236,6 +238,112 @@ export async function updatePlantAction(
     return {
       success: false,
       message: 'Algo salió mal al guardar los cambios.',
+    };
+  }
+}
+
+/**
+ * SERVER ACTION: Archivar Planta (SCR-003 / SCR-006)
+ * Ejecuta ArchivePlantUseCase (soft delete), preservando permanent_code y toda la identidad.
+ */
+export async function archivePlantAction(plantId: string): Promise<PlantActionResult> {
+  try {
+    if (!plantId || plantId.trim() === '') {
+      return {
+        success: false,
+        message: 'Identificador de ejemplar no proporcionado.',
+      };
+    }
+
+    const plantRepository = new PrismaPlantRepository();
+    const archivePlantUseCase = new ArchivePlantUseCase(plantRepository);
+
+    const archivedPlant = await archivePlantUseCase.execute(plantId);
+
+    // Revalidar rutas afectadas
+    revalidatePath('/');
+    revalidatePath('/inventory');
+    revalidatePath('/plants/archived');
+    revalidatePath(`/plants/${archivedPlant.permanent_code}`);
+    revalidatePath(`/plants/${archivedPlant.id}`);
+
+    return {
+      success: true,
+      permanent_code: archivedPlant.permanent_code,
+      message: 'Ejemplar archivado correctamente',
+    };
+  } catch (error: unknown) {
+    const err = error as { name?: string; message?: string };
+    if (err?.name === 'PlantNotFoundError') {
+      return {
+        success: false,
+        message: 'El ejemplar a archivar no fue encontrado.',
+      };
+    }
+    if (err?.name === 'PlantValidationError') {
+      return {
+        success: false,
+        message: err.message || 'Error de validación al archivar.',
+      };
+    }
+
+    console.error('[archivePlantAction] Error inesperado:', error);
+    return {
+      success: false,
+      message: 'Algo salió mal al archivar el ejemplar.',
+    };
+  }
+}
+
+/**
+ * SERVER ACTION: Restaurar Planta (SCR-006)
+ * Ejecuta RestorePlantUseCase (reactivación), preservando permanent_code y toda la identidad.
+ */
+export async function restorePlantAction(plantId: string): Promise<PlantActionResult> {
+  try {
+    if (!plantId || plantId.trim() === '') {
+      return {
+        success: false,
+        message: 'Identificador de ejemplar no proporcionado.',
+      };
+    }
+
+    const plantRepository = new PrismaPlantRepository();
+    const restorePlantUseCase = new RestorePlantUseCase(plantRepository);
+
+    const restoredPlant = await restorePlantUseCase.execute(plantId);
+
+    // Revalidar rutas afectadas
+    revalidatePath('/');
+    revalidatePath('/inventory');
+    revalidatePath('/plants/archived');
+    revalidatePath(`/plants/${restoredPlant.permanent_code}`);
+    revalidatePath(`/plants/${restoredPlant.id}`);
+
+    return {
+      success: true,
+      permanent_code: restoredPlant.permanent_code,
+      message: 'Ejemplar restaurado correctamente',
+    };
+  } catch (error: unknown) {
+    const err = error as { name?: string; message?: string };
+    if (err?.name === 'PlantNotFoundError') {
+      return {
+        success: false,
+        message: 'El ejemplar a restaurar no fue encontrado.',
+      };
+    }
+    if (err?.name === 'PlantValidationError') {
+      return {
+        success: false,
+        message: err.message || 'Error de validación al restaurar.',
+      };
+    }
+
+    console.error('[restorePlantAction] Error inesperado:', error);
+    return {
+      success: false,
+      message: 'Algo salió mal al restaurar el ejemplar.',
     };
   }
 }

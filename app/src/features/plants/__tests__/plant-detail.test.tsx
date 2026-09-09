@@ -1,9 +1,16 @@
 // @vitest-environment jsdom
 import React from 'react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { PlantDetailView } from '../components';
 import { PlantEntity } from '@/core/domain/entities';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}));
 
 const mockPlantFull: PlantEntity = {
   id: '01931a00-0001-7000-8000-000000000001',

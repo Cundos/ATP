@@ -10,7 +10,7 @@
 | Release / Milestone | Enfoque Principal | Entregables Clave | Gate de Calidad | Estado |
 | :--- | :--- | :--- | :--- | :--- |
 | **Milestone 0: Bootstrap Técnico** (`v0.0.1-bootstrap`) | Fundaciones de Entorno & Persistencia | Next.js/TS, Docker Compose, PostgreSQL (Neon / Local), Prisma ORM, UUIDv7, secuencia nativa `permanent_code`, repositorios base y framework de tests. | `GATE-0` | **COMPLETADO (GATE-0 APROBADO)** |
-| **Milestone 1: Inventario Base** (`v0.0.2-inventory`) | Núcleo de Dominio & Catálogo UI | Importación bootstrap de 13 plantas (`AT-PL-001` a `013`), CRUD completo de ejemplares, archivo/restauración, catálogo de ubicaciones, Dashboard, listado mobile-first, Ficha Individual (`SCR-003`) y Formularios de Alta/Edición (`SCR-004`/`SCR-005`). | `GATE-1` | **EN PROGRESO (Bootstrap, CRUD Plantas, Ubicaciones, Shell, Inventario, Dashboard, Ficha Individual y Formularios de Alta/Edición completados)** |
+| **Milestone 1: Inventario Base** (`v0.0.2-inventory`) | Núcleo de Dominio & Catálogo UI | Importación bootstrap de 13 plantas (`AT-PL-001` a `013`), CRUD completo de ejemplares, archivo/restauración, catálogo de ubicaciones, Dashboard, listado mobile-first, Ficha Individual (`SCR-003`), Formularios de Alta/Edición (`SCR-004`/`SCR-005`), Plantas Archivadas (`SCR-006`) y Administración de Ubicaciones (`SCR-007`). | `GATE-1` | **EN PROGRESO (Implementación funcional M1 completa — pendiente auditoría GATE-1)** |
 
 
 

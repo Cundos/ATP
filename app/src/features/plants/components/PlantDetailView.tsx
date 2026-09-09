@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -18,7 +19,8 @@ import {
   Tag,
 } from 'lucide-react';
 import { PlantEntity } from '@/core/domain/entities';
-import { HealthBadge, Button, Modal } from '@/components/ui';
+import { HealthBadge, Button, Modal, Toast } from '@/components/ui';
+import { archivePlantAction } from '../actions';
 import styles from './PlantDetailView.module.css';
 
 export interface PlantDetailViewProps {
@@ -26,7 +28,10 @@ export interface PlantDetailViewProps {
 }
 
 export const PlantDetailView: React.FC<PlantDetailViewProps> = ({ plant }) => {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: 'error'; message: string } | null>(null);
 
   // Formateo de fecha de adquisición
   const formattedAcquisitionDate = plant.acquisition_date
@@ -52,8 +57,33 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({ plant }) => {
         profile.watering_notes)
   );
 
+  const handleConfirmArchive = () => {
+    setFeedback(null);
+    startTransition(async () => {
+      const result = await archivePlantAction(plant.id);
+      if (result.success) {
+        setIsArchiveModalOpen(false);
+        router.push('/plants/archived');
+        router.refresh();
+      } else {
+        setFeedback({
+          type: 'error',
+          message: result.message || 'Error al archivar el ejemplar.',
+        });
+      }
+    });
+  };
+
   return (
     <article className={styles.container} aria-label={`Ficha de ${plant.common_name}`}>
+      {feedback && (
+        <Toast
+          type={feedback.type}
+          message={feedback.message}
+          onClose={() => setFeedback(null)}
+        />
+      )}
+
       {/* Navegación Superior */}
       <nav aria-label="Navegación secundaria">
         <Link href="/inventory" className={styles.backLink}>
@@ -230,17 +260,20 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({ plant }) => {
         description={`El ejemplar ${plant.permanent_code} (${plant.common_name}) pasará a la lista de plantas archivadas.`}
         footer={
           <>
-            <Button variant="ghost" onClick={() => setIsArchiveModalOpen(false)}>
+            <Button
+              variant="ghost"
+              onClick={() => setIsArchiveModalOpen(false)}
+              disabled={isPending}
+            >
               Cancelar
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
-                // Flujo visual preparado; la persistencia se implementa en ATP-IMP-014/015
-                setIsArchiveModalOpen(false);
-              }}
+              onClick={handleConfirmArchive}
+              isLoading={isPending}
+              disabled={isPending}
             >
-              Confirmar Archivo
+              {isPending ? 'Archivando...' : 'Confirmar Archivo'}
             </Button>
           </>
         }

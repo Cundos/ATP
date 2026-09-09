@@ -281,7 +281,9 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Listado fluido y responsivo que muestra los 13 ejemplares cargados.
 
 #### `ATP-IMP-012` — Pantalla de Dashboard Resumen (`SCR-001`)
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Proveer la vista panorámica del estado sanitario de la colección botánica.
+
 - **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M1`
 - **Dependencias:** `ATP-IMP-008`, `ATP-IMP-010`.
 - **Trazabilidad:** `FR-031` a `FR-034`, `US-010`, `SCR-001`.

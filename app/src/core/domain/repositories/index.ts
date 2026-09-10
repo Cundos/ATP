@@ -1,6 +1,7 @@
 import {
   PlantEntity,
   LocationEntity,
+  PhotoEntity,
   HealthStatus,
   LifecycleStatus,
 } from '../entities';
@@ -71,4 +72,24 @@ export interface ILocationRepository {
   update(id: string, dto: UpdateLocationDTO): Promise<LocationEntity>;
   archive(id: string): Promise<LocationEntity>;
   restore(id: string): Promise<LocationEntity>;
+}
+
+export interface CreatePhotoPersistenceDTO {
+  id?: string;
+  plant_id: string;
+  file_path: string;
+  file_name: string;
+  mime_type: string;
+  file_size?: number | null;
+  is_primary?: boolean;
+  captured_at?: Date | null;
+}
+
+export interface IPhotoRepository {
+  findById(id: string): Promise<PhotoEntity | null>;
+  findByFilePath(filePath: string): Promise<PhotoEntity | null>;
+  listByPlant(plantId: string): Promise<PhotoEntity[]>;
+  findPrimaryByPlant(plantId: string): Promise<PhotoEntity | null>;
+  create(dto: CreatePhotoPersistenceDTO): Promise<PhotoEntity>;
+  setPrimary(plantId: string, photoId: string): Promise<PhotoEntity>;
 }

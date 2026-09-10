@@ -10,3 +10,7 @@ export * from './use-cases/RenameLocationUseCase';
 export * from './use-cases/ArchiveLocationUseCase';
 export * from './use-cases/RestoreLocationUseCase';
 export * from './use-cases/ListLocationsUseCase';
+export * from './use-cases/RegisterPlantPhotoUseCase';
+export * from './use-cases/SetPrimaryPhotoUseCase';
+export * from './use-cases/ListPlantPhotosUseCase';
+export * from './use-cases/GetPrimaryPhotoUseCase';

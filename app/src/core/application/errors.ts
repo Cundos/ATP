@@ -47,3 +47,33 @@ export class LocationAlreadyExistsError extends Error {
     this.name = 'LocationAlreadyExistsError';
   }
 }
+
+/**
+ * Error de aplicación lanzado cuando una foto solicitada no existe.
+ */
+export class PhotoNotFoundError extends Error {
+  constructor(identifier: string) {
+    super(`No se encontró la foto con identificador: ${identifier}`);
+    this.name = 'PhotoNotFoundError';
+  }
+}
+
+/**
+ * Error de aplicación lanzado cuando los datos de entrada para una operación de foto no son válidos.
+ */
+export class PhotoValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PhotoValidationError';
+  }
+}
+
+/**
+ * Error de aplicación lanzado cuando se intenta operar sobre una foto que no pertenece a la planta especificada.
+ */
+export class PhotoOwnershipError extends Error {
+  constructor(photoId: string, plantId: string) {
+    super(`La foto ${photoId} no pertenece a la planta ${plantId}`);
+    this.name = 'PhotoOwnershipError';
+  }
+}

@@ -1,0 +1,49 @@
+.thumbnailContainer {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-surface-sunken);
+  flex-shrink: 0;
+}
+
+.sm {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+}
+
+.md {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-md);
+}
+
+.lg {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--bg-surface-sunken) 0%, var(--brand-primary-subtle) 100%);
+  color: var(--brand-primary);
+}
+
+.placeholderIcon {
+  opacity: 0.85;
+}

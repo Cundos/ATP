@@ -404,17 +404,19 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Almacenamiento durable y desacoplado operativo tanto en local como en producción Vercel.
 
 #### `ATP-IMP-020` — Integración UI Móvil de Fotos en Ficha, Catálogo y Formularios
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Mostrar y permitir la captura de fotos desde la interfaz de usuario.
 - **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M2`
 - **Dependencias:** `ATP-IMP-018`, `ATP-IMP-019`, `ATP-IMP-011`, `ATP-IMP-013`.
 - **Trazabilidad:** `SCR-002`, `SCR-003`, `SCR-004`, `SCR-005`, `FLOW-007`.
 - **Criterios de Aceptación:**
   - Componente de subida con input file nativo (`capture="environment"` para cámara móvil en alta `SCR-004` y edición `SCR-005`).
-  - Preview visual inmediato antes de confirmar el guardado.
+  - Preview visual inmediato antes de confirmar el guardado con ciclo de vida seguro de object URLs.
   - Avatar / Thumbnail de foto principal en las tarjetas del inventario activo (`SCR-002`) y dashboard (`SCR-001`).
   - Imagen destacada en la cabecera de la ficha individual (`SCR-003`).
-  - Placeholder visual botánico sobrio para ejemplares sin fotografía registrada.
-- **Resultado:** Experiencia fotográfica completa y fluida en dispositivos móviles.
+  - Placeholder visual botánico sobrio para ejemplares sin fotografía registrada (`aria-hidden="true"`).
+  - Orquestación server-side con compensación automática de binarios huérfanos sin afectar histórico (ADR-008).
+- **Resultado:** Experiencia fotográfica completa y fluida en dispositivos móviles con 0 N+1 queries.
 
 ---
 

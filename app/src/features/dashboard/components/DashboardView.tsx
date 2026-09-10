@@ -15,7 +15,8 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { PlantEntity } from '@/core/domain/entities';
-import { Button, EmptyState } from '@/components/ui';
+import { Button, EmptyState, HealthBadge } from '@/components/ui';
+import { PlantThumbnail } from '@/features/plants/components/PlantThumbnail';
 import { DashboardMetricCard } from './DashboardMetricCard';
 import styles from './DashboardView.module.css';
 
@@ -35,6 +36,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ plants }) => {
   };
 
   const requiringAttentionCount = counts.attention + counts.recovery;
+  const attentionPlants = plants
+    .filter((p) => p.health_status === 'ATTENTION' || p.health_status === 'RECOVERY')
+    .slice(0, 3);
 
   if (total === 0) {
     return (
@@ -144,6 +148,45 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ plants }) => {
           />
         </div>
       </section>
+
+      {/* Sección de Ejemplares que requieren seguimiento */}
+      {attentionPlants.length > 0 && (
+        <section className={styles.attentionSection} aria-label="Ejemplares que requieren seguimiento">
+          <div className={styles.sectionHeaderRow}>
+            <h2 className={styles.sectionTitle}>Requieren Seguimiento</h2>
+            <Link href="/inventory?health=ATTENTION" className={styles.seeAllLink}>
+              Ver inventario
+            </Link>
+          </div>
+          <div className={styles.attentionGrid}>
+            {attentionPlants.map((plant) => {
+              const primaryPhoto = plant.photos?.find((p) => p.is_primary) || plant.photos?.[0];
+              return (
+                <Link
+                  key={plant.id}
+                  href={`/plants/${plant.permanent_code}`}
+                  className={styles.attentionCard}
+                  aria-label={`Ver ejemplar ${plant.common_name} (${plant.permanent_code})`}
+                >
+                  <PlantThumbnail
+                    photoPath={primaryPhoto?.file_path}
+                    plantName={plant.common_name}
+                    size="sm"
+                    className={styles.attentionThumbnail}
+                  />
+                  <div className={styles.attentionInfo}>
+                    <div className={styles.attentionTop}>
+                      <span className={styles.attentionCode}>{plant.permanent_code}</span>
+                      <HealthBadge status={plant.health_status} size="sm" />
+                    </div>
+                    <span className={styles.attentionName}>{plant.common_name}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Acción Principal CTA */}
       <section className={styles.ctaSection} aria-label="Acción principal">

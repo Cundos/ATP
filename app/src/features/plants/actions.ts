@@ -8,6 +8,7 @@ import { UpdatePlantUseCase } from '@/core/application/use-cases/UpdatePlantUseC
 import { ArchivePlantUseCase } from '@/core/application/use-cases/ArchivePlantUseCase';
 import { RestorePlantUseCase } from '@/core/application/use-cases/RestorePlantUseCase';
 import { PlantFormInputSchema, PlantFormRawInput } from './schemas/plant-form.schema';
+import { uploadAndRegisterPlantPhoto } from './server/photo-service';
 
 export interface PlantActionResult {
   success: boolean;
@@ -19,7 +20,7 @@ export interface PlantActionResult {
 /**
  * SERVER ACTION: Alta de Planta (SCR-004)
  * Parsea FormData, valida con Zod, comprueba validez de Location ACTIVE,
- * ejecuta CreatePlantUseCase y revalida los paths afectados.
+ * ejecuta CreatePlantUseCase, procesa foto opcional y revalida los paths afectados.
  */
 export async function createPlantAction(
   _prevState: PlantActionResult | null,
@@ -74,7 +75,7 @@ export async function createPlantAction(
       }
     }
 
-    // 3. Ejecución del Caso de Uso
+    // 3. Ejecución del Caso de Uso de creación de Planta
     const plantRepository = new PrismaPlantRepository();
     const createPlantUseCase = new CreatePlantUseCase(plantRepository);
 
@@ -92,7 +93,26 @@ export async function createPlantAction(
       watering_notes: validatedData.watering_notes,
     });
 
-    // 4. Revalidar cache de Next.js
+    // 4. Procesamiento opcional de fotografía inicial
+    const photoFile = formData.get('photo') as File | null;
+    let photoMessage = '';
+    if (photoFile && typeof photoFile === 'object' && 'size' in photoFile && photoFile.size > 0) {
+      try {
+        const fileBuffer = Buffer.from(await photoFile.arrayBuffer());
+        await uploadAndRegisterPlantPhoto({
+          plantId: createdPlant.id,
+          permanentCode: createdPlant.permanent_code,
+          fileBuffer,
+          fileName: photoFile.name,
+          makePrimary: true,
+        });
+      } catch (photoError) {
+        console.error('[createPlantAction] Error al procesar fotografía inicial:', photoError);
+        photoMessage = ' (La foto no pudo guardarse, podés agregarla luego desde edición).';
+      }
+    }
+
+    // 5. Revalidar cache de Next.js
     revalidatePath('/');
     revalidatePath('/inventory');
     revalidatePath(`/plants/${createdPlant.permanent_code}`);
@@ -100,7 +120,7 @@ export async function createPlantAction(
     return {
       success: true,
       permanent_code: createdPlant.permanent_code,
-      message: 'Planta registrada correctamente',
+      message: `Planta registrada correctamente${photoMessage}`,
     };
   } catch (error: unknown) {
     const err = error as { name?: string; message?: string };
@@ -124,7 +144,7 @@ export async function createPlantAction(
 /**
  * SERVER ACTION: Edición de Planta (SCR-005)
  * Parsea FormData, valida con Zod, comprueba validez de Location ACTIVE (si fue modificada),
- * ejecuta UpdatePlantUseCase y revalida los paths afectados.
+ * ejecuta UpdatePlantUseCase, procesa nueva foto si fue enviada y revalida los paths afectados.
  */
 export async function updatePlantAction(
   plantId: string,
@@ -187,7 +207,7 @@ export async function updatePlantAction(
       }
     }
 
-    // 3. Ejecución del Caso de Uso
+    // 3. Ejecución del Caso de Uso de actualización de Planta
     const plantRepository = new PrismaPlantRepository();
     const updatePlantUseCase = new UpdatePlantUseCase(plantRepository);
 
@@ -205,7 +225,26 @@ export async function updatePlantAction(
       watering_notes: validatedData.watering_notes,
     });
 
-    // 4. Revalidar cache de Next.js
+    // 4. Procesamiento opcional de nueva fotografía (reemplazo de principal)
+    const photoFile = formData.get('photo') as File | null;
+    let photoMessage = '';
+    if (photoFile && typeof photoFile === 'object' && 'size' in photoFile && photoFile.size > 0) {
+      try {
+        const fileBuffer = Buffer.from(await photoFile.arrayBuffer());
+        await uploadAndRegisterPlantPhoto({
+          plantId: updatedPlant.id,
+          permanentCode: updatedPlant.permanent_code,
+          fileBuffer,
+          fileName: photoFile.name,
+          makePrimary: true,
+        });
+      } catch (photoError) {
+        console.error('[updatePlantAction] Error al actualizar fotografía:', photoError);
+        photoMessage = ' (No se pudo actualizar la foto, intentá nuevamente).';
+      }
+    }
+
+    // 5. Revalidar cache de Next.js
     revalidatePath('/');
     revalidatePath('/inventory');
     revalidatePath(`/plants/${updatedPlant.permanent_code}`);
@@ -215,7 +254,7 @@ export async function updatePlantAction(
     return {
       success: true,
       permanent_code: updatedPlant.permanent_code,
-      message: 'Cambios guardados correctamente',
+      message: `Cambios guardados correctamente${photoMessage}`,
     };
   } catch (error: unknown) {
     const err = error as { name?: string; message?: string };
@@ -260,7 +299,7 @@ export async function archivePlantAction(plantId: string): Promise<PlantActionRe
 
     const archivedPlant = await archivePlantUseCase.execute(plantId);
 
-    // Revalidar rutas afectadas
+    // Revalidar cache de Next.js
     revalidatePath('/');
     revalidatePath('/inventory');
     revalidatePath('/plants/archived');
@@ -277,27 +316,21 @@ export async function archivePlantAction(plantId: string): Promise<PlantActionRe
     if (err?.name === 'PlantNotFoundError') {
       return {
         success: false,
-        message: 'El ejemplar a archivar no fue encontrado.',
-      };
-    }
-    if (err?.name === 'PlantValidationError') {
-      return {
-        success: false,
-        message: err.message || 'Error de validación al archivar.',
+        message: 'El ejemplar no fue encontrado.',
       };
     }
 
     console.error('[archivePlantAction] Error inesperado:', error);
     return {
       success: false,
-      message: 'Algo salió mal al archivar el ejemplar.',
+      message: 'No se pudo archivar el ejemplar.',
     };
   }
 }
 
 /**
  * SERVER ACTION: Restaurar Planta (SCR-006)
- * Ejecuta RestorePlantUseCase (reactivación), preservando permanent_code y toda la identidad.
+ * Ejecuta RestorePlantUseCase restaurando la planta a ACTIVE.
  */
 export async function restorePlantAction(plantId: string): Promise<PlantActionResult> {
   try {
@@ -313,7 +346,7 @@ export async function restorePlantAction(plantId: string): Promise<PlantActionRe
 
     const restoredPlant = await restorePlantUseCase.execute(plantId);
 
-    // Revalidar rutas afectadas
+    // Revalidar cache de Next.js
     revalidatePath('/');
     revalidatePath('/inventory');
     revalidatePath('/plants/archived');
@@ -323,27 +356,21 @@ export async function restorePlantAction(plantId: string): Promise<PlantActionRe
     return {
       success: true,
       permanent_code: restoredPlant.permanent_code,
-      message: 'Ejemplar restaurado correctamente',
+      message: 'Ejemplar restaurado al inventario activo',
     };
   } catch (error: unknown) {
     const err = error as { name?: string; message?: string };
     if (err?.name === 'PlantNotFoundError') {
       return {
         success: false,
-        message: 'El ejemplar a restaurar no fue encontrado.',
-      };
-    }
-    if (err?.name === 'PlantValidationError') {
-      return {
-        success: false,
-        message: err.message || 'Error de validación al restaurar.',
+        message: 'El ejemplar no fue encontrado.',
       };
     }
 
     console.error('[restorePlantAction] Error inesperado:', error);
     return {
       success: false,
-      message: 'Algo salió mal al restaurar el ejemplar.',
+      message: 'No se pudo restaurar el ejemplar.',
     };
   }
 }

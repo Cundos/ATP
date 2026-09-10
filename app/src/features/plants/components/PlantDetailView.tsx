@@ -21,6 +21,7 @@ import {
 import { PlantEntity } from '@/core/domain/entities';
 import { HealthBadge, Button, Modal, Toast } from '@/components/ui';
 import { archivePlantAction } from '../actions';
+import { PlantThumbnail } from './PlantThumbnail';
 import styles from './PlantDetailView.module.css';
 
 export interface PlantDetailViewProps {
@@ -94,6 +95,15 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({ plant }) => {
 
       {/* Cabecera / Hero */}
       <header className={styles.headerCard}>
+        <div className={styles.photoBannerWrapper}>
+          <PlantThumbnail
+            photoPath={plant.photos?.find((p) => p.is_primary)?.file_path || plant.photos?.[0]?.file_path}
+            plantName={plant.common_name}
+            size="lg"
+            className={styles.heroThumbnail}
+          />
+        </div>
+
         <div className={styles.headerTop}>
           <span className={styles.permanentCodeBadge}>
             <Tag size={14} aria-hidden="true" />

@@ -119,11 +119,11 @@ describe('ATP-IMP-012: Dashboard Summary (SCR-001) Tests', () => {
       expect(screen.getByText('10')).toBeDefined();
 
       // Atención
-      expect(screen.getByText('Atención')).toBeDefined();
+      expect(screen.getAllByText('Atención')[0]).toBeDefined();
       expect(screen.getByText('2')).toBeDefined();
 
       // Recuperación
-      expect(screen.getByText('Recuperación')).toBeDefined();
+      expect(screen.getAllByText('Recuperación')[0]).toBeDefined();
       expect(screen.getByText('1')).toBeDefined();
 
       // Sin evaluar

@@ -9,6 +9,7 @@ import {
   FileText,
   Lock,
   HeartPulse,
+  Camera,
 } from 'lucide-react';
 import {
   Input,
@@ -21,6 +22,7 @@ import {
 import { PlantEntity, LocationEntity, HealthStatus } from '@/core/domain/entities';
 import { createPlantAction, updatePlantAction, PlantActionResult } from '../actions';
 import { PlantFormInputSchema } from '../schemas/plant-form.schema';
+import { PhotoUpload } from './PhotoUpload';
 import styles from './PlantForm.module.css';
 
 export interface PlantFormProps {
@@ -53,6 +55,9 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
   const [substrateInfo, setSubstrateInfo] = useState(initialData?.profile?.substrate_info || '');
   const [lightConditions, setLightConditions] = useState(initialData?.profile?.light_conditions || '');
   const [wateringNotes, setWateringNotes] = useState(initialData?.profile?.watering_notes || '');
+
+  // Photo state
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
 
   // Validation & feedback state
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -89,6 +94,13 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
       label: `${initialData.location.name} (Archivada)`,
     });
   }
+
+  // Determine current primary photo URL if in edit mode
+  const currentPrimaryPhoto =
+    initialData?.photos?.find((p) => p.is_primary) || initialData?.photos?.[0];
+  const currentPhotoUrl = currentPrimaryPhoto?.file_path
+    ? `/api/photos/view/${currentPrimaryPhoto.file_path.replace(/^\/+/, '')}`
+    : null;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -139,6 +151,10 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
     formData.append('substrate_info', substrateInfo);
     formData.append('light_conditions', lightConditions);
     formData.append('watering_notes', wateringNotes);
+
+    if (selectedPhoto) {
+      formData.append('photo', selectedPhoto);
+    }
 
     startTransition(async () => {
       let result: PlantActionResult;
@@ -225,47 +241,64 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
             id="common_name"
             name="common_name"
             label="Nombre Común"
-            placeholder="Ej. Gomero, Monstera, Pothos"
+            placeholder="Ej. Gomero, Monstera, Pothos..."
             value={commonName}
-            onChange={(e) => {
-              setCommonName(e.target.value);
-              if (errors.common_name) {
-                setErrors((prev) => ({ ...prev, common_name: '' }));
-              }
-            }}
+            onChange={(e) => setCommonName(e.target.value)}
             error={errors.common_name}
             required
-            autoFocus={mode === 'create'}
             disabled={isPending}
           />
 
-          <div className={styles.fieldsGrid2Col}>
-            <Input
-              id="scientific_name"
-              name="scientific_name"
-              label="Nombre Científico (Opcional)"
-              placeholder="Ej. Ficus elastica"
-              value={scientificName}
-              onChange={(e) => setScientificName(e.target.value)}
-              error={errors.scientific_name}
-              disabled={isPending}
-            />
+          <Input
+            id="scientific_name"
+            name="scientific_name"
+            label="Nombre Científico"
+            placeholder="Ej. Ficus elastica, Monstera adansonii..."
+            value={scientificName}
+            onChange={(e) => setScientificName(e.target.value)}
+            error={errors.scientific_name}
+            disabled={isPending}
+          />
 
-            <Input
-              id="cultivar"
-              name="cultivar"
-              label="Cultivar / Variedad (Opcional)"
-              placeholder="Ej. Variegata, Robusta"
-              value={cultivar}
-              onChange={(e) => setCultivar(e.target.value)}
-              error={errors.cultivar}
-              disabled={isPending}
-            />
-          </div>
+          <Input
+            id="cultivar"
+            name="cultivar"
+            label="Cultivar / Variedad"
+            placeholder="Ej. Variegata, Marble Queen, Pink Princess..."
+            value={cultivar}
+            onChange={(e) => setCultivar(e.target.value)}
+            error={errors.cultivar}
+            disabled={isPending}
+          />
         </div>
       </section>
 
-      {/* Sección 2: Estado, Ubicación e Incorporación */}
+      {/* Sección 2: Fotografía del Ejemplar */}
+      <section className={styles.sectionCard} aria-labelledby="section-photo-title">
+        <div className={styles.sectionHeader}>
+          <span className={styles.sectionIcon}>
+            <Camera size={20} />
+          </span>
+          <div>
+            <h2 id="section-photo-title" className={styles.sectionTitle}>
+              Fotografía del Ejemplar
+            </h2>
+            <p className={styles.sectionDescription}>
+              Capturá con la cámara o seleccioná una foto de tu galería móvil.
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.fieldsGrid}>
+          <PhotoUpload
+            currentPhotoUrl={currentPhotoUrl}
+            onFileSelect={setSelectedPhoto}
+            disabled={isPending}
+          />
+        </div>
+      </section>
+
+      {/* Sección 3: Estado y Ubicación */}
       <section className={styles.sectionCard} aria-labelledby="section-status-title">
         <div className={styles.sectionHeader}>
           <span className={styles.sectionIcon}>
@@ -276,12 +309,12 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
               Estado y Ubicación
             </h2>
             <p className={styles.sectionDescription}>
-              Ubicación física y condición de salud actual.
+              Condición de salud actual y espacio físico donde se encuentra.
             </p>
           </div>
         </div>
 
-        <div className={styles.fieldsGrid2Col}>
+        <div className={styles.fieldsGrid}>
           <Select
             id="health_status"
             name="health_status"
@@ -299,54 +332,46 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
             label="Ubicación Física"
             options={locationOptions}
             value={locationId}
-            onChange={(e) => {
-              setLocationId(e.target.value);
-              if (errors.location_id) {
-                setErrors((prev) => ({ ...prev, location_id: '' }));
-              }
-            }}
+            onChange={(e) => setLocationId(e.target.value)}
             error={errors.location_id}
             disabled={isPending}
           />
-        </div>
 
-        <div className={styles.fieldsGrid}>
           <Input
             id="acquisition_date"
             name="acquisition_date"
             type="date"
-            label="Fecha de Adquisición (Opcional)"
+            label="Fecha de Adquisición"
             value={acquisitionDate}
             onChange={(e) => setAcquisitionDate(e.target.value)}
             error={errors.acquisition_date}
-            helperText="Dejar vacío si la fecha exacta de incorporación es desconocida."
             disabled={isPending}
           />
         </div>
       </section>
 
-      {/* Sección 3: Perfil de Cultivo */}
-      <section className={styles.sectionCard} aria-labelledby="section-profile-title">
+      {/* Sección 4: Datos de Cultivo */}
+      <section className={styles.sectionCard} aria-labelledby="section-care-title">
         <div className={styles.sectionHeader}>
           <span className={styles.sectionIcon}>
             <Droplets size={20} />
           </span>
           <div>
-            <h2 id="section-profile-title" className={styles.sectionTitle}>
+            <h2 id="section-care-title" className={styles.sectionTitle}>
               Perfil de Cultivo
             </h2>
             <p className={styles.sectionDescription}>
-              Parámetros de maceta, sustrato, luz y pautas de riego.
+              Información de maceta, sustrato, requerimientos de luz y pautas de riego.
             </p>
           </div>
         </div>
 
-        <div className={styles.fieldsGrid2Col}>
+        <div className={styles.fieldsGrid}>
           <Input
             id="pot_info"
             name="pot_info"
             label="Maceta"
-            placeholder="Ej. Terracota N° 18, Plástico 3L"
+            placeholder="Ej. Barro N°18, Plástico colgante 20cm..."
             value={potInfo}
             onChange={(e) => setPotInfo(e.target.value)}
             error={errors.pot_info}
@@ -357,20 +382,18 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
             id="substrate_info"
             name="substrate_info"
             label="Sustrato"
-            placeholder="Ej. Sustrato para aráceas con perlita"
+            placeholder="Ej. Mezcla aireada con perlita y corteza de pino..."
             value={substrateInfo}
             onChange={(e) => setSubstrateInfo(e.target.value)}
             error={errors.substrate_info}
             disabled={isPending}
           />
-        </div>
 
-        <div className={styles.fieldsGrid}>
           <Input
             id="light_conditions"
             name="light_conditions"
             label="Condiciones de Luz"
-            placeholder="Ej. Luz indirecta brillante, sol suave de mañana"
+            placeholder="Ej. Luz indirecta brillante, sin sol directo..."
             value={lightConditions}
             onChange={(e) => setLightConditions(e.target.value)}
             error={errors.light_conditions}
@@ -390,7 +413,7 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
         </div>
       </section>
 
-      {/* Sección 4: Observaciones Generales */}
+      {/* Sección 5: Observaciones Generales */}
       <section className={styles.sectionCard} aria-labelledby="section-notes-title">
         <div className={styles.sectionHeader}>
           <span className={styles.sectionIcon}>

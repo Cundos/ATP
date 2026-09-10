@@ -69,14 +69,14 @@ graph TD
     M1_4 --> M1_9
     
     M1_8 --> M2_1
-    M2_1 --> M2_2 --> M2_3 --> M2_4 --> M2_5
+    M2_1 --> M2_2 --> M2_3 --> M2_4 --> M2_5 --> M2_6
     M1_7 --> M2_5
     
     M1_8 --> M3_1
     M3_1 --> M3_2 --> M3_3 --> M3_4 --> M3_5
     M1_7 --> M3_5
     
-    M2_5 --> M4_1
+    M2_6 --> M4_1
     M3_5 --> M4_1
     M4_1 --> M4_2 --> M4_3 --> M4_4 --> M4_5
 ```
@@ -110,7 +110,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 | :--- | :--- | :--- | :--- |
 | **GATE-0** | Cierre Milestone 0 | Contenedores Docker / Cloud PostgreSQL (Neon) operativos; Prisma migra la base de datos; la secuencia de PostgreSQL genera códigos atómicos y únicos sin colisiones; el suite completo de tests unitarios y de integración ejecuta en verde. | **APROBADO** |
 | **GATE-1** | Cierre Milestone 1 | Las 13 plantas del bootstrap están cargadas con sus estados reales; CRUD de plantas y catálogo de ubicaciones 100% operativo en UI móvil sin recargas forzadas. | **APROBADO** |
-| **GATE-2** | Cierre Milestone 2 | Las fotos se procesan en servidor a WebP, se guardan en el volumen montado bajo la jerarquía aprobada y se sirven mediante `resolveUrl()` sin errores; reemplazar foto principal preserva el archivo físico previo. | PENDIENTE |
+| **GATE-2** | Cierre Milestone 2 | Las fotos se procesan en servidor a WebP, se guardan en el volumen montado bajo la jerarquía aprobada y se sirven mediante `resolveUrl()` sin errores; reemplazar foto principal preserva el archivo físico previo. | **APROBADO** |
 | **GATE-3** | Cierre Milestone 3 | Búsqueda botánica funcional en modal; persistencia del snapshot `PlantReference`; la aplicación sigue operando y guardando plantas si Open Plantbook se desconecta o devuelve HTTP 429. |
 | **GATE-4** | Cierre Milestone 4 | Interfaz responsiva mobile-first testeada; suite completa de tests automatizados pasa; guía de instalación local probada en entorno limpio. Release v0.1 lista. |
 

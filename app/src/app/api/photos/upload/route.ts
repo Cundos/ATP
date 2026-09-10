@@ -101,7 +101,7 @@ export async function POST(request: Request) {
     } catch (err) {
       if (err instanceof StorageUnavailableError) {
         return NextResponse.json(
-          { error: { code: 'STORAGE_UNAVAILABLE', message: err.message } },
+          { error: { code: 'STORAGE_UNAVAILABLE', message: 'El almacenamiento de fotografías no está disponible.' } },
           { status: 503 }
         );
       }
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
     } catch (err) {
       if (err instanceof ImageProcessingError) {
         return NextResponse.json(
-          { error: { code: 'INVALID_IMAGE', message: err.message } },
+          { error: { code: 'INVALID_IMAGE', message: 'La imagen no pudo ser procesada.' } },
           { status: 422 }
         );
       }
@@ -143,7 +143,7 @@ export async function POST(request: Request) {
     } catch (err) {
       if (err instanceof StorageUnavailableError) {
         return NextResponse.json(
-          { error: { code: 'STORAGE_UNAVAILABLE', message: err.message } },
+          { error: { code: 'STORAGE_UNAVAILABLE', message: 'El almacenamiento de fotografías no está disponible.' } },
           { status: 503 }
         );
       }

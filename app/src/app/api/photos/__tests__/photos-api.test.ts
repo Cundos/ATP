@@ -10,8 +10,8 @@ import {
   setFileStorageService,
   setImageProcessingService,
 } from '@/infrastructure/services';
-import { IFileStorageService } from '@/core/domain/services';
-import { StorageUnavailableError } from '@/core/domain/errors';
+import { IFileStorageService, IImageProcessingService } from '@/core/domain/services';
+import { StorageUnavailableError, ImageProcessingError } from '@/core/domain/errors';
 
 describe('Photo API Route Handlers (ATP-IMP-018)', () => {
   let tempDir: string;
@@ -229,21 +229,53 @@ describe('Photo API Route Handlers (ATP-IMP-018)', () => {
       expect(data.error.code).toBe('PAYLOAD_TOO_LARGE');
     });
 
-    it('rejects corrupt image data with 422 even if MIME is image/jpeg', async () => {
+    it('rejects corrupt image data with 422 and public message without exposing internal sharp details', async () => {
       const corruptBlob = new Blob([Buffer.from('not-a-real-jpeg-stream')], { type: 'image/jpeg' });
       const req = createMultipartRequest({ file: corruptBlob, permanentCode: 'AT-PL-001' });
       const response = await POST(req);
       expect(response.status).toBe(422);
       const data = await response.json();
       expect(data.error.code).toBe('INVALID_IMAGE');
+      expect(data.error.message).toBe('La imagen no pudo ser procesada.');
+
+      const rawJson = JSON.stringify(data);
+      expect(rawJson).not.toContain('sharp');
+      expect(rawJson).not.toContain('Vips');
+      expect(rawJson).not.toContain('libvips');
     });
 
-    it('returns 503 when storage backend is unavailable (e.g. Vercel without persistent backend)', async () => {
+    it('sanitizes ImageProcessingError and never leaks internal vips/sharp messages to the client', async () => {
+      const mockImageService: IImageProcessingService = {
+        processImage: async () => {
+          throw new ImageProcessingError(
+            'Failed to process image: VipsJpeg: Corrupt JPEG data at offset 0x4f92a with internal /usr/local/lib/libvips error'
+          );
+        },
+      };
+      setImageProcessingService(mockImageService);
+
+      const validImg = await createSampleImage('jpeg', 100, 100);
+      const req = createMultipartRequest({ file: new Blob([new Uint8Array(validImg)], { type: 'image/jpeg' }), permanentCode: 'AT-PL-001' });
+      const response = await POST(req);
+
+      expect(response.status).toBe(422);
+      const data = await response.json();
+      expect(data.error.code).toBe('INVALID_IMAGE');
+      expect(data.error.message).toBe('La imagen no pudo ser procesada.');
+
+      const rawJson = JSON.stringify(data);
+      expect(rawJson).not.toContain('Vips');
+      expect(rawJson).not.toContain('Corrupt JPEG data');
+      expect(rawJson).not.toContain('libvips');
+      expect(rawJson).not.toContain('0x4f92a');
+    });
+
+    it('returns 503 with sanitized public message when storage backend is unavailable', async () => {
       const unavailableStorage: IFileStorageService = {
-        saveFile: async () => { throw new StorageUnavailableError('Persistent storage unconfigured'); },
+        saveFile: async () => { throw new StorageUnavailableError('Bucket photo-prod-123 missing / secret/path'); },
         resolveUrl: () => '',
         fileExists: async () => false,
-        readFile: async () => { throw new StorageUnavailableError('Persistent storage unconfigured'); },
+        readFile: async () => { throw new StorageUnavailableError('Bucket photo-prod-123 missing / secret/path'); },
         deleteFile: async () => {},
       };
       setFileStorageService(unavailableStorage);
@@ -254,6 +286,11 @@ describe('Photo API Route Handlers (ATP-IMP-018)', () => {
       expect(response.status).toBe(503);
       const data = await response.json();
       expect(data.error.code).toBe('STORAGE_UNAVAILABLE');
+      expect(data.error.message).toBe('El almacenamiento de fotografías no está disponible.');
+
+      const rawJson = JSON.stringify(data);
+      expect(rawJson).not.toContain('photo-prod-123');
+      expect(rawJson).not.toContain('secret/path');
     });
 
     it('does not leak internal server paths in JSON responses', async () => {
@@ -348,12 +385,12 @@ describe('Photo API Route Handlers (ATP-IMP-018)', () => {
       expect(data.error.code).toBe('INVALID_STORAGE_KEY');
     });
 
-    it('returns 503 when storage backend is unavailable', async () => {
+    it('returns 503 with sanitized public message when storage backend is unavailable', async () => {
       const unavailableStorage: IFileStorageService = {
         saveFile: async () => '',
         resolveUrl: () => '',
-        fileExists: async () => { throw new StorageUnavailableError('Persistent storage unconfigured'); },
-        readFile: async () => { throw new StorageUnavailableError('Persistent storage unconfigured'); },
+        fileExists: async () => { throw new StorageUnavailableError('Bucket photo-prod-123 missing / secret/path'); },
+        readFile: async () => { throw new StorageUnavailableError('Bucket photo-prod-123 missing / secret/path'); },
         deleteFile: async () => {},
       };
       setFileStorageService(unavailableStorage);
@@ -366,6 +403,11 @@ describe('Photo API Route Handlers (ATP-IMP-018)', () => {
       expect(response.status).toBe(503);
       const data = await response.json();
       expect(data.error.code).toBe('STORAGE_UNAVAILABLE');
+      expect(data.error.message).toBe('El almacenamiento de fotografías no está disponible.');
+
+      const rawJson = JSON.stringify(data);
+      expect(rawJson).not.toContain('photo-prod-123');
+      expect(rawJson).not.toContain('secret/path');
     });
 
     it('returns 500 when storage throws an unexpected read error', async () => {

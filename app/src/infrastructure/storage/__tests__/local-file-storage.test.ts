@@ -58,6 +58,26 @@ describe('LocalFileStorageService', () => {
     expect(exists).toBe(false);
   });
 
+  describe('readFile', () => {
+    it('reads binary content from an existing stored file', async () => {
+      const key = 'photos/AT-PL-001/leaf.webp';
+      const content = Buffer.from([0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50]);
+      await storage.saveFile(key, content);
+
+      const retrieved = await storage.readFile(key);
+      expect(retrieved).toEqual(content);
+    });
+
+    it('throws error when reading non-existent file', async () => {
+      await expect(storage.readFile('photos/AT-PL-001/nonexistent.webp')).rejects.toThrow();
+    });
+
+    it('throws error when reading with traversal or invalid key', async () => {
+      await expect(storage.readFile('../secret.txt')).rejects.toThrow(/traversal/i);
+      await expect(storage.readFile('/etc/passwd')).rejects.toThrow(/traversal/i);
+    });
+  });
+
   describe('resolveUrl', () => {
     it('generates valid relative route for valid photo storage keys', () => {
       const url = storage.resolveUrl('photos/AT-PL-001/a0eebc99.webp');

@@ -22,6 +22,13 @@ export interface IFileStorageService {
   fileExists(storageKey: string): Promise<boolean>;
 
   /**
+   * Reads binary file content from the designated storage key.
+   * Throws an error if the file does not exist or cannot be read.
+   * @param storageKey Relative storage key
+   */
+  readFile(storageKey: string): Promise<Buffer>;
+
+  /**
    * Deletes a file at the given storage key.
    * Operation is idempotent: does not throw if the file does not exist.
    * @param storageKey Relative storage key

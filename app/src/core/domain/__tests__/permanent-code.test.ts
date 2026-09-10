@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatPermanentCode } from '../permanent-code';
+import { formatPermanentCode, isValidPermanentCode } from '../permanent-code';
 
 describe('formatPermanentCode (ATP-IMP-004)', () => {
   it('debe formatear números menores a 10 con padding de dos ceros', () => {
@@ -33,5 +33,30 @@ describe('formatPermanentCode (ATP-IMP-004)', () => {
     expect(() => formatPermanentCode(0)).toThrow();
     expect(() => formatPermanentCode(-5)).toThrow();
     expect(() => formatPermanentCode(1.5)).toThrow();
+  });
+});
+
+describe('isValidPermanentCode (ATP-IMP-018)', () => {
+  it('acepta códigos válidos de 3 o más dígitos numéricos', () => {
+    expect(isValidPermanentCode('AT-PL-001')).toBe(true);
+    expect(isValidPermanentCode('AT-PL-013')).toBe(true);
+    expect(isValidPermanentCode('AT-PL-014')).toBe(true);
+    expect(isValidPermanentCode('AT-PL-999')).toBe(true);
+    expect(isValidPermanentCode('AT-PL-1000')).toBe(true);
+    expect(isValidPermanentCode('AT-PL-99999')).toBe(true);
+    expect(isValidPermanentCode(' AT-PL-001 ')).toBe(true);
+  });
+
+  it('rechaza códigos con formato inválido, longitud insuficiente o caracteres no numéricos', () => {
+    expect(isValidPermanentCode('AT-PL-01')).toBe(false);
+    expect(isValidPermanentCode('AT-PL-1')).toBe(false);
+    expect(isValidPermanentCode('PL-001')).toBe(false);
+    expect(isValidPermanentCode('AT-PL-ABC')).toBe(false);
+    expect(isValidPermanentCode('AT-PL-001a')).toBe(false);
+    expect(isValidPermanentCode('AT-PL-')).toBe(false);
+    expect(isValidPermanentCode('')).toBe(false);
+    expect(isValidPermanentCode(null)).toBe(false);
+    expect(isValidPermanentCode(undefined)).toBe(false);
+    expect(isValidPermanentCode(123)).toBe(false);
   });
 });

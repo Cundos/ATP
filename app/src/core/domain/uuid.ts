@@ -6,3 +6,8 @@ import { v7 as uuidv7 } from 'uuid';
 export function generateUUIDv7(): string {
   return uuidv7();
 }
+
+/**
+ * Alias de conveniencia para generación de identificadores técnicos únicos.
+ */
+export const generateUuid = generateUUIDv7;

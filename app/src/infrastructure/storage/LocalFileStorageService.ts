@@ -75,6 +75,14 @@ export class LocalFileStorageService implements IFileStorageService {
   }
 
   /**
+   * Reads binary file content from the designated storage key.
+   */
+  async readFile(storageKey: string): Promise<Buffer> {
+    const fullPath = this.resolveSafePath(storageKey);
+    return await fs.promises.readFile(fullPath);
+  }
+
+  /**
    * Deletes a file at the given storage key.
    * Idempotent: Does not throw if file does not exist.
    */

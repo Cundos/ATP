@@ -16,3 +16,15 @@ export function formatPermanentCode(sequenceNumber: number | bigint): string {
 
   return `AT-PL-${num.toString().padStart(3, '0')}`;
 }
+
+/**
+ * Valida si un valor cumple el formato oficial de código permanente de planta (ADR-002, ADR-017).
+ * Debe comenzar con "AT-PL-" seguido de 3 o más dígitos numéricos (ej. AT-PL-001, AT-PL-014, AT-PL-1000).
+ */
+export function isValidPermanentCode(code: unknown): code is string {
+  if (typeof code !== 'string') {
+    return false;
+  }
+
+  return /^AT-PL-\d{3,}$/.test(code.trim());
+}

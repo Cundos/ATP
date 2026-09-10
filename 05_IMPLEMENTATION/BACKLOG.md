@@ -35,7 +35,8 @@ graph TD
         M2_2[ATP-IMP-017: Sharp Image Preprocessing WebP]
         M2_3[ATP-IMP-018: Photo Upload & Serving Route Handlers]
         M2_4[ATP-IMP-019: Primary Photo Management Logic]
-        M2_5[ATP-IMP-020: Photo UI Integration Mobile]
+        M2_5[ATP-IMP-019B: Persistent Photo Storage Vercel Blob]
+        M2_6[ATP-IMP-020: Photo UI Integration Mobile]
     end
 
     subgraph "Milestone 3: Open Plantbook Integration"
@@ -365,26 +366,42 @@ Un Milestone se considera **COMPLETADO** cuando:
 - **Resultado:** Módulo procesador que toma cualquier imagen móvil y retorna un buffer WebP ligero y estandarizado.
 
 #### `ATP-IMP-018` — Route Handlers de Subida y Serving de Fotos
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Proveer los puntos de entrada HTTP para la carga y entrega de binarios.
 - **Tipo:** `BACKEND` | **Prioridad:** `MUST` | **Release:** `M2`
 - **Dependencias:** `ATP-IMP-016`, `ATP-IMP-017`.
 - **Trazabilidad:** `NFR-007`, `NFR-014`, `ADR-013`.
 - **Criterios de Aceptación:**
-  - `POST /api/photos/upload`: recibe `multipart/form-data`, valida MIME (`jpeg`, `png`, `webp`), delega al preprocesador y almacena vía `StorageService`.
-  - `GET /api/photos/view/[...storageKey]`: lee el binario del storage y responde con `Content-Type: image/webp`, `Cache-Control: public, max-age=31536000, immutable` y `X-Content-Type-Options: nosniff`.
-  - Respuestas HTTP estructuradas con códigos semánticos.
+- `POST /api/photos/upload`: recibe `multipart/form-data`, valida MIME (`jpeg`, `png`, `webp`), delega al preprocesador y almacena vía `StorageService`.
+- `GET /api/photos/view/[...storageKey]`: lee el binario del storage y responde con `Content-Type: image/webp`, `Cache-Control: public, max-age=31536000, immutable` y `X-Content-Type-Options: nosniff`.
+- Respuestas HTTP estructuradas con códigos semánticos.
 - **Resultado:** Endpoints probados y seguros para streaming de imágenes y subida.
 
 #### `ATP-IMP-019` — Lógica de Reemplazo y Preservación de Foto Principal
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Administrar el flag `Photo.is_primary` preservando los binarios anteriores en disco.
 - **Tipo:** `BACKEND` | **Prioridad:** `MUST` | **Release:** `M2`
 - **Dependencias:** `ATP-IMP-018`.
 - **Trazabilidad:** `FR-039` a `FR-045`, `US-011` a `US-013`, `ADR-008`, `ADR-010`.
 - **Criterios de Aceptación:**
-  - Al marcar una nueva foto como principal, se ejecuta transacción en base de datos: las fotos anteriores del ejemplar pasan a `is_primary = false`.
-  - **Prohibición de borrado físico:** el archivo en disco de la foto previa no es eliminado (`ADR-008`).
-  - La entidad `Plant` no almacena clave foránea `primary_photo_id`; la consulta proyecta la foto con `is_primary = true` (`ADR-010`).
+- Al marcar una nueva foto como principal, se ejecuta transacción en base de datos: las fotos anteriores del ejemplar pasan a `is_primary = false`.
+- **Prohibición de borrado físico:** el archivo en disco de la foto previa no es eliminado (`ADR-008`).
+- La entidad `Plant` no almacena clave foránea `primary_photo_id`; la consulta proyecta la foto con `is_primary = true` (`ADR-010`).
 - **Resultado:** Integridad estricta garantizada: como máximo 1 foto principal activa por planta, con histórico preservado.
+
+#### `ATP-IMP-019B` — Storage Persistente de Fotos para Producción Vercel (`VercelBlobStorageService`)
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Proveer un backend de almacenamiento persistente en la nube (Vercel Blob) bajo el contrato `IFileStorageService` para entornos Vercel, manteniendo el soporte de `LocalFileStorageService` para local/Docker.
+- **Tipo:** `STORAGE` | **Prioridad:** `MUST` | **Release:** `M2`
+- **Dependencias:** `ATP-IMP-016`, `ATP-IMP-018`.
+- **Trazabilidad:** `NFR-007`, `ADR-006`, `ADR-011`.
+- **Criterios de Aceptación:**
+- Implementación de `VercelBlobStorageService` que satisface `IFileStorageService` usando `@vercel/blob` (`put`, `head`, `get`, `del`).
+- Preservación estricta de storage keys lógicas portables (`photos/{permanent_code}/{uuid}.webp`).
+- Selección centralizada en `serviceContainer`: `VercelBlobStorageService` si existe `BLOB_READ_WRITE_TOKEN` / `STORAGE_DRIVER=blob`, `LocalFileStorageService` para local/docker, o `StorageUnavailableError` si corre en Vercel sin credenciales.
+- Bloqueo de path traversal y validación con `isValidStorageKey()`.
+- Suite completa de tests unitarios, suite de contrato y verificación en producción.
+- **Resultado:** Almacenamiento durable y desacoplado operativo tanto en local como en producción Vercel.
 
 #### `ATP-IMP-020` — Integración UI Móvil de Fotos en Ficha, Catálogo y Formularios
 - **Objetivo:** Mostrar y permitir la captura de fotos desde la interfaz de usuario.

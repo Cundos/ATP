@@ -280,11 +280,20 @@ export interface IFileStorageService {
 }
 ```
 
-### 6.2 Implementación v0.1: `LocalFileStorageService` y Abstracción de Serving
-- **Jerarquía Lógica en Disco:** `photos/{permanent_code}/{unique-file-id}.{extension}`.
-  - La clave `storage_key` lógica es relativa (ej: `photos/AT-PL-013/0191aa10-pho1...webp`) y es lo único que se almacena en `Photo.file_path`. **Nunca es una ruta absoluta del host**.
-  - `unique-file-id` es un identificador físico único (UUID) que garantiza no sobreescribir archivos históricos (`ADR-008`).
-- **Resolución de Serving:** La Presentation/UI no asume cómo ni dónde se guardan las imágenes. Obtiene el recurso utilizable exclusivamente mediante `storageService.resolveUrl(photo.file_path)`. Para `LocalFileStorage`, el servicio resuelve hacia un Route Handler controlado de la aplicación; para un futuro `ObjectStorage`, resolverá a URLs prefirmadas o CDN.
+### 6.2 Implementaciones de Almacenamiento: `LocalFileStorageService` y `VercelBlobStorageService`
+- **Contrato Común:** Ambas implementaciones satisfacen la interfaz `IFileStorageService` (`saveFile`, `readFile`, `fileExists`, `deleteFile`, `resolveUrl`), manteniendo desacopladas las capas de Dominio y Aplicación.
+- **Jerarquía Lógica:** `photos/{permanent_code}/{unique-file-id}.{extension}`.
+  - La clave `storage_key` lógica es relativa (ej: `photos/AT-PL-013/0191aa10-pho1...webp`) y es lo único que se almacena en `Photo.file_path`. **Nunca es una ruta absoluta del host ni una URL externa acoplada**.
+  - `unique-file-id` es un identificador único (UUIDv7) que garantiza no sobreescribir archivos históricos (`ADR-008`).
+- **Implementación Local / Docker / Homelab (`LocalFileStorageService`):**
+  - Escribe en el sistema de archivos del host montado bajo `STORAGE_LOCAL_PATH` (ej: `/app/storage/photos/...`).
+- **Implementación Producción Vercel (`VercelBlobStorageService`):**
+  - Persiste los binarios de forma duradera en **Vercel Blob Object Storage** mediante `@vercel/blob` (`put`, `get`, `head`, `del`) utilizando `BLOB_READ_WRITE_TOKEN`.
+- **Resolución en `serviceContainer`:**
+  - Si existe `BLOB_READ_WRITE_TOKEN` o `STORAGE_DRIVER=blob`, instancia `VercelBlobStorageService`.
+  - Si corre en Vercel (`process.env.VERCEL`) sin almacenamiento en la nube configurado, lanza `StorageUnavailableError` (evitando escrituras en el filesystem efímero de Vercel).
+  - En entorno local / Docker / pruebas, instancia `LocalFileStorageService`.
+- **Resolución de Serving:** La Presentation/UI obtiene el recurso utilizable exclusivamente mediante `storageService.resolveUrl(photo.file_path)`. El endpoint `/api/photos/view/[...storageKey]` lee los bytes a través de `IFileStorageService.readFile(storageKey)` garantizando abstracción uniforme y control de caché `immutable`.
 
 ### 6.3 Preprocesamiento de Imágenes Server-Side
 Durante la subida de fotografías de ejemplares, el servidor procesará la imagen mediante una biblioteca apropiada como **`sharp`**:

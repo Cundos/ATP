@@ -437,15 +437,16 @@ Un Milestone se considera **COMPLETADO** cuando:
 
 #### `ATP-IMP-022` — Cliente HTTP Resiliente Open Plantbook (`OpenPlantbookClient`)
 - **Objetivo:** Implementar el cliente HTTP con tolerancia a fallos, rate limits y timeouts.
-- **Tipo:** `INTEGRATION` | **Prioridad:** `MUST` | **Release:** `M3`
+- **Tipo:** `INTEGRATION` | **Prioridad:** `MUST` | **Release:** `M3` | **Estado:** `COMPLETADO`
 - **Dependencias:** `ATP-IMP-021`.
 - **Trazabilidad:** `NFR-016`, `NFR-018`, `OPEN_PLANTBOOK_INTEGRATION.md`.
 - **Criterios de Aceptación:**
-  - Timeout estricto de petición saliente de **5000 ms**.
-  - Método de búsqueda de especies (`GET /api/v1/plant/search?alias=...`).
-  - Método de detalle completo (`GET /api/v1/plant/detail/{pid}?include=*`).
-  - Manejo estructurado de errores: captura HTTP 429 (`Rate Limit`) y errores 5xx devolviendo excepciones de dominio controladas (`ExternalServiceUnavailableError`).
-- **Resultado:** Cliente HTTP robusto con tests unitarios basados en MSW (Mock Service Worker).
+  - Timeout estricto de petición saliente de **5000 ms** con `AbortController`.
+  - Método de búsqueda de especies (`GET /api/v1/plant/search/?alias=...`) con encoding seguro y validación de query no vacía.
+  - Método de detalle completo (`GET /api/v1/plant/detail/{pid}/?include=*`) con encoding seguro de PID.
+  - Manejo estructurado de errores: captura HTTP 429 (`OpenPlantbookRateLimitError` con `Retry-After`), HTTP 404 (`OpenPlantbookPlantNotFoundError`), errores 5xx (`OpenPlantbookServiceUnavailableError`), timeout y network errors sin exponer secrets.
+  - Preservación del payload `raw` para persistencia snapshot en ATP-IMP-023.
+- **Resultado:** Cliente `OpenPlantbookClient` implementado con arquitectura Clean Architecture y testeado exhaustivamente con MSW (Mock Service Worker) cubriendo 17 escenarios (A–R).
 
 #### `ATP-IMP-023` — Mapper y Persistencia del Snapshot Local `PlantReference`
 - **Objetivo:** Mapear payloads externos a entidades de dominio y persistirlos en PostgreSQL.

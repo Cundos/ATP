@@ -1,7 +1,7 @@
-# Integración con Open Plantbook — Análisis y Diseño Conceptual (Change Request ATP-004B)
+# Integración con Open Plantbook — Análisis y Diseño Arquitectónico (Change Request ATP-004B)
 
-> **Estado del Documento:** Propuesta de Change Request (Pendiente de Aprobación).  
-> **Alcance:** Especificación conceptual, evaluación de impacto arquitectónico, de datos y UX para la integración opcional con Open Plantbook.
+> **Estado del Documento:** Aprobado e Incorporado al MVP v0.1 (`ADR-012`, `ADR-013`).  
+> **Alcance:** Especificación técnica y de integración server-side, evaluación de impacto arquitectónico, de datos y UX para la integración opcional con Open Plantbook.
 
 ---
 

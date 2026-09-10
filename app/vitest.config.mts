@@ -14,6 +14,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Mock Next.js server-only guard for Vitest test environment.
+      // In production Next.js builds, 'server-only' throws if imported from
+      // a Client Component. In tests we replace it with an empty no-op module.
+      'server-only': path.resolve(__dirname, './src/__mocks__/server-only.ts'),
     },
   },
 });

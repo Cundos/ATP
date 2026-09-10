@@ -424,15 +424,16 @@ Un Milestone se considera **COMPLETADO** cuando:
 
 #### `ATP-IMP-021` — Gestor de Tokens OAuth2 Server-Side (`OAuth2TokenManager`)
 - **Objetivo:** Implementar la autenticación segura Client Credentials con el proveedor externo.
-- **Tipo:** `INTEGRATION` | **Prioridad:** `MUST` | **Release:** `M3`
+- **Tipo:** `INTEGRATION` | **Prioridad:** `MUST` | **Release:** `M3` | **Estado:** `COMPLETADO`
 - **Dependencias:** `ATP-IMP-001`.
 - **Trazabilidad:** `NFR-013`, `NFR-017`, `ADR-013`, `OPEN_PLANTBOOK_INTEGRATION.md`.
 - **Criterios de Aceptación:**
   - Lee credenciales `OPEN_PLANTBOOK_CLIENT_ID` y `CLIENT_SECRET` exclusivamente desde variables de entorno del servidor.
   - Solicita token Bearer a `POST https://open.plantbook.io/api/v1/token/`.
-  - Mantiene el token en memoria caché de servidor mientras sea válido, renovándolo automáticamente antes de su expiración.
-  - Cero exposición de secretos o tokens hacia el bundle cliente del navegador.
-- **Resultado:** Módulo de autenticación server-side probado con mocks.
+  - Mantiene el token en memoria caché de servidor mientras sea válido, renovándolo automáticamente antes de su expiración (ventana de seguridad adaptativa: `min(60s, 20% TTL)`).
+  - Protección de concurrencia mediante compartición de promesa in-flight para evitar thundering herd.
+  - Cero exposición de secretos o tokens hacia el bundle cliente del navegador (`server-only`).
+- **Resultado:** Módulo `OAuth2TokenManager` implementado y testeado unitariamente cubriendo los 13 escenarios de autenticación, caché, concurrencia, timeout y sanitización (30 test files, 323 tests passing).
 
 #### `ATP-IMP-022` — Cliente HTTP Resiliente Open Plantbook (`OpenPlantbookClient`)
 - **Objetivo:** Implementar el cliente HTTP con tolerancia a fallos, rate limits y timeouts.

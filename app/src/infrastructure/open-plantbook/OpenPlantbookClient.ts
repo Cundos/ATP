@@ -25,12 +25,14 @@ import {
   OpenPlantbookSearchResultItem,
 } from '../../core/domain/services/IOpenPlantbookClient';
 import {
+  OpenPlantbookAuthorizationError,
   OpenPlantbookError,
   OpenPlantbookPlantNotFoundError,
   OpenPlantbookRateLimitError,
   OpenPlantbookResponseError,
   OpenPlantbookServiceUnavailableError,
 } from '../../core/domain/errors/OpenPlantbookClientErrors';
+
 
 const DEFAULT_BASE_URL = 'https://open.plantbook.io';
 const TIMEOUT_MS = 5_000;
@@ -145,8 +147,14 @@ export class OpenPlantbookClient implements IOpenPlantbookClient {
       );
     }
 
-    const responsePid =
-      typeof rawData['pid'] === 'string' ? rawData['pid'].trim() : trimmedPid;
+    const rawPid = rawData['pid'];
+    if (typeof rawPid !== 'string' || rawPid.trim().length === 0) {
+      throw new OpenPlantbookResponseError(
+        'Open Plantbook detail response is missing a valid "pid" field.'
+      );
+    }
+
+    const responsePid = rawPid.trim();
 
     const parsedData: OpenPlantbookDetailData = {
       pid: responsePid,
@@ -241,6 +249,13 @@ export class OpenPlantbookClient implements IOpenPlantbookClient {
 
     if (!response.ok) {
       const status = response.status;
+
+      if (status === 401 || status === 403) {
+        throw new OpenPlantbookAuthorizationError(
+          `Open Plantbook authorization rejected (HTTP ${status}).`,
+          status
+        );
+      }
 
       if (status === 404 && operation === 'detail' && contextPid) {
         throw new OpenPlantbookPlantNotFoundError(contextPid);

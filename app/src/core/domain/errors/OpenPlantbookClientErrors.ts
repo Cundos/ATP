@@ -75,6 +75,22 @@ export class OpenPlantbookPlantNotFoundError extends OpenPlantbookError {
 }
 
 /**
+ * Thrown when Open Plantbook responds with HTTP 401 Unauthorized or HTTP 403 Forbidden.
+ */
+export class OpenPlantbookAuthorizationError extends OpenPlantbookError {
+  readonly code = 'AUTH_ERROR' as const;
+
+  constructor(
+    message: string = 'Open Plantbook authorization rejected (HTTP 401/403).',
+    statusCode: number = 401,
+    cause?: unknown
+  ) {
+    super(message, statusCode, cause);
+    this.name = 'OpenPlantbookAuthorizationError';
+  }
+}
+
+/**
  * Thrown when Open Plantbook returns a malformed or invalid response (e.g. invalid JSON, missing required structure).
  */
 export class OpenPlantbookResponseError extends OpenPlantbookError {
@@ -89,3 +105,5 @@ export class OpenPlantbookResponseError extends OpenPlantbookError {
     this.name = 'OpenPlantbookResponseError';
   }
 }
+
+

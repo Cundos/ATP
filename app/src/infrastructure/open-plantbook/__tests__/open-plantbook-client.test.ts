@@ -28,11 +28,13 @@ import { http, HttpResponse, delay } from 'msw';
 import { OpenPlantbookClient } from '../OpenPlantbookClient';
 import { IOAuth2TokenManager } from '../../../core/domain/services/IOAuth2TokenManager';
 import {
+  OpenPlantbookAuthorizationError,
   OpenPlantbookPlantNotFoundError,
   OpenPlantbookRateLimitError,
   OpenPlantbookResponseError,
   OpenPlantbookServiceUnavailableError,
 } from '../../../core/domain/errors/OpenPlantbookClientErrors';
+
 
 const TEST_BASE_URL = 'https://open.plantbook.io';
 const TEST_TOKEN = 'secret-test-bearer-token-xyz-123';
@@ -479,6 +481,141 @@ describe('OpenPlantbookClient (ATP-IMP-022)', () => {
       const err = await client.searchPlants('ficus').catch((e) => e);
 
       expect((err as Error).message).not.toContain(TEST_TOKEN);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // S. Authorization Error (401 & 403 -> AUTH_ERROR)
+  // ---------------------------------------------------------------------------
+  describe('S. Authorization Error (HTTP 401 & 403 -> AUTH_ERROR)', () => {
+    it('throws OpenPlantbookAuthorizationError with code AUTH_ERROR on HTTP 401', async () => {
+      server.use(
+        http.get(`${TEST_BASE_URL}/api/v1/plant/search/`, () => {
+          return new HttpResponse(JSON.stringify({ detail: 'Invalid token.' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        })
+      );
+
+      const client = new OpenPlantbookClient(mockTokenManager, TEST_BASE_URL);
+      const err = await client.searchPlants('monstera').catch((e) => e);
+
+      expect(err).toBeInstanceOf(OpenPlantbookAuthorizationError);
+      expect((err as OpenPlantbookAuthorizationError).code).toBe('AUTH_ERROR');
+      expect((err as OpenPlantbookAuthorizationError).statusCode).toBe(401);
+      expect((err as Error).message).not.toContain(TEST_TOKEN);
+    });
+
+    it('throws OpenPlantbookAuthorizationError with code AUTH_ERROR on HTTP 403', async () => {
+      server.use(
+        http.get(`${TEST_BASE_URL}/api/v1/plant/detail/:pid/`, () => {
+          return new HttpResponse(JSON.stringify({ detail: 'Forbidden.' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        })
+      );
+
+      const client = new OpenPlantbookClient(mockTokenManager, TEST_BASE_URL);
+      const err = await client.getPlantDetail('monstera deliciosa').catch((e) => e);
+
+      expect(err).toBeInstanceOf(OpenPlantbookAuthorizationError);
+      expect((err as OpenPlantbookAuthorizationError).code).toBe('AUTH_ERROR');
+      expect((err as OpenPlantbookAuthorizationError).statusCode).toBe(403);
+      expect((err as Error).message).not.toContain(TEST_TOKEN);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // T. Detail PID Mandatory Validation
+  // ---------------------------------------------------------------------------
+  describe('T. Detail PID Mandatory Validation', () => {
+    it('throws OpenPlantbookResponseError when detail response 200 is missing pid field', async () => {
+      server.use(
+        http.get(`${TEST_BASE_URL}/api/v1/plant/detail/:pid/`, () => {
+          return HttpResponse.json({
+            display_pid: 'Monstera deliciosa',
+            min_temp: 15,
+          });
+        })
+      );
+
+      const client = new OpenPlantbookClient(mockTokenManager, TEST_BASE_URL);
+      const err = await client.getPlantDetail('monstera deliciosa').catch((e) => e);
+
+      expect(err).toBeInstanceOf(OpenPlantbookResponseError);
+      expect((err as OpenPlantbookResponseError).code).toBe('INVALID_RESPONSE');
+      expect((err as Error).message).toContain('pid');
+    });
+
+    it('throws OpenPlantbookResponseError when pid is null', async () => {
+      server.use(
+        http.get(`${TEST_BASE_URL}/api/v1/plant/detail/:pid/`, () => {
+          return HttpResponse.json({
+            pid: null,
+            display_pid: 'Monstera deliciosa',
+          });
+        })
+      );
+
+      const client = new OpenPlantbookClient(mockTokenManager, TEST_BASE_URL);
+      const err = await client.getPlantDetail('monstera deliciosa').catch((e) => e);
+
+      expect(err).toBeInstanceOf(OpenPlantbookResponseError);
+      expect((err as OpenPlantbookResponseError).code).toBe('INVALID_RESPONSE');
+    });
+
+    it('throws OpenPlantbookResponseError when pid is an empty string', async () => {
+      server.use(
+        http.get(`${TEST_BASE_URL}/api/v1/plant/detail/:pid/`, () => {
+          return HttpResponse.json({
+            pid: '   ',
+            display_pid: 'Monstera deliciosa',
+          });
+        })
+      );
+
+      const client = new OpenPlantbookClient(mockTokenManager, TEST_BASE_URL);
+      const err = await client.getPlantDetail('monstera deliciosa').catch((e) => e);
+
+      expect(err).toBeInstanceOf(OpenPlantbookResponseError);
+      expect((err as OpenPlantbookResponseError).code).toBe('INVALID_RESPONSE');
+    });
+
+    it('throws OpenPlantbookResponseError when pid is not a string (e.g. number)', async () => {
+      server.use(
+        http.get(`${TEST_BASE_URL}/api/v1/plant/detail/:pid/`, () => {
+          return HttpResponse.json({
+            pid: 12345,
+            display_pid: 'Monstera deliciosa',
+          });
+        })
+      );
+
+      const client = new OpenPlantbookClient(mockTokenManager, TEST_BASE_URL);
+      const err = await client.getPlantDetail('monstera deliciosa').catch((e) => e);
+
+      expect(err).toBeInstanceOf(OpenPlantbookResponseError);
+      expect((err as OpenPlantbookResponseError).code).toBe('INVALID_RESPONSE');
+    });
+
+    it('succeeds when detail response contains only pid', async () => {
+      server.use(
+        http.get(`${TEST_BASE_URL}/api/v1/plant/detail/:pid/`, () => {
+          return HttpResponse.json({
+            pid: 'monstera deliciosa',
+          });
+        })
+      );
+
+      const client = new OpenPlantbookClient(mockTokenManager, TEST_BASE_URL);
+      const detail = await client.getPlantDetail('monstera deliciosa');
+
+      expect(detail.data.pid).toBe('monstera deliciosa');
+      expect(detail.data.display_pid).toBeUndefined();
+      expect(detail.data.alias).toBeUndefined();
+      expect(detail.data.image_url).toBeNull();
     });
   });
 });

@@ -59,7 +59,7 @@ describe('OpenPlantbookClient (ATP-IMP-022)', () => {
   describe('A. Search Exitoso', () => {
     it('returns formatted search response with matching species', async () => {
       server.use(
-        http.get(`${TEST_BASE_URL}/api/v1/plant/search/`, () => {
+        http.get(`${TEST_BASE_URL}/api/v1/plant/search`, () => {
           return HttpResponse.json({
             count: 2,
             next: null,
@@ -104,7 +104,7 @@ describe('OpenPlantbookClient (ATP-IMP-022)', () => {
       let interceptedUrl: string | null = null;
 
       server.use(
-        http.get(`${TEST_BASE_URL}/api/v1/plant/search/`, ({ request }) => {
+        http.get(`${TEST_BASE_URL}/api/v1/plant/search`, ({ request }) => {
           interceptedUrl = request.url;
           return HttpResponse.json({
             count: 1,
@@ -201,7 +201,7 @@ describe('OpenPlantbookClient (ATP-IMP-022)', () => {
       let authHeader: string | null = null;
 
       server.use(
-        http.get(`${TEST_BASE_URL}/api/v1/plant/search/`, ({ request }) => {
+        http.get(`${TEST_BASE_URL}/api/v1/plant/search`, ({ request }) => {
           authHeader = request.headers.get('Authorization');
           return HttpResponse.json({ count: 0, results: [] });
         })
@@ -221,7 +221,7 @@ describe('OpenPlantbookClient (ATP-IMP-022)', () => {
   describe('G. Timeout Search', () => {
     it('throws OpenPlantbookServiceUnavailableError with timeout reason on search timeout', async () => {
       server.use(
-        http.get(`${TEST_BASE_URL}/api/v1/plant/search/`, async () => {
+        http.get(`${TEST_BASE_URL}/api/v1/plant/search`, async () => {
           await delay(6_000);
           return HttpResponse.json({ count: 0, results: [] });
         })
@@ -263,7 +263,7 @@ describe('OpenPlantbookClient (ATP-IMP-022)', () => {
   describe('I. Network Error', () => {
     it('throws OpenPlantbookServiceUnavailableError with network reason on connection failure', async () => {
       server.use(
-        http.get(`${TEST_BASE_URL}/api/v1/plant/search/`, () => {
+        http.get(`${TEST_BASE_URL}/api/v1/plant/search`, () => {
           return HttpResponse.error();
         })
       );
@@ -283,7 +283,7 @@ describe('OpenPlantbookClient (ATP-IMP-022)', () => {
   describe('J. HTTP 429 Rate Limit con Retry-After', () => {
     it('throws OpenPlantbookRateLimitError and captures Retry-After header', async () => {
       server.use(
-        http.get(`${TEST_BASE_URL}/api/v1/plant/search/`, () => {
+        http.get(`${TEST_BASE_URL}/api/v1/plant/search`, () => {
           return new HttpResponse(
             JSON.stringify({ detail: 'Request was throttled.' }),
             {
@@ -313,7 +313,7 @@ describe('OpenPlantbookClient (ATP-IMP-022)', () => {
   describe('K. HTTP 500 Internal Server Error', () => {
     it('throws OpenPlantbookServiceUnavailableError on HTTP 500', async () => {
       server.use(
-        http.get(`${TEST_BASE_URL}/api/v1/plant/search/`, () => {
+        http.get(`${TEST_BASE_URL}/api/v1/plant/search`, () => {
           return new HttpResponse('Internal Server Error', { status: 500 });
         })
       );
@@ -378,7 +378,7 @@ describe('OpenPlantbookClient (ATP-IMP-022)', () => {
   describe('N. Invalid JSON Response', () => {
     it('throws OpenPlantbookResponseError when HTTP 200 body is not JSON', async () => {
       server.use(
-        http.get(`${TEST_BASE_URL}/api/v1/plant/search/`, () => {
+        http.get(`${TEST_BASE_URL}/api/v1/plant/search`, () => {
           return new HttpResponse('<html><body>Gateway Error</body></html>', {
             status: 200,
             headers: { 'Content-Type': 'text/html' },
@@ -400,7 +400,7 @@ describe('OpenPlantbookClient (ATP-IMP-022)', () => {
   describe('O. Malformed Search Response', () => {
     it('throws OpenPlantbookResponseError when results is not an array', async () => {
       server.use(
-        http.get(`${TEST_BASE_URL}/api/v1/plant/search/`, () => {
+        http.get(`${TEST_BASE_URL}/api/v1/plant/search`, () => {
           return HttpResponse.json({ count: 1, results: 'not-an-array' });
         })
       );
@@ -447,7 +447,7 @@ describe('OpenPlantbookClient (ATP-IMP-022)', () => {
       let fetchTriggered = false;
 
       server.use(
-        http.get(`${TEST_BASE_URL}/api/v1/plant/search/`, () => {
+        http.get(`${TEST_BASE_URL}/api/v1/plant/search`, () => {
           fetchTriggered = true;
           return HttpResponse.json({ count: 0, results: [] });
         })
@@ -472,7 +472,7 @@ describe('OpenPlantbookClient (ATP-IMP-022)', () => {
   describe('R. Secret Sanitization', () => {
     it('does not expose access token in any error messages', async () => {
       server.use(
-        http.get(`${TEST_BASE_URL}/api/v1/plant/search/`, () => {
+        http.get(`${TEST_BASE_URL}/api/v1/plant/search`, () => {
           return new HttpResponse('Unauthorized', { status: 401 });
         })
       );
@@ -490,7 +490,7 @@ describe('OpenPlantbookClient (ATP-IMP-022)', () => {
   describe('S. Authorization Error (HTTP 401 & 403 -> AUTH_ERROR)', () => {
     it('throws OpenPlantbookAuthorizationError with code AUTH_ERROR on HTTP 401', async () => {
       server.use(
-        http.get(`${TEST_BASE_URL}/api/v1/plant/search/`, () => {
+        http.get(`${TEST_BASE_URL}/api/v1/plant/search`, () => {
           return new HttpResponse(JSON.stringify({ detail: 'Invalid token.' }), {
             status: 401,
             headers: { 'Content-Type': 'application/json' },

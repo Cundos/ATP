@@ -63,7 +63,7 @@ export class OpenPlantbookClient implements IOpenPlantbookClient {
       };
     }
 
-    const url = new URL(`${this.baseUrl}/api/v1/plant/search/`);
+    const url = new URL(`${this.baseUrl}/api/v1/plant/search`);
     url.searchParams.set('alias', trimmedQuery);
 
     const data = await this.executeRequest<Record<string, unknown>>(url, 'search');

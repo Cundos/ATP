@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { parseBotanicalReferenceViewModel } from '../view-models/botanical-reference.vm';
 import { PlantReferenceEntity } from '@/core/domain/entities';
 
-describe('BotanicalReference ViewModel Parser (ATP-IMP-025)', () => {
+describe('BotanicalReference ViewModel Parser & Data Minimization (ATP-IMP-025)', () => {
   const baseReference: PlantReferenceEntity = {
     id: 'ref-uuid-001',
     provider: 'OPEN_PLANTBOOK',
@@ -29,7 +29,7 @@ describe('BotanicalReference ViewModel Parser (ATP-IMP-025)', () => {
       pruning: 'Retirar hojas amarillentas o dañadas desde la base.',
       fertilization: 'Abonar mensualmente en primavera y verano.',
     },
-    raw_data: { some_raw: 'payload' },
+    raw_data: { some_raw_secret: 'confidential_raw_payload' },
   };
 
   it('A. parses complete reference with all metrics and qualitative care', () => {
@@ -37,7 +37,6 @@ describe('BotanicalReference ViewModel Parser (ATP-IMP-025)', () => {
     expect(vm).not.toBeNull();
     expect(vm?.scientificName).toBe('Monstera deliciosa');
     expect(vm?.commonNamesFormatted).toBe('Costilla de Adán · Ceriman');
-    expect(vm?.source).toBe('Open Plantbook');
     expect(vm?.sourceProvenanceText).toContain('Fuente: Open Plantbook · consultado el 10/09/2026');
     expect(vm?.imageUrl).toBe('https://open.plantbook.io/images/monstera.jpg');
 
@@ -75,7 +74,6 @@ describe('BotanicalReference ViewModel Parser (ATP-IMP-025)', () => {
     const vm = parseBotanicalReferenceViewModel(minRef);
     expect(vm).not.toBeNull();
     expect(vm?.scientificName).toBe('Ficus elastica');
-    expect(vm?.commonNames).toBeNull();
     expect(vm?.commonNamesFormatted).toBeNull();
     expect(vm?.imageUrl).toBeNull();
     expect(vm?.hasMetrics).toBe(false);
@@ -146,7 +144,6 @@ describe('BotanicalReference ViewModel Parser (ATP-IMP-025)', () => {
     const vm = parseBotanicalReferenceViewModel(extraKeysRef);
     expect(vm?.metrics.temperature).toBe('18–24 °C');
     expect(vm?.metrics.light).toBeNull();
-    // raw_data or extra keys are never leaked into ViewModel
     expect(Object.keys(vm?.metrics || {})).toEqual([
       'temperature',
       'light',
@@ -221,7 +218,6 @@ describe('BotanicalReference ViewModel Parser (ATP-IMP-025)', () => {
       ...baseReference,
       common_names: null,
     });
-    expect(vmNull?.commonNames).toBeNull();
     expect(vmNull?.commonNamesFormatted).toBeNull();
 
     // 2. empty array
@@ -229,7 +225,6 @@ describe('BotanicalReference ViewModel Parser (ATP-IMP-025)', () => {
       ...baseReference,
       common_names: [],
     });
-    expect(vmEmpty?.commonNames).toBeNull();
     expect(vmEmpty?.commonNamesFormatted).toBeNull();
 
     // 3. array with blank strings
@@ -237,7 +232,6 @@ describe('BotanicalReference ViewModel Parser (ATP-IMP-025)', () => {
       ...baseReference,
       common_names: ['  ', ''],
     });
-    expect(vmBlanks?.commonNames).toBeNull();
     expect(vmBlanks?.commonNamesFormatted).toBeNull();
 
     // 4. populated list
@@ -261,5 +255,27 @@ describe('BotanicalReference ViewModel Parser (ATP-IMP-025)', () => {
   it('L. returns null when reference is null or undefined', () => {
     expect(parseBotanicalReferenceViewModel(null)).toBeNull();
     expect(parseBotanicalReferenceViewModel(undefined)).toBeNull();
+  });
+
+  it('M. Data Minimization & Prop Boundary: strictly certifies that the ViewModel excludes id, external_id, raw_data and raw reference_care', () => {
+    const vm = parseBotanicalReferenceViewModel(baseReference);
+    expect(vm).not.toBeNull();
+
+    const vmKeys = Object.keys(vm as object);
+
+    // Guaranteed absence of sensitive/internal fields
+    expect(vmKeys).not.toContain('id');
+    expect(vmKeys).not.toContain('external_id');
+    expect(vmKeys).not.toContain('raw_data');
+    expect(vmKeys).not.toContain('reference_care');
+    expect(vmKeys).not.toContain('provider');
+    expect(vmKeys).not.toContain('fetched_at');
+    expect(vmKeys).not.toContain('last_sync_at');
+
+    // Check JSON serialization contains zero leakage
+    const serialized = JSON.stringify(vm);
+    expect(serialized).not.toContain('ref-uuid-001');
+    expect(serialized).not.toContain('confidential_raw_payload');
+    expect(serialized).not.toContain('OPEN_PLANTBOOK');
   });
 });

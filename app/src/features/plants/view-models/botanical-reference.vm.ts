@@ -17,13 +17,8 @@ export interface BotanicalReferenceCareGuidelines {
 }
 
 export interface BotanicalReferenceViewModel {
-  id: string;
   scientificName: string;
-  commonNames: string[] | null;
   commonNamesFormatted: string | null;
-  source: string;
-  fetchedAt: Date | null;
-  fetchedAtFormatted: string | null;
   sourceProvenanceText: string;
   imageUrl: string | null;
   metrics: BotanicalReferenceMetrics;
@@ -88,7 +83,8 @@ function parseStringField(val: unknown): string | null {
 
 /**
  * Pure parser converting local PlantReferenceEntity snapshot into a safe,
- * presentation-ready BotanicalReferenceViewModel without exposing raw_data or internal IDs.
+ * presentation-ready BotanicalReferenceViewModel without exposing raw_data,
+ * raw reference_care, external IDs or internal database UUIDs.
  */
 export function parseBotanicalReferenceViewModel(
   reference: PlantReferenceEntity | null | undefined
@@ -104,43 +100,41 @@ export function parseBotanicalReferenceViewModel(
       : 'Especie botánica de referencia';
 
   // Parse common names
-  let commonNamesArray: string[] | null = null;
   let commonNamesFormatted: string | null = null;
-
   if (Array.isArray(reference.common_names)) {
     const validNames = reference.common_names
       .filter((n): n is string => typeof n === 'string' && n.trim().length > 0)
       .map((n) => n.trim());
     if (validNames.length > 0) {
-      commonNamesArray = validNames;
       commonNamesFormatted = validNames.join(' · ');
     }
   }
 
   // Parse provenance and timestamps
-  const source = reference.provider === 'OPEN_PLANTBOOK' ? 'Open Plantbook' : reference.provider || 'Proveedor botánico';
+  const source =
+    reference.provider === 'OPEN_PLANTBOOK'
+      ? 'Open Plantbook'
+      : reference.provider || 'Proveedor botánico';
   const timestamp = reference.last_sync_at || reference.fetched_at || null;
-  let fetchedAtDate: Date | null = null;
-  let fetchedAtFormatted: string | null = null;
   let sourceProvenanceText = `Fuente: ${source}`;
 
   if (timestamp) {
     const d = new Date(timestamp);
     if (!isNaN(d.getTime())) {
-      fetchedAtDate = d;
-      fetchedAtFormatted = new Intl.DateTimeFormat('es-AR', {
+      const formattedDate = new Intl.DateTimeFormat('es-AR', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
         timeZone: 'UTC',
       }).format(d);
-      sourceProvenanceText = `Fuente: ${source} · consultado el ${fetchedAtFormatted}`;
+      sourceProvenanceText = `Fuente: ${source} · consultado el ${formattedDate}`;
     }
   }
 
   // Parse image URL
   const imageUrl =
-    typeof reference.image_url === 'string' && reference.image_url.trim().length > 0
+    typeof reference.image_url === 'string' &&
+    reference.image_url.trim().length > 0
       ? reference.image_url.trim()
       : null;
 
@@ -188,13 +182,8 @@ export function parseBotanicalReferenceViewModel(
   );
 
   return {
-    id: reference.id,
     scientificName,
-    commonNames: commonNamesArray,
     commonNamesFormatted,
-    source,
-    fetchedAt: fetchedAtDate,
-    fetchedAtFormatted,
     sourceProvenanceText,
     imageUrl,
     metrics: {

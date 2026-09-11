@@ -4,6 +4,10 @@ import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BotanicalReferenceSection } from '../components/BotanicalReferenceSection';
+import {
+  parseBotanicalReferenceViewModel,
+  BotanicalReferenceViewModel,
+} from '../view-models/botanical-reference.vm';
 import { PlantReferenceEntity } from '@/core/domain/entities';
 
 describe('BotanicalReferenceSection Component (ATP-IMP-025)', () => {
@@ -36,8 +40,9 @@ describe('BotanicalReferenceSection Component (ATP-IMP-025)', () => {
     raw_data: { secret_internal_payload: 'super_confidential_raw_json' },
   };
 
-  it('A. renders botanical reference section when reference is provided', () => {
-    render(<BotanicalReferenceSection reference={mockReference} />);
+  it('A. renders botanical reference section when viewModel is provided', () => {
+    const vm = parseBotanicalReferenceViewModel(mockReference)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
 
     expect(
       screen.getByRole('heading', { name: /Conocimiento Botánico de Referencia/i })
@@ -46,45 +51,51 @@ describe('BotanicalReferenceSection Component (ATP-IMP-025)', () => {
     expect(screen.getByText('Costilla de Adán · Ceriman')).toBeInTheDocument();
   });
 
-  it('B. renders nothing if reference is null/undefined', () => {
+  it('B. renders nothing if viewModel is null/undefined', () => {
     const { container } = render(
-      <BotanicalReferenceSection reference={null as unknown as PlantReferenceEntity} />
+      <BotanicalReferenceSection viewModel={null as unknown as BotanicalReferenceViewModel} />
     );
     expect(container).toBeEmptyDOMElement();
   });
 
   it('C. renders temperature metric properly', () => {
-    render(<BotanicalReferenceSection reference={mockReference} />);
+    const vm = parseBotanicalReferenceViewModel(mockReference)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
     expect(screen.getByText(/Temperatura/i)).toBeInTheDocument();
     expect(screen.getByText('18–27 °C')).toBeInTheDocument();
   });
 
   it('D. renders light metric properly', () => {
-    render(<BotanicalReferenceSection reference={mockReference} />);
+    const vm = parseBotanicalReferenceViewModel(mockReference)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
     expect(screen.getByText(/Luminosidad/i)).toBeInTheDocument();
     expect(screen.getByText('1.500–3.000 lux')).toBeInTheDocument();
   });
 
   it('E. renders environmental humidity metric properly', () => {
-    render(<BotanicalReferenceSection reference={mockReference} />);
+    const vm = parseBotanicalReferenceViewModel(mockReference)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
     expect(screen.getByText(/Humedad Ambiente/i)).toBeInTheDocument();
     expect(screen.getByText('60–80%')).toBeInTheDocument();
   });
 
   it('F. renders soil moisture metric properly', () => {
-    render(<BotanicalReferenceSection reference={mockReference} />);
+    const vm = parseBotanicalReferenceViewModel(mockReference)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
     expect(screen.getByText(/Humedad de Suelo/i)).toBeInTheDocument();
     expect(screen.getByText('20–45%')).toBeInTheDocument();
   });
 
   it('G. renders soil EC metric properly', () => {
-    render(<BotanicalReferenceSection reference={mockReference} />);
+    const vm = parseBotanicalReferenceViewModel(mockReference)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
     expect(screen.getByText(/EC de Suelo/i)).toBeInTheDocument();
     expect(screen.getByText('400–1200')).toBeInTheDocument();
   });
 
   it('H. renders watering guideline', () => {
-    render(<BotanicalReferenceSection reference={mockReference} />);
+    const vm = parseBotanicalReferenceViewModel(mockReference)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
     expect(screen.getByText(/Riego Recomendado/i)).toBeInTheDocument();
     expect(
       screen.getByText('Regar cuando el sustrato superior esté seco.')
@@ -92,13 +103,15 @@ describe('BotanicalReferenceSection Component (ATP-IMP-025)', () => {
   });
 
   it('I. renders sunlight guideline', () => {
-    render(<BotanicalReferenceSection reference={mockReference} />);
+    const vm = parseBotanicalReferenceViewModel(mockReference)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
     expect(screen.getByText(/Exposición Solar/i)).toBeInTheDocument();
     expect(screen.getByText('Luz brillante indirecta.')).toBeInTheDocument();
   });
 
   it('J. renders soil guideline', () => {
-    render(<BotanicalReferenceSection reference={mockReference} />);
+    const vm = parseBotanicalReferenceViewModel(mockReference)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
     expect(screen.getByText(/Sustrato Sugerido/i)).toBeInTheDocument();
     expect(
       screen.getByText('Sustrato aireado rico en materia orgánica.')
@@ -106,7 +119,8 @@ describe('BotanicalReferenceSection Component (ATP-IMP-025)', () => {
   });
 
   it('K. renders pruning guideline', () => {
-    render(<BotanicalReferenceSection reference={mockReference} />);
+    const vm = parseBotanicalReferenceViewModel(mockReference)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
     expect(screen.getByText('Poda')).toBeInTheDocument();
     expect(
       screen.getByText('Poda de limpieza de hojas viejas.')
@@ -114,7 +128,8 @@ describe('BotanicalReferenceSection Component (ATP-IMP-025)', () => {
   });
 
   it('L. renders fertilization guideline', () => {
-    render(<BotanicalReferenceSection reference={mockReference} />);
+    const vm = parseBotanicalReferenceViewModel(mockReference)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
     expect(screen.getByText(/Fertilización/i)).toBeInTheDocument();
     expect(
       screen.getByText('Fertilizante foliar cada 15 días.')
@@ -126,11 +141,10 @@ describe('BotanicalReferenceSection Component (ATP-IMP-025)', () => {
       ...mockReference,
       reference_care: {
         min_temp: 20,
-        // all other metrics and guidelines null/missing
       },
     };
-
-    render(<BotanicalReferenceSection reference={partialRef} />);
+    const vm = parseBotanicalReferenceViewModel(partialRef)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
 
     // Temperature is rendered
     expect(screen.getByText(/Temperatura/i)).toBeInTheDocument();
@@ -147,7 +161,8 @@ describe('BotanicalReferenceSection Component (ATP-IMP-025)', () => {
   });
 
   it('N. never renders or leaks raw_data or internal UUID in the DOM', () => {
-    render(<BotanicalReferenceSection reference={mockReference} />);
+    const vm = parseBotanicalReferenceViewModel(mockReference)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
 
     expect(
       screen.queryByText(/super_confidential_raw_json/i)
@@ -156,15 +171,17 @@ describe('BotanicalReferenceSection Component (ATP-IMP-025)', () => {
   });
 
   it('O. renders source provenance clearly with date', () => {
-    render(<BotanicalReferenceSection reference={mockReference} />);
+    const vm = parseBotanicalReferenceViewModel(mockReference)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
 
     expect(
       screen.getByText(/Fuente: Open Plantbook · consultado el 10\/09\/2026/i)
     ).toBeInTheDocument();
   });
 
-  it('P. renders reference image with caption and fallback safely', () => {
-    render(<BotanicalReferenceSection reference={mockReference} />);
+  it('P. renders reference image with caption and fallback safely via ReferenceBotanicalImage', () => {
+    const vm = parseBotanicalReferenceViewModel(mockReference)!;
+    render(<BotanicalReferenceSection viewModel={vm} />);
 
     const img = screen.getByRole('img', {
       name: /Referencia botánica para Monstera deliciosa/i,

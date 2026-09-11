@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useState } from 'react';
+import React from 'react';
 import {
   BookOpen,
   Thermometer,
@@ -12,21 +10,22 @@ import {
   Sparkles,
   Layers,
 } from 'lucide-react';
-import { PlantReferenceEntity } from '@/core/domain/entities';
-import { parseBotanicalReferenceViewModel } from '../view-models/botanical-reference.vm';
+import { BotanicalReferenceViewModel } from '../view-models/botanical-reference.vm';
+import { ReferenceBotanicalImage } from './ReferenceBotanicalImage';
 import styles from './BotanicalReferenceSection.module.css';
 
 export interface BotanicalReferenceSectionProps {
-  reference: PlantReferenceEntity;
+  viewModel: BotanicalReferenceViewModel;
 }
 
+/**
+ * Server-safe Component rendering botanical reference knowledge.
+ * Receives strictly sanitized BotanicalReferenceViewModel (0 raw_data, 0 database UUIDs).
+ */
 export const BotanicalReferenceSection: React.FC<BotanicalReferenceSectionProps> = ({
-  reference,
+  viewModel,
 }) => {
-  const [imageError, setImageError] = useState(false);
-  const vm = parseBotanicalReferenceViewModel(reference);
-
-  if (!vm) {
+  if (!viewModel) {
     return null;
   }
 
@@ -41,82 +40,75 @@ export const BotanicalReferenceSection: React.FC<BotanicalReferenceSectionProps>
             <BookOpen size={18} aria-hidden="true" className={styles.headerIcon} />
             <span>Conocimiento Botánico de Referencia</span>
           </h2>
-          <span className={styles.provenanceBadge}>{vm.sourceProvenanceText}</span>
+          <span className={styles.provenanceBadge}>{viewModel.sourceProvenanceText}</span>
         </div>
       </div>
 
       {/* Reference Identity: Scientific Name, Common Names, Reference Image */}
       <div className={styles.referenceIdentity}>
         <div className={styles.identityText}>
-          <h3 className={styles.scientificName}>{vm.scientificName}</h3>
-          {vm.commonNamesFormatted && (
-            <p className={styles.commonNames}>{vm.commonNamesFormatted}</p>
+          <h3 className={styles.scientificName}>{viewModel.scientificName}</h3>
+          {viewModel.commonNamesFormatted && (
+            <p className={styles.commonNames}>{viewModel.commonNamesFormatted}</p>
           )}
         </div>
 
-        {vm.imageUrl && !imageError && (
-          <div className={styles.referenceImageWrapper}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={vm.imageUrl}
-              alt={`Referencia botánica para ${vm.scientificName}`}
-              className={styles.referenceImage}
-              onError={() => setImageError(true)}
-              loading="lazy"
-            />
-            <span className={styles.imageCaption}>Imagen de referencia botánica</span>
-          </div>
+        {viewModel.imageUrl && (
+          <ReferenceBotanicalImage
+            imageUrl={viewModel.imageUrl}
+            scientificName={viewModel.scientificName}
+          />
         )}
       </div>
 
       {/* Environmental Metrics */}
-      {vm.hasMetrics && (
+      {viewModel.hasMetrics && (
         <div className={styles.metricsContainer}>
           <h4 className={styles.subHeading}>Requerimientos Ambientales</h4>
           <dl className={styles.metricsGrid}>
-            {vm.metrics.temperature && (
+            {viewModel.metrics.temperature && (
               <div className={styles.metricCard}>
                 <dt className={styles.metricLabel}>
                   <Thermometer size={14} aria-hidden="true" className={styles.metricIcon} />
                   <span>Temperatura</span>
                 </dt>
-                <dd className={styles.metricValue}>{vm.metrics.temperature}</dd>
+                <dd className={styles.metricValue}>{viewModel.metrics.temperature}</dd>
               </div>
             )}
-            {vm.metrics.light && (
+            {viewModel.metrics.light && (
               <div className={styles.metricCard}>
                 <dt className={styles.metricLabel}>
                   <Sun size={14} aria-hidden="true" className={styles.metricIcon} />
                   <span>Luminosidad</span>
                 </dt>
-                <dd className={styles.metricValue}>{vm.metrics.light}</dd>
+                <dd className={styles.metricValue}>{viewModel.metrics.light}</dd>
               </div>
             )}
-            {vm.metrics.environmentalHumidity && (
+            {viewModel.metrics.environmentalHumidity && (
               <div className={styles.metricCard}>
                 <dt className={styles.metricLabel}>
                   <CloudRain size={14} aria-hidden="true" className={styles.metricIcon} />
                   <span>Humedad Ambiente</span>
                 </dt>
-                <dd className={styles.metricValue}>{vm.metrics.environmentalHumidity}</dd>
+                <dd className={styles.metricValue}>{viewModel.metrics.environmentalHumidity}</dd>
               </div>
             )}
-            {vm.metrics.soilMoisture && (
+            {viewModel.metrics.soilMoisture && (
               <div className={styles.metricCard}>
                 <dt className={styles.metricLabel}>
                   <Droplets size={14} aria-hidden="true" className={styles.metricIcon} />
                   <span>Humedad de Suelo</span>
                 </dt>
-                <dd className={styles.metricValue}>{vm.metrics.soilMoisture}</dd>
+                <dd className={styles.metricValue}>{viewModel.metrics.soilMoisture}</dd>
               </div>
             )}
-            {vm.metrics.soilEc && (
+            {viewModel.metrics.soilEc && (
               <div className={styles.metricCard}>
                 <dt className={styles.metricLabel}>
                   <Gauge size={14} aria-hidden="true" className={styles.metricIcon} />
                   <span>EC de Suelo</span>
                 </dt>
-                <dd className={styles.metricValue}>{vm.metrics.soilEc}</dd>
+                <dd className={styles.metricValue}>{viewModel.metrics.soilEc}</dd>
               </div>
             )}
           </dl>
@@ -124,53 +116,53 @@ export const BotanicalReferenceSection: React.FC<BotanicalReferenceSectionProps>
       )}
 
       {/* Qualitative Care Guidelines */}
-      {vm.hasCareGuidelines && (
+      {viewModel.hasCareGuidelines && (
         <div className={styles.guidelinesContainer}>
           <h4 className={styles.subHeading}>Guía Teórica de Cuidados</h4>
           <dl className={styles.guidelinesList}>
-            {vm.careGuidelines.watering && (
+            {viewModel.careGuidelines.watering && (
               <div className={styles.guidelineItem}>
                 <dt className={styles.guidelineTitle}>
                   <Droplets size={14} aria-hidden="true" className={styles.guidelineIcon} />
                   <span>Riego Recomendado</span>
                 </dt>
-                <dd className={styles.guidelineText}>{vm.careGuidelines.watering}</dd>
+                <dd className={styles.guidelineText}>{viewModel.careGuidelines.watering}</dd>
               </div>
             )}
-            {vm.careGuidelines.sunlight && (
+            {viewModel.careGuidelines.sunlight && (
               <div className={styles.guidelineItem}>
                 <dt className={styles.guidelineTitle}>
                   <Sun size={14} aria-hidden="true" className={styles.guidelineIcon} />
                   <span>Exposición Solar</span>
                 </dt>
-                <dd className={styles.guidelineText}>{vm.careGuidelines.sunlight}</dd>
+                <dd className={styles.guidelineText}>{viewModel.careGuidelines.sunlight}</dd>
               </div>
             )}
-            {vm.careGuidelines.soil && (
+            {viewModel.careGuidelines.soil && (
               <div className={styles.guidelineItem}>
                 <dt className={styles.guidelineTitle}>
                   <Layers size={14} aria-hidden="true" className={styles.guidelineIcon} />
                   <span>Sustrato Sugerido</span>
                 </dt>
-                <dd className={styles.guidelineText}>{vm.careGuidelines.soil}</dd>
+                <dd className={styles.guidelineText}>{viewModel.careGuidelines.soil}</dd>
               </div>
             )}
-            {vm.careGuidelines.pruning && (
+            {viewModel.careGuidelines.pruning && (
               <div className={styles.guidelineItem}>
                 <dt className={styles.guidelineTitle}>
                   <Scissors size={14} aria-hidden="true" className={styles.guidelineIcon} />
                   <span>Poda</span>
                 </dt>
-                <dd className={styles.guidelineText}>{vm.careGuidelines.pruning}</dd>
+                <dd className={styles.guidelineText}>{viewModel.careGuidelines.pruning}</dd>
               </div>
             )}
-            {vm.careGuidelines.fertilization && (
+            {viewModel.careGuidelines.fertilization && (
               <div className={styles.guidelineItem}>
                 <dt className={styles.guidelineTitle}>
                   <Sparkles size={14} aria-hidden="true" className={styles.guidelineIcon} />
                   <span>Fertilización</span>
                 </dt>
-                <dd className={styles.guidelineText}>{vm.careGuidelines.fertilization}</dd>
+                <dd className={styles.guidelineText}>{viewModel.careGuidelines.fertilization}</dd>
               </div>
             )}
           </dl>

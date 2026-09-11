@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { PrismaPlantRepository } from '@/infrastructure/db/repositories/PrismaPlantRepository';
 import { GetPlantUseCase } from '@/core/application/use-cases/GetPlantUseCase';
 import { PlantDetailView } from '@/features/plants/components';
+import { parseBotanicalReferenceViewModel } from '@/features/plants/view-models/botanical-reference.vm';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,9 +37,14 @@ export default async function PlantDetailPage({ params }: PlantDetailPageProps) 
     notFound();
   }
 
+  // Parse server-side to sanitize botanical reference ViewModel (zero raw_data / UUID leakage)
+  const botanicalReference = plant.reference
+    ? parseBotanicalReferenceViewModel(plant.reference)
+    : null;
+
   return (
     <section>
-      <PlantDetailView plant={plant} />
+      <PlantDetailView plant={plant} botanicalReference={botanicalReference} />
     </section>
   );
 }

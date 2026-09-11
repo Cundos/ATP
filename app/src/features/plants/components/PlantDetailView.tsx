@@ -23,17 +23,33 @@ import { HealthBadge, Button, Modal, Toast } from '@/components/ui';
 import { archivePlantAction } from '../actions';
 import { PlantThumbnail } from './PlantThumbnail';
 import { BotanicalReferenceSection } from './BotanicalReferenceSection';
+import {
+  BotanicalReferenceViewModel,
+  parseBotanicalReferenceViewModel,
+} from '../view-models/botanical-reference.vm';
 import styles from './PlantDetailView.module.css';
 
 export interface PlantDetailViewProps {
   plant: PlantEntity;
+  botanicalReference?: BotanicalReferenceViewModel | null;
 }
 
-export const PlantDetailView: React.FC<PlantDetailViewProps> = ({ plant }) => {
+export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
+  plant,
+  botanicalReference,
+}) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'error'; message: string } | null>(null);
+
+  // Sanitized botanical reference view model
+  const botanicalRefVm =
+    botanicalReference !== undefined
+      ? botanicalReference
+      : plant.reference
+        ? parseBotanicalReferenceViewModel(plant.reference)
+        : null;
 
   // Formateo de fecha de adquisición
   const formattedAcquisitionDate = plant.acquisition_date
@@ -253,8 +269,8 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({ plant }) => {
       </section>
 
       {/* Sección: Conocimiento Botánico de Referencia (ATP-IMP-025) */}
-      {plant.reference && (
-        <BotanicalReferenceSection reference={plant.reference} />
+      {botanicalRefVm && (
+        <BotanicalReferenceSection viewModel={botanicalRefVm} />
       )}
 
       {/* Sección: Observaciones y Notas */}

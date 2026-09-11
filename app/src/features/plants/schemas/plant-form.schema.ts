@@ -1,4 +1,4 @@
-﻿import { z } from 'zod';
+import { z } from 'zod';
 
 export const HealthStatusSchema = z.enum(['UNKNOWN', 'HEALTHY', 'ATTENTION', 'RECOVERY'], {
   message: 'El estado de salud no es válido.',
@@ -87,6 +87,18 @@ export const PlantFormInputSchema = z.object({
     .optional()
     .nullable()
     .transform((val) => (val && val.length > 0 ? val : null)),
+  selected_pid: z
+    .string()
+    .trim()
+    .max(200, 'El identificador botánico no puede superar los 200 caracteres.')
+    .optional()
+    .nullable()
+    .transform((val) => (val && val.length > 0 ? val.trim() : null)),
+  clear_reference: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => val === 'true' || val === '1'),
 });
 
 export type PlantFormRawInput = {
@@ -101,6 +113,9 @@ export type PlantFormRawInput = {
   substrate_info?: string | null;
   light_conditions?: string | null;
   watering_notes?: string | null;
+  selected_pid?: string | null;
+  clear_reference?: string | boolean | null;
 };
 
 export type PlantFormValidatedData = z.infer<typeof PlantFormInputSchema>;
+

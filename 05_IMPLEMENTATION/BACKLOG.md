@@ -463,7 +463,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 
 #### `ATP-IMP-024` — Búsqueda y Vinculación Asistida en Formulario de Alta (`SCR-004`)
 - **Objetivo:** Permitir al usuario buscar y vincular una especie dentro del flujo de creación/edición de planta.
-- **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M3`
+- **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M3` | **Estado:** `COMPLETADO`
 - **Dependencias:** `ATP-IMP-022`, `ATP-IMP-023`, `ATP-IMP-014`.
 - **Trazabilidad:** `FR-051` a `FR-055`, `US-014`, `US-015`, `SCR-004`, `FLOW-008`, `FLOW-009`.
 - **Criterios de Aceptación:**
@@ -472,7 +472,7 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Lista de resultados con nombre científico, nombres comunes y opción de seleccionar.
   - **No bloqueante:** opción clara para "Continuar sin referencia" o cancelar.
   - Si el servicio devuelve 429 o error de red, muestra aviso amigable sin bloquear el formulario de la planta (`FLOW-008`).
-- **Resultado:** Flujo de búsqueda asistida no bloqueante integrado en los formularios de ejemplar.
+- **Resultado:** Flujo de búsqueda asistida no bloqueante integrado en los formularios de ejemplar con `BotanicalReferencePicker` debounced (400ms), cancelación `AbortController`, preview de referencia botánica, autocompletado respetuoso y persistencia de snapshot local server-side.
 
 #### `ATP-IMP-025` — Visualización de Referencia Botánica en Ficha Individual (`SCR-003`)
 - **Objetivo:** Mostrar los requerimientos de la especie en la ficha de detalle del ejemplar.

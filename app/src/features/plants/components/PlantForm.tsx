@@ -23,6 +23,11 @@ import { PlantEntity, LocationEntity, HealthStatus } from '@/core/domain/entitie
 import { createPlantAction, updatePlantAction, PlantActionResult } from '../actions';
 import { PlantFormInputSchema } from '../schemas/plant-form.schema';
 import { PhotoUpload } from './PhotoUpload';
+import {
+  BotanicalReferencePicker,
+  BotanicalSearchResult,
+  SelectedBotanicalReference,
+} from './BotanicalReferencePicker';
 import styles from './PlantForm.module.css';
 
 export interface PlantFormProps {
@@ -40,6 +45,21 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
   const [scientificName, setScientificName] = useState(initialData?.scientific_name || '');
   const [cultivar, setCultivar] = useState(initialData?.cultivar || '');
   const [healthStatus, setHealthStatus] = useState<HealthStatus>(initialData?.health_status || 'UNKNOWN');
+
+  // Botanical reference state
+  const initialRef: SelectedBotanicalReference | null = initialData?.reference
+    ? {
+        pid: initialData.reference.external_id,
+        displayName: initialData.reference.scientific_name,
+        alias: initialData.reference.common_names?.join(', ') || null,
+        imageUrl: initialData.reference.image_url || null,
+        isExistingLocal: true,
+      }
+    : null;
+
+  const [selectedReference, setSelectedReference] = useState<SelectedBotanicalReference | null>(initialRef);
+  const [selectedPid, setSelectedPid] = useState<string | null>(initialData?.reference?.external_id || null);
+  const [clearReference, setClearReference] = useState(false);
   
   // Format acquisition date to YYYY-MM-DD for date input
   const initialAcquisitionDateStr = initialData?.acquisition_date
@@ -102,6 +122,34 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
     ? `/api/photos/view/${currentPrimaryPhoto.file_path.replace(/^\/+/, '')}`
     : null;
 
+  const handleSelectReference = (result: BotanicalSearchResult) => {
+    setSelectedReference({
+      pid: result.pid,
+      displayName: result.displayName,
+      alias: result.alias,
+      imageUrl: result.imageUrl,
+    });
+    setSelectedPid(result.pid);
+    setClearReference(false);
+
+    // Autocompletado asistido: solo si los campos están vacíos, no sobreescribir lo escrito por el usuario
+    if (!commonName.trim() && result.alias) {
+      const firstAlias = result.alias.split(',')[0]?.trim();
+      if (firstAlias) {
+        setCommonName(firstAlias);
+      }
+    }
+    if (!scientificName.trim() && result.displayName) {
+      setScientificName(result.displayName);
+    }
+  };
+
+  const handleClearReference = () => {
+    setSelectedReference(null);
+    setSelectedPid(null);
+    setClearReference(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setActionFeedback(null);
@@ -120,6 +168,8 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
       substrate_info: substrateInfo,
       light_conditions: lightConditions,
       watering_notes: wateringNotes,
+      selected_pid: selectedPid,
+      clear_reference: clearReference ? 'true' : null,
     };
 
     const clientValidation = PlantFormInputSchema.safeParse(rawPayload);
@@ -151,6 +201,13 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
     formData.append('substrate_info', substrateInfo);
     formData.append('light_conditions', lightConditions);
     formData.append('watering_notes', wateringNotes);
+
+    if (selectedPid && !clearReference) {
+      formData.append('selected_pid', selectedPid);
+    }
+    if (clearReference) {
+      formData.append('clear_reference', 'true');
+    }
 
     if (selectedPhoto) {
       formData.append('photo', selectedPhoto);
@@ -237,6 +294,14 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
         </div>
 
         <div className={styles.fieldsGrid}>
+          {/* Asistente de Búsqueda Botánica Open Plantbook */}
+          <BotanicalReferencePicker
+            selectedReference={selectedReference}
+            onSelectReference={handleSelectReference}
+            onClearReference={handleClearReference}
+            disabled={isPending}
+          />
+
           <Input
             id="common_name"
             name="common_name"

@@ -9,6 +9,7 @@ import { ArchivePlantUseCase } from '@/core/application/use-cases/ArchivePlantUs
 import { RestorePlantUseCase } from '@/core/application/use-cases/RestorePlantUseCase';
 import { PlantFormInputSchema, PlantFormRawInput } from './schemas/plant-form.schema';
 import { uploadAndRegisterPlantPhoto } from './server/photo-service';
+import { getOrCreatePlantReferenceUseCase } from '@/infrastructure/services/serviceContainer';
 
 export interface PlantActionResult {
   success: boolean;
@@ -20,7 +21,7 @@ export interface PlantActionResult {
 /**
  * SERVER ACTION: Alta de Planta (SCR-004)
  * Parsea FormData, valida con Zod, comprueba validez de Location ACTIVE,
- * ejecuta CreatePlantUseCase, procesa foto opcional y revalida los paths afectados.
+ * resuelve PlantReference opcional, ejecuta CreatePlantUseCase, procesa foto opcional y revalida los paths afectados.
  */
 export async function createPlantAction(
   _prevState: PlantActionResult | null,
@@ -39,6 +40,7 @@ export async function createPlantAction(
       substrate_info: (formData.get('substrate_info') as string) || '',
       light_conditions: (formData.get('light_conditions') as string) || '',
       watering_notes: (formData.get('watering_notes') as string) || '',
+      selected_pid: (formData.get('selected_pid') as string) || '',
     };
 
     // 1. Validación de esquema con Zod
@@ -75,7 +77,24 @@ export async function createPlantAction(
       }
     }
 
-    // 3. Ejecución del Caso de Uso de creación de Planta
+    // 3. Resolución opcional de Referencia Botánica (Open Plantbook snapshot)
+    let referenceId: string | null = null;
+    let referenceMessage = '';
+    if (validatedData.selected_pid) {
+      try {
+        const getOrCreatePlantReference = getOrCreatePlantReferenceUseCase();
+        const reference = await getOrCreatePlantReference.execute({
+          provider: 'OPEN_PLANTBOOK',
+          external_id: validatedData.selected_pid,
+        });
+        referenceId = reference.id;
+      } catch (refError) {
+        console.error('[createPlantAction] Error al resolver referencia botánica:', refError);
+        referenceMessage = ' (No pudimos vincular la referencia botánica; podés agregarla luego desde edición).';
+      }
+    }
+
+    // 4. Ejecución del Caso de Uso de creación de Planta
     const plantRepository = new PrismaPlantRepository();
     const createPlantUseCase = new CreatePlantUseCase(plantRepository);
 
@@ -86,6 +105,7 @@ export async function createPlantAction(
       health_status: validatedData.health_status,
       acquisition_date: validatedData.acquisition_date,
       location_id: validatedData.location_id,
+      reference_id: referenceId,
       notes: validatedData.notes,
       pot_info: validatedData.pot_info,
       substrate_info: validatedData.substrate_info,
@@ -93,7 +113,7 @@ export async function createPlantAction(
       watering_notes: validatedData.watering_notes,
     });
 
-    // 4. Procesamiento opcional de fotografía inicial
+    // 5. Procesamiento opcional de fotografía inicial
     const photoFile = formData.get('photo') as File | null;
     let photoMessage = '';
     if (photoFile && typeof photoFile === 'object' && 'size' in photoFile && photoFile.size > 0) {
@@ -112,7 +132,7 @@ export async function createPlantAction(
       }
     }
 
-    // 5. Revalidar cache de Next.js
+    // 6. Revalidar cache de Next.js
     revalidatePath('/');
     revalidatePath('/inventory');
     revalidatePath(`/plants/${createdPlant.permanent_code}`);
@@ -120,7 +140,7 @@ export async function createPlantAction(
     return {
       success: true,
       permanent_code: createdPlant.permanent_code,
-      message: `Planta registrada correctamente${photoMessage}`,
+      message: `Planta registrada correctamente${referenceMessage}${photoMessage}`,
     };
   } catch (error: unknown) {
     const err = error as { name?: string; message?: string };
@@ -171,6 +191,8 @@ export async function updatePlantAction(
       substrate_info: (formData.get('substrate_info') as string) || '',
       light_conditions: (formData.get('light_conditions') as string) || '',
       watering_notes: (formData.get('watering_notes') as string) || '',
+      selected_pid: (formData.get('selected_pid') as string) || '',
+      clear_reference: formData.get('clear_reference') as string | null,
     };
 
     // 1. Validación de esquema con Zod
@@ -207,7 +229,27 @@ export async function updatePlantAction(
       }
     }
 
-    // 3. Ejecución del Caso de Uso de actualización de Planta
+    // 3. Resolución opcional de Referencia Botánica (Open Plantbook snapshot)
+    let referenceId: string | null | undefined = undefined;
+    let referenceMessage = '';
+
+    if (validatedData.clear_reference) {
+      referenceId = null;
+    } else if (validatedData.selected_pid) {
+      try {
+        const getOrCreatePlantReference = getOrCreatePlantReferenceUseCase();
+        const reference = await getOrCreatePlantReference.execute({
+          provider: 'OPEN_PLANTBOOK',
+          external_id: validatedData.selected_pid,
+        });
+        referenceId = reference.id;
+      } catch (refError) {
+        console.error('[updatePlantAction] Error al resolver referencia botánica:', refError);
+        referenceMessage = ' (No pudimos actualizar la referencia botánica, se mantuvieron los datos actuales).';
+      }
+    }
+
+    // 4. Ejecución del Caso de Uso de actualización de Planta
     const plantRepository = new PrismaPlantRepository();
     const updatePlantUseCase = new UpdatePlantUseCase(plantRepository);
 
@@ -218,6 +260,7 @@ export async function updatePlantAction(
       health_status: validatedData.health_status,
       acquisition_date: validatedData.acquisition_date,
       location_id: validatedData.location_id,
+      reference_id: referenceId,
       notes: validatedData.notes,
       pot_info: validatedData.pot_info,
       substrate_info: validatedData.substrate_info,
@@ -254,7 +297,7 @@ export async function updatePlantAction(
     return {
       success: true,
       permanent_code: updatedPlant.permanent_code,
-      message: `Cambios guardados correctamente${photoMessage}`,
+      message: `Cambios guardados correctamente${referenceMessage}${photoMessage}`,
     };
   } catch (error: unknown) {
     const err = error as { name?: string; message?: string };

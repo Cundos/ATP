@@ -1,4 +1,5 @@
-﻿// @vitest-environment jsdom
+// @vitest-environment jsdom
+import '@testing-library/jest-dom';
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -282,5 +283,48 @@ describe('PlantForm Component (SCR-004 Alta y SCR-005 Edición)', () => {
       const errorMsg = screen.getByText(/el nombre común es obligatorio y no puede estar vacío/i);
       expect(errorMsg).toBeDefined();
     });
+  });
+
+  it('debe autocompletar nombre común y científico vacíos al seleccionar una referencia sin sobrescribir campos ya llenados', async () => {
+    render(<PlantForm mode="create" activeLocations={mockActiveLocations} />);
+
+    const commonNameInput = screen.getByLabelText(/nombre común/i) as HTMLInputElement;
+    const scientificInput = screen.getByLabelText(/nombre científico/i) as HTMLInputElement;
+
+    // Initially empty
+    expect(commonNameInput.value).toBe('');
+    expect(scientificInput.value).toBe('');
+
+    // Pre-fill common name manually
+    fireEvent.change(commonNameInput, { target: { value: 'Mi Costilla Favorita' } });
+
+    // Mock search API response
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        results: [
+          {
+            pid: 'monstera deliciosa',
+            displayName: 'Monstera deliciosa',
+            alias: 'Costilla de Adán, Ceriman',
+            imageUrl: 'https://open.plantbook.io/images/monstera.jpg',
+          },
+        ],
+      }),
+    });
+    global.fetch = mockFetch;
+
+    const searchInput = screen.getByLabelText(/buscar especie botánica/i);
+    fireEvent.change(searchInput, { target: { value: 'monstera' } });
+
+    const resultItem = await screen.findByText('Monstera deliciosa');
+    fireEvent.click(resultItem);
+
+    // common_name was already typed, so it MUST NOT be overwritten!
+    expect(commonNameInput.value).toBe('Mi Costilla Favorita');
+    // scientific_name was empty, so it SHOULD be auto-filled with displayName
+    expect(scientificInput.value).toBe('Monstera deliciosa');
+    // Botanical reference badge is shown
+    expect(screen.getByText('Referencia Botánica')).toBeInTheDocument();
   });
 });

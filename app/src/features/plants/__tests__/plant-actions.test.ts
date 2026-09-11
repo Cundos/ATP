@@ -328,5 +328,204 @@ describe('Plant Server Actions (ATP-IMP-014 / ATP-IMP-020)', () => {
       expect(result.success).toBe(false);
       expect(result.errors?.location_id).toContain('archivada');
     });
+
+    it('debe vincular una referencia botánica al editar pasando selected_pid', async () => {
+      const mockExistingPlant = {
+        id: 'plant-123',
+        permanent_code: 'AT-PL-001',
+        common_name: 'Gomero',
+        scientific_name: 'Ficus elastica',
+        cultivar: null,
+        health_status: 'HEALTHY' as const,
+        lifecycle_status: 'ACTIVE' as const,
+        acquisition_date: null,
+        location_id: null,
+        notes: null,
+        reference_id: null,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      const mockReference = {
+        id: 'ref-ficus-uuid',
+        provider: 'OPEN_PLANTBOOK',
+        external_id: 'ficus elastica',
+        scientific_name: 'Ficus elastica',
+        common_names: ['Gomero'],
+        reference_care: null,
+        image_url: null,
+        fetched_at: new Date(),
+        last_sync_at: new Date(),
+        raw_data: {},
+      };
+
+      vi.mocked(PrismaPlantRepository.prototype.findById).mockResolvedValue(mockExistingPlant);
+      vi.mocked(PrismaPlantRepository.prototype.update).mockResolvedValue({
+        ...mockExistingPlant,
+        reference_id: 'ref-ficus-uuid',
+      });
+
+      const { setPlantReferenceRepository } = await import('@/infrastructure/services/serviceContainer');
+      setPlantReferenceRepository({
+        findById: vi.fn(),
+        findByProviderAndExternalId: vi.fn().mockResolvedValue(mockReference),
+        create: vi.fn(),
+      });
+
+      const formData = new FormData();
+      formData.append('common_name', 'Gomero');
+      formData.append('selected_pid', 'ficus elastica');
+
+      const result = await updatePlantAction('plant-123', null, formData);
+
+      expect(result.success).toBe(true);
+      expect(PrismaPlantRepository.prototype.update).toHaveBeenCalledWith(
+        'plant-123',
+        expect.objectContaining({
+          reference_id: 'ref-ficus-uuid',
+        })
+      );
+    });
+
+    it('debe desvincular la referencia botánica estableciendo reference_id en null cuando clear_reference es true', async () => {
+      const mockExistingPlant = {
+        id: 'plant-123',
+        permanent_code: 'AT-PL-001',
+        common_name: 'Gomero',
+        scientific_name: 'Ficus elastica',
+        cultivar: null,
+        health_status: 'HEALTHY' as const,
+        lifecycle_status: 'ACTIVE' as const,
+        acquisition_date: null,
+        location_id: null,
+        notes: null,
+        reference_id: 'ref-old-uuid',
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      vi.mocked(PrismaPlantRepository.prototype.findById).mockResolvedValue(mockExistingPlant);
+      vi.mocked(PrismaPlantRepository.prototype.update).mockResolvedValue({
+        ...mockExistingPlant,
+        reference_id: null,
+      });
+
+      const formData = new FormData();
+      formData.append('common_name', 'Gomero');
+      formData.append('clear_reference', 'true');
+
+      const result = await updatePlantAction('plant-123', null, formData);
+
+      expect(result.success).toBe(true);
+      expect(PrismaPlantRepository.prototype.update).toHaveBeenCalledWith(
+        'plant-123',
+        expect.objectContaining({
+          reference_id: null,
+        })
+      );
+    });
+  });
+
+  describe('createPlantAction with Botanical Reference', () => {
+    it('crea la planta vinculando reference_id cuando se provee selected_pid', async () => {
+      const mockCreatedPlant = {
+        id: 'plant-monstera-uuid',
+        permanent_code: 'AT-PL-016',
+        common_name: 'Monstera',
+        scientific_name: 'Monstera deliciosa',
+        cultivar: null,
+        health_status: 'HEALTHY' as const,
+        lifecycle_status: 'ACTIVE' as const,
+        acquisition_date: null,
+        location_id: null,
+        notes: null,
+        reference_id: 'ref-monstera-uuid',
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      const mockReference = {
+        id: 'ref-monstera-uuid',
+        provider: 'OPEN_PLANTBOOK',
+        external_id: 'monstera deliciosa',
+        scientific_name: 'Monstera deliciosa',
+        common_names: ['Costilla de Adán'],
+        reference_care: null,
+        image_url: null,
+        fetched_at: new Date(),
+        last_sync_at: new Date(),
+        raw_data: {},
+      };
+
+      const { setPlantReferenceRepository } = await import('@/infrastructure/services/serviceContainer');
+      setPlantReferenceRepository({
+        findById: vi.fn(),
+        findByProviderAndExternalId: vi.fn().mockResolvedValue(mockReference),
+        create: vi.fn(),
+      });
+
+      vi.mocked(PrismaPlantRepository.prototype.getNextSequenceValue).mockResolvedValue(16);
+      vi.mocked(PrismaPlantRepository.prototype.create).mockResolvedValue(mockCreatedPlant);
+
+      const formData = new FormData();
+      formData.append('common_name', 'Monstera');
+      formData.append('scientific_name', 'Monstera deliciosa');
+      formData.append('selected_pid', 'monstera deliciosa');
+
+      const result = await createPlantAction(null, formData);
+
+      expect(result.success).toBe(true);
+      expect(PrismaPlantRepository.prototype.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          reference_id: 'ref-monstera-uuid',
+        })
+      );
+    });
+
+    it('continúa la creación de la planta con reference_id = null si la resolución de Open Plantbook falla', async () => {
+      const mockCreatedPlant = {
+        id: 'plant-fallback-uuid',
+        permanent_code: 'AT-PL-017',
+        common_name: 'Planta Resistente',
+        scientific_name: null,
+        cultivar: null,
+        health_status: 'HEALTHY' as const,
+        lifecycle_status: 'ACTIVE' as const,
+        acquisition_date: null,
+        location_id: null,
+        notes: null,
+        reference_id: null,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      const { setPlantReferenceRepository, setOpenPlantbookClient } = await import('@/infrastructure/services/serviceContainer');
+      setPlantReferenceRepository({
+        findById: vi.fn(),
+        findByProviderAndExternalId: vi.fn().mockResolvedValue(null),
+        create: vi.fn(),
+      });
+      setOpenPlantbookClient({
+        searchPlants: vi.fn(),
+        getPlantDetail: vi.fn().mockRejectedValue(new Error('Open Plantbook timeout')),
+      });
+
+      vi.mocked(PrismaPlantRepository.prototype.getNextSequenceValue).mockResolvedValue(17);
+      vi.mocked(PrismaPlantRepository.prototype.create).mockResolvedValue(mockCreatedPlant);
+
+      const formData = new FormData();
+      formData.append('common_name', 'Planta Resistente');
+      formData.append('selected_pid', 'failing-plant');
+
+      const result = await createPlantAction(null, formData);
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('No pudimos vincular la referencia botánica');
+      expect(PrismaPlantRepository.prototype.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          reference_id: null,
+        })
+      );
+    });
   });
 });

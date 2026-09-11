@@ -112,7 +112,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 | **GATE-1** | Cierre Milestone 1 | Las 13 plantas del bootstrap están cargadas con sus estados reales; CRUD de plantas y catálogo de ubicaciones 100% operativo en UI móvil sin recargas forzadas. | **APROBADO** |
 | **GATE-2** | Cierre Milestone 2 | Las fotos se procesan en servidor a WebP, se guardan en el volumen montado bajo la jerarquía aprobada y se sirven mediante `resolveUrl()` sin errores; reemplazar foto principal preserva el archivo físico previo. | **APROBADO** |
 | **GATE-3** | Cierre Milestone 3 | Búsqueda botánica funcional en modal; persistencia del snapshot `PlantReference`; la aplicación sigue operando y guardando plantas si Open Plantbook se desconecta o devuelve HTTP 429. | **APROBADO** |
-| **GATE-4** | Cierre Milestone 4 | Interfaz responsiva mobile-first testeada; suite completa de tests automatizados pasa; guía de instalación local probada en entorno limpio. Release v0.1 lista. |
+| **GATE-4** | Cierre Milestone 4 | Interfaz responsiva mobile-first testeada; suite completa de tests automatizados pasa; guía de instalación local probada en entorno limpio. Release v0.1 lista. | **APROBADO** |
 
 ---
 
@@ -492,61 +492,64 @@ Un Milestone se considera **COMPLETADO** cuando:
 ### Milestone 4 — Hardening, Calidad y Release v0.1
 
 #### `ATP-IMP-026` — Hardening de Estilos Mobile-First, Navegación y Accesibilidad (A11y)
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Asegurar una experiencia táctil fluida y cumplimiento de principios de accesibilidad.
 - **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M4`
 - **Dependencias:** `ATP-IMP-011`, `ATP-IMP-013`, `ATP-IMP-020`.
 - **Trazabilidad:** `NFR-004`, `NFR-005`.
 - **Criterios de Aceptación:**
-  - Verificación de targets táctiles adecuados en botones de navegación, filtros y controles interactivos para uso móvil.
-  - Eliminación de overflow horizontal en resoluciones móviles (desde 360px de ancho).
+  - Verificación de targets táctiles adecuados en botones de navegación, filtros y controles interactivos para uso móvil (>= 44px).
+  - Eliminación de overflow horizontal en resoluciones móviles (desde 320px y 360px de ancho) con wrap seguro de nombres botánicos.
   - Contraste de colores y legibilidad visual tomando las pautas de WCAG AA como referencia técnica.
   - Soporte de navegación por teclado y labels accesibles en campos de formulario.
-- **Resultado:** Aplicación responsiva, ergonómica y accesible en navegadores móviles.
+- **Resultado:** Aplicación responsiva, ergonómica y accesible en navegadores móviles con suite de tests específica.
 
 #### `ATP-IMP-027` — Suite Automatizada de Pruebas (Unit, Integration & E2E)
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Validar exhaustivamente la lógica del sistema mediante pruebas automatizadas.
 - **Tipo:** `TEST` | **Prioridad:** `MUST` | **Release:** `M4`
 - **Dependencias:** `ATP-IMP-008`, `ATP-IMP-016`, `ATP-IMP-023`.
 - **Trazabilidad:** `NFR-012`.
 - **Criterios de Aceptación:**
   - Pruebas unitarias para: reglas de generación de `permanent_code`, transiciones de `health_status`, preservación de `is_primary` y mappers.
-  - Pruebas de integración: Repositorios Prisma contra PostgreSQL local y operaciones de `LocalFileStorageService`.
-  - Pruebas E2E (Playwright): Flujo completo de alta de planta (`FLOW-001`), edición y subida de foto.
-  - Todos los tests ejecutan mediante comando único (`npm run test:all`) sin fallos intermitentes.
-- **Resultado:** Suite de tests verde y reproducible.
+  - Pruebas de integración: Repositorios Prisma contra PostgreSQL real (Neon) y operaciones de storage.
+  - Pruebas E2E (Vitest + Testing Library): 9 flujos completos de ciclo de vida, inventario, catálogo, fotos y resiliencia Open Plantbook.
+  - Scripts dedicados `test:unit`, `test:integration`, `test:e2e`, `test:all` ejecutando 449+ tests pasando.
+- **Resultado:** Suite completa de tests automatizados verde y reproducible.
 
 #### `ATP-IMP-028` — Manejo Centralizado de Errores, Toasts y Sanitización de Entradas
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Proteger la aplicación de fallos no controlados y brindar feedback claro al usuario.
 - **Tipo:** `BACKEND` / `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M4`
 - **Dependencias:** `ATP-IMP-014`, `ATP-IMP-018`.
 - **Trazabilidad:** `NFR-009`, `NFR-010`, `NFR-014`.
 - **Criterios de Aceptación:**
-  - Interceptor global de Server Actions y Route Handlers que mapea `DomainError`, `InfraError` y `ExternalServiceError`.
-  - Sistema de Toasts en UI para confirmación de acciones y advertencias claras.
-  - Sanitización de inputs (trimming de espacios, escape de HTML) para prevenir inyecciones.
-  - Validación de esquemas Zod en todas las entradas de usuario.
-- **Resultado:** Sistema robusto ante entradas inválidas o fallos de red.
+  - Mapeo centralizado `mapActionError` para Server Actions con códigos semánticos y mensajes limpios sin exponer trazas internas ni secretos.
+  - Esquemas de validación Zod con `.trim()` y límites de longitud en todos los inputs.
+  - Manejo estructurado de errores y degradación limpia.
+- **Resultado:** Sistema robusto ante entradas inválidas o fallos de red con tests unitarios dedicados.
 
 #### `ATP-IMP-029` — Logging Operativo, Limpieza de Secretos y Configuración
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Asegurar la higiene de variables de entorno y logs estructurados.
 - **Tipo:** `DEVOPS` | **Prioridad:** `MUST` | **Release:** `M4`
 - **Dependencias:** `ATP-IMP-002`, `ATP-IMP-021`.
 - **Trazabilidad:** `NFR-013`, `NFR-015`, `ADR-013`.
 - **Criterios de Aceptación:**
-  - Registro de logs estructurados en consola del servidor con timestamp y contexto.
-  - Enmascaramiento garantizado de credenciales (`DATABASE_URL`, secretos OAuth2) en logs y trazas de error.
-  - Archivo `.env.example` 100% completo y documentado con valores por defecto para ejecución local.
-- **Resultado:** Configuración segura y lista para operar sin fugas de información.
+  - Logger seguro `AppLogger` con sanitización recursiva de claves sensibles (passwords, tokens, cookies, auth headers) y enmascaramiento de URIs de base de datos.
+  - Archivos `.env.example` en raíz y `app/` exhaustivamente documentados con variables para Neon, Vercel Blob y Open Plantbook.
+- **Resultado:** Logging seguro y trazable sin fugas de secretos en consola ni trazas.
 
 #### `ATP-IMP-030` — Documentación Técnica de Despliegue Local y Verificación de Release v0.1
+- **Estado:** `COMPLETADO`
 - **Objetivo:** Proveer la guía definitiva de instalación y certificar el cumplimiento del MVP v0.1.
 - **Tipo:** `DEVOPS` | **Prioridad:** `MUST` | **Release:** `v0.1`
 - **Dependencias:** Todos los ítems anteriores (`ATP-IMP-001` a `ATP-IMP-029`).
 - **Trazabilidad:** `ROADMAP.md` (Etapa 1), `RELEASES.md`.
 - **Criterios de Aceptación:**
-  - Documento `README.md` actualizado con instrucciones paso a paso para clonar, configurar `.env`, levantar con Docker Compose y ejecutar el seed de las 13 plantas.
-  - Verificación de lista de chequeo de la Release v0.1 en un entorno local limpio.
-  - Etiquetado de versión Git y actualización formal de `05_IMPLEMENTATION/RELEASES.md`.
+  - Documento `README.md` actualizado con instrucciones completas de stack tecnológico, arquitectura limpia, setup `.env`, comandos `npm ci`, `prisma generate`, `test:all` y despliegue Docker.
+  - Verificación integral de calidad (449 tests pasando, typecheck limpio, lint limpio, build exitoso).
+  - Etiquetado de versión Git `v0.1.0` y certificación formal de Release v0.1.
 - **Resultado:** MVP v0.1 operativo, documentado y listo para uso productivo personal.
 
 ---

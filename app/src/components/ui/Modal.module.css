@@ -63,9 +63,9 @@
   border-radius: var(--radius-sm);
   color: var(--text-muted);
   cursor: pointer;
-  padding: 6px;
-  min-height: 36px;
-  min-width: 36px;
+  padding: 8px;
+  min-height: var(--touch-target-min, 44px);
+  min-width: var(--touch-target-min, 44px);
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 

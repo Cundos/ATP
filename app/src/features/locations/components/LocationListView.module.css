@@ -1,4 +1,4 @@
-﻿.container {
+.container {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -50,6 +50,12 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
+  min-height: var(--touch-target-min, 44px);
+}
+
+.filterTab:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 @media (min-width: 640px) {

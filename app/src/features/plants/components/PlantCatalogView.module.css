@@ -65,12 +65,19 @@
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 4px;
+  padding: 8px;
+  min-height: var(--touch-target-min, 44px);
+  min-width: var(--touch-target-min, 44px);
   border-radius: var(--radius-xs);
 }
 
 .clearSearchBtn:hover {
   color: var(--text-primary);
+}
+
+.clearSearchBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .sortWrapper {
@@ -94,7 +101,7 @@
   align-items: center;
   gap: 8px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-bottom: 6px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
@@ -107,7 +114,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 8px 14px;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
@@ -117,12 +124,17 @@
   color: var(--text-secondary);
   transition: all 0.15s ease;
   user-select: none;
-  min-height: 36px;
+  min-height: var(--touch-target-min, 44px);
 }
 
 .filterPill:hover {
   background-color: var(--bg-surface-hover);
   border-color: var(--border-focus);
+}
+
+.filterPill:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .filterPillActive {
@@ -175,6 +187,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .locationFilterLabel {
@@ -188,7 +201,7 @@
 }
 
 .locationSelect {
-  padding: 4px 10px;
+  padding: 8px 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-default);
   background-color: var(--bg-surface);
@@ -196,7 +209,7 @@
   font-size: 0.8125rem;
   outline: none;
   cursor: pointer;
-  min-height: 32px;
+  min-height: var(--touch-target-min, 44px);
 }
 
 .locationSelect:focus-visible {

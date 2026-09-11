@@ -77,6 +77,8 @@
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.3;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .scientificName {
@@ -84,12 +86,16 @@
   font-size: 0.875rem;
   font-style: italic;
   color: var(--text-secondary);
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .cultivar {
   margin: 0;
   font-size: 0.8125rem;
   color: var(--text-muted);
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .cultivarLabel {

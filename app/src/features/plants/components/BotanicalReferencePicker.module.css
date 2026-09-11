@@ -1,4 +1,4 @@
-﻿.container {
+.container {
   display: flex;
   flex-direction: column;
   gap: var(--space-3, 0.75rem);
@@ -167,12 +167,13 @@
 
 .clearQueryButton {
   position: absolute;
-  right: 0.75rem;
+  right: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  min-width: var(--touch-target-min, 44px);
+  min-height: var(--touch-target-min, 44px);
+  padding: 8px;
   background: transparent;
   border: none;
   color: var(--color-text-muted, #94a3b8);
@@ -183,6 +184,11 @@
 .clearQueryButton:hover {
   color: var(--color-text-primary, #0f172a);
   background: var(--color-surface-muted, #f1f5f9);
+}
+
+.clearQueryButton:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring, 0 0 0 3px rgba(45, 106, 79, 0.25));
 }
 
 .helperText {

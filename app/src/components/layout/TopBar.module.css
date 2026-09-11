@@ -111,7 +111,7 @@
   font-size: 0.9375rem;
   color: var(--text-primary);
   transition: background-color 0.12s ease;
-  min-height: 40px;
+  min-height: var(--touch-target-min, 44px);
 }
 
 .menuItem:hover {

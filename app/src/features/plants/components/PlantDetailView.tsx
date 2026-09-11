@@ -22,6 +22,7 @@ import { PlantEntity } from '@/core/domain/entities';
 import { HealthBadge, Button, Modal, Toast } from '@/components/ui';
 import { archivePlantAction } from '../actions';
 import { PlantThumbnail } from './PlantThumbnail';
+import { BotanicalReferenceSection } from './BotanicalReferenceSection';
 import styles from './PlantDetailView.module.css';
 
 export interface PlantDetailViewProps {
@@ -250,6 +251,11 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({ plant }) => {
           <p className={styles.emptyText}>Sin datos de cultivo</p>
         )}
       </section>
+
+      {/* Sección: Conocimiento Botánico de Referencia (ATP-IMP-025) */}
+      {plant.reference && (
+        <BotanicalReferenceSection reference={plant.reference} />
+      )}
 
       {/* Sección: Observaciones y Notas */}
       {plant.notes && (

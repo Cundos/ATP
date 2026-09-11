@@ -6,4 +6,5 @@ export * from './ArchivedPlantsView';
 export * from './PhotoUpload';
 export * from './PlantThumbnail';
 export * from './BotanicalReferencePicker';
+export * from './BotanicalReferenceSection';
 

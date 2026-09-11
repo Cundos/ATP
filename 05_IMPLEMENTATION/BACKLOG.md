@@ -476,7 +476,7 @@ Un Milestone se considera **COMPLETADO** cuando:
 
 #### `ATP-IMP-025` — Visualización de Referencia Botánica en Ficha Individual (`SCR-003`)
 - **Objetivo:** Mostrar los requerimientos de la especie en la ficha de detalle del ejemplar.
-- **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M3`
+- **Tipo:** `FRONTEND` | **Prioridad:** `MUST` | **Release:** `M3` | **Estado:** `COMPLETADO`
 - **Dependencias:** `ATP-IMP-023`, `ATP-IMP-013`.
 - **Trazabilidad:** `FR-055`, `US-015`, `SCR-003`.
 - **Criterios de Aceptación:**
@@ -485,7 +485,7 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Guía teórica de riego y sustrato provista por el proveedor.
   - Leyenda aclaratoria que indica el origen del dato ("Fuente: Open Plantbook") y su fecha de sincronización.
   - Si la planta no tiene referencia, la sección se oculta limpiamente sin generar espacios en blanco vacíos.
-- **Resultado:** Enriquecimiento visual contextual del ejemplar sin acoplar datos físicos.
+- **Resultado:** Enriquecimiento visual contextual del ejemplar sin acoplar datos físicos, alimentado de forma 100% Local-First a partir del snapshot persistido en PostgreSQL sin llamadas externas en runtime SSR/RSC.
 
 ---
 

@@ -10,6 +10,7 @@ import { RestorePlantUseCase } from '@/core/application/use-cases/RestorePlantUs
 import { PlantFormInputSchema, PlantFormRawInput } from './schemas/plant-form.schema';
 import { uploadAndRegisterPlantPhoto } from './server/photo-service';
 import { getOrCreatePlantReferenceUseCase } from '@/infrastructure/services/serviceContainer';
+import { mapActionError } from '@/core/application/error-handler';
 
 export interface PlantActionResult {
   success: boolean;
@@ -143,21 +144,7 @@ export async function createPlantAction(
       message: `Planta registrada correctamente${referenceMessage}${photoMessage}`,
     };
   } catch (error: unknown) {
-    const err = error as { name?: string; message?: string };
-    if (err?.name === 'PlantValidationError') {
-      return {
-        success: false,
-        errors: { common_name: err.message || 'Datos de planta inválidos.' },
-        message: err.message || 'Error de validación.',
-      };
-    }
-
-    // Log en servidor sin exponer stack ni credenciales al cliente
-    console.error('[createPlantAction] Error inesperado:', error);
-    return {
-      success: false,
-      message: 'Algo salió mal al guardar los cambios.',
-    };
+    return mapActionError(error, 'Algo salió mal al guardar los cambios.');
   }
 }
 
@@ -300,27 +287,7 @@ export async function updatePlantAction(
       message: `Cambios guardados correctamente${referenceMessage}${photoMessage}`,
     };
   } catch (error: unknown) {
-    const err = error as { name?: string; message?: string };
-    if (err?.name === 'PlantValidationError') {
-      return {
-        success: false,
-        errors: { common_name: err.message || 'Datos de planta inválidos.' },
-        message: err.message || 'Error de validación.',
-      };
-    }
-    if (err?.name === 'PlantNotFoundError') {
-      return {
-        success: false,
-        message: 'El ejemplar no fue encontrado.',
-      };
-    }
-
-    // Log en servidor sin exponer stack ni credenciales al cliente
-    console.error('[updatePlantAction] Error inesperado:', error);
-    return {
-      success: false,
-      message: 'Algo salió mal al guardar los cambios.',
-    };
+    return mapActionError(error, 'Algo salió mal al guardar los cambios.');
   }
 }
 
@@ -355,19 +322,7 @@ export async function archivePlantAction(plantId: string): Promise<PlantActionRe
       message: 'Ejemplar archivado correctamente',
     };
   } catch (error: unknown) {
-    const err = error as { name?: string; message?: string };
-    if (err?.name === 'PlantNotFoundError') {
-      return {
-        success: false,
-        message: 'El ejemplar no fue encontrado.',
-      };
-    }
-
-    console.error('[archivePlantAction] Error inesperado:', error);
-    return {
-      success: false,
-      message: 'No se pudo archivar el ejemplar.',
-    };
+    return mapActionError(error, 'No se pudo archivar el ejemplar.');
   }
 }
 
@@ -402,18 +357,6 @@ export async function restorePlantAction(plantId: string): Promise<PlantActionRe
       message: 'Ejemplar restaurado al inventario activo',
     };
   } catch (error: unknown) {
-    const err = error as { name?: string; message?: string };
-    if (err?.name === 'PlantNotFoundError') {
-      return {
-        success: false,
-        message: 'El ejemplar no fue encontrado.',
-      };
-    }
-
-    console.error('[restorePlantAction] Error inesperado:', error);
-    return {
-      success: false,
-      message: 'No se pudo restaurar el ejemplar.',
-    };
+    return mapActionError(error, 'No se pudo restaurar el ejemplar.');
   }
 }

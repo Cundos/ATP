@@ -7,6 +7,7 @@ import { RenameLocationUseCase } from '@/core/application/use-cases/RenameLocati
 import { ArchiveLocationUseCase } from '@/core/application/use-cases/ArchiveLocationUseCase';
 import { RestoreLocationUseCase } from '@/core/application/use-cases/RestoreLocationUseCase';
 import { LocationFormSchema } from './schemas/location-form.schema';
+import { mapActionError } from '@/core/application/error-handler';
 
 export interface LocationActionResult {
   success: boolean;
@@ -49,27 +50,7 @@ export async function createLocationAction(
       message: 'Ubicación creada correctamente',
     };
   } catch (error: unknown) {
-    const err = error as { name?: string; message?: string };
-    if (err?.name === 'LocationValidationError') {
-      return {
-        success: false,
-        errors: { name: err.message || 'Error de validación.' },
-        message: err.message || 'Error de validación.',
-      };
-    }
-    if (err?.name === 'LocationAlreadyExistsError') {
-      return {
-        success: false,
-        errors: { name: err.message || 'La ubicación ya existe.' },
-        message: err.message || 'La ubicación ya existe.',
-      };
-    }
-
-    console.error('[createLocationAction] Error inesperado:', error);
-    return {
-      success: false,
-      message: 'Algo salió mal al crear la ubicación.',
-    };
+    return mapActionError(error, 'Algo salió mal al crear la ubicación.');
   }
 }
 
@@ -118,33 +99,7 @@ export async function renameLocationAction(
       message: 'Ubicación actualizada correctamente',
     };
   } catch (error: unknown) {
-    const err = error as { name?: string; message?: string };
-    if (err?.name === 'LocationValidationError') {
-      return {
-        success: false,
-        errors: { name: err.message || 'Error de validación.' },
-        message: err.message || 'Error de validación.',
-      };
-    }
-    if (err?.name === 'LocationAlreadyExistsError') {
-      return {
-        success: false,
-        errors: { name: err.message || 'La ubicación ya existe.' },
-        message: err.message || 'La ubicación ya existe.',
-      };
-    }
-    if (err?.name === 'LocationNotFoundError') {
-      return {
-        success: false,
-        message: 'La ubicación no fue encontrada.',
-      };
-    }
-
-    console.error('[renameLocationAction] Error inesperado:', error);
-    return {
-      success: false,
-      message: 'Algo salió mal al actualizar la ubicación.',
-    };
+    return mapActionError(error, 'Algo salió mal al actualizar la ubicación.');
   }
 }
 
@@ -174,19 +129,7 @@ export async function archiveLocationAction(locationId: string): Promise<Locatio
       message: 'Ubicación archivada correctamente',
     };
   } catch (error: unknown) {
-    const err = error as { name?: string; message?: string };
-    if (err?.name === 'LocationNotFoundError') {
-      return {
-        success: false,
-        message: 'La ubicación a archivar no fue encontrada.',
-      };
-    }
-
-    console.error('[archiveLocationAction] Error inesperado:', error);
-    return {
-      success: false,
-      message: 'Algo salió mal al archivar la ubicación.',
-    };
+    return mapActionError(error, 'Algo salió mal al archivar la ubicación.');
   }
 }
 
@@ -216,25 +159,6 @@ export async function restoreLocationAction(locationId: string): Promise<Locatio
       message: 'Ubicación restaurada correctamente',
     };
   } catch (error: unknown) {
-    const err = error as { name?: string; message?: string };
-    if (err?.name === 'LocationAlreadyExistsError') {
-      return {
-        success: false,
-        errors: { name: err.message || 'Ya existe una ubicación activa con ese nombre.' },
-        message: err.message || 'Ya existe una ubicación activa con ese nombre.',
-      };
-    }
-    if (err?.name === 'LocationNotFoundError') {
-      return {
-        success: false,
-        message: 'La ubicación a restaurar no fue encontrada.',
-      };
-    }
-
-    console.error('[restoreLocationAction] Error inesperado:', error);
-    return {
-      success: false,
-      message: 'Algo salió mal al restaurar la ubicación.',
-    };
+    return mapActionError(error, 'Algo salió mal al restaurar la ubicación.');
   }
 }

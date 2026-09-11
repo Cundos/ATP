@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 // Core entities and types
-import { PlantEntity, LocationEntity, PhotoEntity, HealthStatus, LifecycleStatus } from '@/core/domain/entities';
+import { PlantEntity, LocationEntity, PhotoEntity, HealthStatus, LifecycleStatus, PlantReferenceEntity } from '@/core/domain/entities';
 
 // Views
 import { DashboardView } from '@/features/dashboard/components/DashboardView';
@@ -53,6 +53,39 @@ describe('Release v0.1 Automated E2E Flows (ATP-IMP-027)', () => {
       },
     ];
 
+    const mockPhoto: PhotoEntity = {
+      id: 'photo-001',
+      plant_id: 'plant-001',
+      file_path: 'photos/AT-PL-001/019.webp',
+      file_name: 'ficus.webp',
+      mime_type: 'image/webp',
+      file_size: 1024,
+      is_primary: true,
+      captured_at: new Date('2026-09-01'),
+      created_at: new Date('2026-09-01'),
+    };
+
+    const mockReference: PlantReferenceEntity = {
+      id: 'ref-001',
+      provider: 'OPEN_PLANTBOOK',
+      external_id: 'monstera deliciosa',
+      scientific_name: 'Monstera deliciosa Liebm.',
+      common_names: ['Monstera', 'Costilla de Adán'],
+      image_url: 'https://open.plantbook.io/images/monstera.jpg',
+      reference_care: {
+        min_light_lux: 1000,
+        max_light_lux: 2500,
+        min_temp_c: 15,
+        max_temp_c: 30,
+        min_env_humid: 60,
+        max_env_humid: 80,
+        watering: 'Regar cuando el sustrato seque.',
+      },
+      raw_data: {},
+      fetched_at: new Date('2026-09-01'),
+      last_sync_at: new Date('2026-09-01'),
+    };
+
     testPlants = [
       {
         id: 'plant-001',
@@ -69,13 +102,7 @@ describe('Release v0.1 Automated E2E Flows (ATP-IMP-027)', () => {
         reference_id: null,
         created_at: new Date('2026-09-01'),
         updated_at: new Date('2026-09-01'),
-        primary_photo: {
-          id: 'photo-001',
-          plant_id: 'plant-001',
-          storage_key: 'photos/AT-PL-001/019.webp',
-          is_primary: true,
-          created_at: new Date('2026-09-01'),
-        } as PhotoEntity,
+        photos: [mockPhoto],
       },
       {
         id: 'plant-002',
@@ -90,25 +117,7 @@ describe('Release v0.1 Automated E2E Flows (ATP-IMP-027)', () => {
         location: testLocations[0],
         notes: 'Hojas con bordes secos.',
         reference_id: 'ref-001',
-        reference: {
-          id: 'ref-001',
-          provider: 'OPEN_PLANTBOOK',
-          external_id: 'monstera deliciosa',
-          scientific_name: 'Monstera deliciosa Liebm.',
-          common_names: ['Monstera', 'Costilla de Adán'],
-          image_url: 'https://open.plantbook.io/images/monstera.jpg',
-          min_light_lux: 1000,
-          max_light_lux: 2500,
-          min_temp_c: 15,
-          max_temp_c: 30,
-          min_env_humid: 60,
-          max_env_humid: 80,
-          reference_care: { watering: 'Regar cuando el sustrato seque.' },
-          raw_data: {},
-          last_synced_at: new Date('2026-09-01'),
-          created_at: new Date('2026-09-01'),
-          updated_at: new Date('2026-09-01'),
-        },
+        reference: mockReference,
         created_at: new Date('2026-09-01'),
         updated_at: new Date('2026-09-01'),
       },
@@ -220,7 +229,8 @@ describe('Release v0.1 Automated E2E Flows (ATP-IMP-027)', () => {
     global.fetch = mockFetch;
 
     const handleSelect = vi.fn();
-    render(<BotanicalReferencePicker onSelectReference={handleSelect} />);
+    const handleClear = vi.fn();
+    render(<BotanicalReferencePicker onSelectReference={handleSelect} onClearReference={handleClear} />);
 
     const searchInput = screen.getByLabelText(/buscar especie botánica/i);
     fireEvent.change(searchInput, { target: { value: 'sansevieria' } });

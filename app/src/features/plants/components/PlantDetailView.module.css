@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .backLink {
@@ -30,22 +30,23 @@
 .headerCard {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   padding: 20px;
-  box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
 
 .photoBannerWrapper {
   width: 100%;
-  margin-bottom: 16px;
-  border-radius: var(--radius-sm);
+  margin-bottom: 18px;
+  border-radius: var(--radius-xs);
   overflow: hidden;
+  background-color: var(--bg-surface-sunken);
+  border: 1px solid var(--border-subtle);
 }
 
 .heroThumbnail {
   width: 100%;
-  max-height: 280px;
+  max-height: 380px;
 }
 
 .headerTop {
@@ -53,48 +54,40 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .permanentCodeBadge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.9375rem;
-  font-weight: 700;
+  gap: 5px;
+  font-family: var(--font-mono-family);
+  font-size: 0.8125rem;
+  font-weight: 500;
   color: var(--brand-primary);
-  background-color: var(--brand-primary-subtle);
-  padding: 4px 10px;
-  border-radius: var(--radius-xs);
   letter-spacing: 0.04em;
 }
 
 .commonName {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-family: var(--font-serif-family);
+  font-size: 1.875rem;
+  font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 6px 0;
-  line-height: 1.25;
-  word-break: break-word;
-  overflow-wrap: anywhere;
+  line-height: 1.2;
 }
 
 .scientificName {
-  font-size: 1rem;
+  font-size: 1.0625rem;
   font-style: italic;
   color: var(--text-secondary);
   margin: 0 0 8px 0;
-  word-break: break-word;
-  overflow-wrap: anywhere;
 }
 
 .cultivarBadge {
   margin: 0;
   font-size: 0.875rem;
   color: var(--text-muted);
-  word-break: break-word;
-  overflow-wrap: anywhere;
 }
 
 .cultivarLabel {
@@ -107,13 +100,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
 .actionBtnLink {
   flex: 1;
   text-decoration: none;
-  min-width: 120px;
 }
 
 .archiveBtn {
@@ -129,17 +120,15 @@
 .sectionCard {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 16px 20px;
-  box-shadow: var(--shadow-sm);
-  overflow-wrap: anywhere;
+  border-radius: var(--radius-sm);
+  padding: 18px 20px;
 }
 
 .sectionTitle {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 14px 0;
@@ -150,7 +139,7 @@
 .dataList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   margin: 0;
   padding: 0;
 }
@@ -159,6 +148,13 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.dataRow:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 @media (min-width: 640px) {
@@ -173,6 +169,8 @@
   font-size: 0.8125rem;
   color: var(--text-muted);
   margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .termWithIcon {
@@ -186,8 +184,6 @@
   color: var(--text-primary);
   margin: 0;
   font-weight: 500;
-  word-break: break-word;
-  overflow-wrap: anywhere;
 }
 
 .emptyText {
@@ -206,7 +202,7 @@
 
 .locationName {
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-primary);
   margin: 0;
 }
@@ -227,7 +223,7 @@
 /* Notes */
 .notesText {
   font-size: 0.9375rem;
-  line-height: 1.5;
+  line-height: 1.6;
   color: var(--text-primary);
   margin: 0;
   white-space: pre-wrap;
@@ -241,7 +237,7 @@
   padding: 12px 14px;
   background-color: var(--health-attention-bg);
   border: 1px solid var(--health-attention-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
   color: var(--health-attention-text);
 }
 
@@ -256,3 +252,4 @@
   font-size: 0.875rem;
   line-height: 1.4;
 }
+

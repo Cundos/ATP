@@ -3,16 +3,7 @@ import Link from 'next/link';
 import {
   Sprout,
   Plus,
-  Trees,
-  CheckCircle2,
-  AlertTriangle,
-  HeartPulse,
-  HelpCircle,
-  MapPin,
-  Archive,
   ArrowRight,
-  ShieldCheck,
-  AlertCircle,
 } from 'lucide-react';
 import { PlantEntity } from '@/core/domain/entities';
 import { Button, EmptyState, HealthBadge } from '@/components/ui';
@@ -70,49 +61,33 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ plants }) => {
       <div className={styles.welcomeSection}>
         <h1 className={styles.title}>Mi Jardín Botánico</h1>
         <p className={styles.subtitle}>
-          Monitoreo panorámico y estado general de tu colección botánica.
+          {total === 1 ? '1 ejemplar en cultivo' : `${total} ejemplares en cultivo`}
         </p>
       </div>
 
       {/* Mensaje Contextual de Síntesis */}
-      <div
-        className={`${styles.summaryBanner} ${
-          requiringAttentionCount > 0 ? styles.bannerWarning : styles.bannerSuccess
-        }`}
-        role="status"
-        aria-live="polite"
-      >
-        <div className={styles.bannerIcon} aria-hidden="true">
-          {requiringAttentionCount > 0 ? (
-            <AlertCircle size={20} />
-          ) : (
-            <ShieldCheck size={20} />
-          )}
-        </div>
-        <div className={styles.bannerContent}>
-          <p className={styles.bannerTitle}>
-            {requiringAttentionCount > 0
-              ? `${requiringAttentionCount} ${
-                  requiringAttentionCount === 1 ? 'ejemplar requiere' : 'ejemplares requieren'
-                } seguimiento`
-              : 'Colección sin alertas activas'}
-          </p>
-          <p className={styles.bannerSubtitle}>
-            {requiringAttentionCount > 0
-              ? `${counts.attention} en atención y ${counts.recovery} en recuperación.`
-              : 'Todos tus ejemplares evaluados se encuentran en estado saludable.'}
-          </p>
-        </div>
+      <div className={styles.summaryBanner} role="status" aria-live="polite">
+        <p className={styles.bannerTitle}>
+          {requiringAttentionCount > 0
+            ? `${requiringAttentionCount} ${
+                requiringAttentionCount === 1 ? 'ejemplar requiere' : 'ejemplares requieren'
+              } seguimiento`
+            : 'Colección sin alertas activas'}
+        </p>
+        <p className={styles.bannerSubtitle}>
+          {requiringAttentionCount > 0
+            ? `${counts.attention} en atención y ${counts.recovery} en recuperación.`
+            : 'Todos tus ejemplares evaluados se encuentran en estado saludable.'}
+        </p>
       </div>
 
       {/* Métricas Principales */}
-      <section aria-label="Métricas de la colección">
+      <section className={styles.metricsSection} aria-label="Métricas de la colección">
         <div className={styles.totalRow}>
           <DashboardMetricCard
             label="Total Colección Activa"
             value={total}
             href="/inventory"
-            icon={<Trees size={18} />}
             isPrimary={true}
           />
         </div>
@@ -122,28 +97,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ plants }) => {
             label="Saludables"
             value={counts.healthy}
             href="/inventory?health=HEALTHY"
-            icon={<CheckCircle2 size={16} />}
             healthStatus="HEALTHY"
           />
           <DashboardMetricCard
             label="Atención"
             value={counts.attention}
             href="/inventory?health=ATTENTION"
-            icon={<AlertTriangle size={16} />}
             healthStatus="ATTENTION"
           />
           <DashboardMetricCard
             label="Recuperación"
             value={counts.recovery}
             href="/inventory?health=RECOVERY"
-            icon={<HeartPulse size={16} />}
             healthStatus="RECOVERY"
           />
           <DashboardMetricCard
             label="Sin evaluar"
             value={counts.unknown}
             href="/inventory?health=UNKNOWN"
-            icon={<HelpCircle size={16} />}
             healthStatus="UNKNOWN"
           />
         </div>
@@ -155,7 +126,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ plants }) => {
           <div className={styles.sectionHeaderRow}>
             <h2 className={styles.sectionTitle}>Requieren Seguimiento</h2>
             <Link href="/inventory?health=ATTENTION" className={styles.seeAllLink}>
-              Ver inventario
+              Ver inventario →
             </Link>
           </div>
           <div className={styles.attentionGrid}>
@@ -202,9 +173,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ plants }) => {
         <h2 className={styles.sectionTitle}>Accesos Rápidos</h2>
         <div className={styles.quickNavGrid}>
           <Link href="/inventory" className={styles.quickNavLink}>
-            <div className={styles.quickNavIcon}>
-              <Trees size={18} />
-            </div>
             <div className={styles.quickNavText}>
               <span className={styles.quickNavTitle}>Inventario Completo</span>
               <span className={styles.quickNavDesc}>Ver y filtrar los {total} ejemplares</span>
@@ -213,9 +181,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ plants }) => {
           </Link>
 
           <Link href="/locations" className={styles.quickNavLink}>
-            <div className={styles.quickNavIcon}>
-              <MapPin size={18} />
-            </div>
             <div className={styles.quickNavText}>
               <span className={styles.quickNavTitle}>Ubicaciones</span>
               <span className={styles.quickNavDesc}>Administrar espacios físicos</span>
@@ -224,9 +189,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ plants }) => {
           </Link>
 
           <Link href="/plants/archived" className={styles.quickNavLink}>
-            <div className={styles.quickNavIcon}>
-              <Archive size={18} />
-            </div>
             <div className={styles.quickNavText}>
               <span className={styles.quickNavTitle}>Plantas Archivadas</span>
               <span className={styles.quickNavDesc}>Historial de bajas</span>

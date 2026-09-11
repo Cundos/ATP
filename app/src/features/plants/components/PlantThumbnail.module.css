@@ -17,13 +17,13 @@
 .md {
   width: 72px;
   height: 72px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
 }
 
 .lg {
   width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: var(--radius-md);
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-sm);
 }
 
 .image {
@@ -40,10 +40,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--bg-surface-sunken) 0%, var(--brand-primary-subtle) 100%);
+  background-color: var(--bg-surface-sunken);
   color: var(--brand-primary);
 }
 
 .placeholderIcon {
-  opacity: 0.85;
+  opacity: 0.6;
 }
+

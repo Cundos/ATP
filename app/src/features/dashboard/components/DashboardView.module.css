@@ -1,19 +1,21 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
 
 .welcomeSection {
-  margin-bottom: -8px;
+  margin-bottom: -4px;
 }
 
 .title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-family: var(--font-serif-family);
+  font-size: 2rem;
+  font-weight: 500;
   margin: 0 0 6px 0;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
 .subtitle {
@@ -23,71 +25,47 @@
   line-height: 1.4;
 }
 
-/* Summary Banner */
+/* Inline Editorial Summary Banner */
 .summaryBanner {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
-}
-
-.bannerWarning {
-  background-color: var(--health-attention-bg);
-  border-color: var(--health-attention-border);
-  color: var(--health-attention-text);
-}
-
-.bannerWarning .bannerIcon {
-  color: var(--health-attention-dot);
-}
-
-.bannerSuccess {
-  background-color: var(--health-healthy-bg);
-  border-color: var(--health-healthy-border);
-  color: var(--health-healthy-text);
-}
-
-.bannerSuccess .bannerIcon {
-  color: var(--health-healthy-dot);
-}
-
-.bannerIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-
-.bannerContent {
-  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--brand-primary);
+  border-radius: var(--radius-xs);
 }
 
 .bannerTitle {
-  margin: 0 0 2px 0;
+  font-size: 0.875rem;
   font-weight: 600;
-  font-size: 0.9375rem;
-  line-height: 1.3;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 .bannerSubtitle {
-  margin: 0;
   font-size: 0.8125rem;
-  opacity: 0.9;
-  line-height: 1.35;
+  color: var(--text-secondary);
+  margin: 0;
 }
 
-/* Metrics */
+
+/* Metrics Section */
+.metricsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .totalRow {
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .healthGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 10px;
 }
 
 @media (min-width: 640px) {
@@ -100,30 +78,41 @@
 .attentionSection {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .sectionHeaderRow {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
+}
+
+.sectionTitle {
+  font-family: var(--font-serif-family);
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin: 0;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .seeAllLink {
   font-size: 0.8125rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--brand-primary);
   text-decoration: none;
+  transition: color 0.15s ease;
 }
 
 .seeAllLink:hover {
   text-decoration: underline;
+  color: var(--brand-primary-hover);
 }
 
 .attentionGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 10px;
+  gap: 8px;
 }
 
 @media (min-width: 640px) {
@@ -136,20 +125,18 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   text-decoration: none;
   color: inherit;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .attentionCard:hover {
-  transform: translateY(-1px);
   border-color: var(--border-default);
-  box-shadow: var(--shadow-md);
+  background-color: var(--bg-surface-hover);
 }
 
 .attentionCard:focus-visible {
@@ -177,10 +164,10 @@
 }
 
 .attentionCode {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--brand-primary);
+  font-family: var(--font-mono-family);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--text-muted);
 }
 
 .attentionName {
@@ -209,63 +196,33 @@
   gap: 12px;
 }
 
-.sectionTitle {
-  font-size: 1.0625rem;
-  font-weight: 600;
-  margin: 0;
-  color: var(--text-primary);
-}
-
 .quickNavGrid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-@media (min-width: 640px) {
-  .quickNavGrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
+  border-top: 1px solid var(--border-subtle);
 }
 
 .quickNavLink {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  padding: 12px 14px;
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
   text-decoration: none;
   color: inherit;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: color 0.15s ease;
   min-height: var(--touch-target-min);
 }
 
 .quickNavLink:hover {
-  transform: translateY(-1px);
-  border-color: var(--border-default);
-  box-shadow: var(--shadow-md);
+  color: var(--brand-primary);
 }
 
 .quickNavLink:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
-}
-
-.quickNavIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  background-color: var(--bg-surface-subtle);
-  color: var(--brand-primary);
-  flex-shrink: 0;
 }
 
 .quickNavText {
@@ -276,23 +233,23 @@
 }
 
 .quickNavTitle {
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.9375rem;
+  font-weight: 500;
   color: var(--text-primary);
 }
 
 .quickNavDesc {
-  font-size: 0.75rem;
-  color: var(--text-muted);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
 }
 
 .quickNavArrow {
   color: var(--text-muted);
   flex-shrink: 0;
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, color 0.15s ease;
 }
 
 .quickNavLink:hover .quickNavArrow {
-  transform: translateX(2px);
+  transform: translateX(3px);
   color: var(--brand-primary);
 }

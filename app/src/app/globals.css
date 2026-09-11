@@ -4,137 +4,140 @@
    ========================================================================== */
 
 :root {
-  /* Paleta Base & Superficies (Modo Claro Cálido / Botánico) */
-  --bg-app: #f8faf8;
-  --bg-surface: #ffffff;
-  --bg-surface-elevated: #ffffff;
-  --bg-surface-subtle: #f0f4f1;
-  --bg-surface-hover: #e8eee9;
+  /* Tipografía */
+  --font-serif-family: var(--font-serif), 'Lora', Georgia, serif;
+  --font-sans-family: var(--font-sans), 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono-family: var(--font-mono), 'JetBrains Mono', monospace;
 
-  /* Texto */
-  --text-primary: #192b1d;
-  --text-secondary: #4a6350;
-  --text-muted: #738a78;
-  --text-inverse: #ffffff;
+  /* Paleta Base & Superficies (Herbario Contemporáneo: Marfil / Pergamino / Blanco Cálido) */
+  --bg-app: #FAF8F5;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #FFFFFF;
+  --bg-surface-subtle: #F3EFEA;
+  --bg-surface-hover: #ECE7DF;
 
-  /* Bordes & Separadores */
-  --border-subtle: #e2e8e3;
-  --border-default: #cbd8ce;
-  --border-focus: #2d6a4f;
+  /* Texto (Carbón Profundo + Gris Cálido Terroso) */
+  --text-primary: #1C1E1B;
+  --text-secondary: #686B65;
+  --text-muted: #93968F;
+  --text-inverse: #FFFFFF;
 
-  /* Colores de Marca & Acento */
-  --brand-primary: #2d6a4f;
-  --brand-primary-hover: #21513c;
-  --brand-primary-active: #183c2c;
-  --brand-primary-subtle: #eaf3ed;
-  --brand-primary-contrast: #ffffff;
+  /* Bordes & Separadores (Líneas Finas Sutiles) */
+  --border-subtle: #EBE7DF;
+  --border-default: #DCD7CC;
+  --border-focus: #364734;
 
-  /* Colores Semánticos de Salud (HealthStatus) */
-  /* HEALTHY: Verde calmado y legible */
-  --health-healthy-bg: #e8f5e9;
-  --health-healthy-text: #1b5e20;
-  --health-healthy-border: #a5d6a7;
-  --health-healthy-dot: #2e7d32;
+  /* Colores de Marca & Acento (Oliva Profundo + Salvia) */
+  --brand-primary: #364734;
+  --brand-primary-hover: #263325;
+  --brand-primary-active: #1A2419;
+  --brand-primary-subtle: #EDF1EC;
+  --brand-primary-contrast: #FFFFFF;
+  --brand-secondary: #7A8E77;
 
-  /* ATTENTION: Ámbar / mostaza equilibrado con contraste AA */
-  --health-attention-bg: #fff8e1;
-  --health-attention-text: #7f5100;
-  --health-attention-border: #ffe082;
-  --health-attention-dot: #b78103;
+  /* Colores Semánticos de Salud (Marcadores Sutiles y WCAG AA) */
+  --health-healthy-bg: #EDF3ED;
+  --health-healthy-text: #2F482F;
+  --health-healthy-border: #D5E2D5;
+  --health-healthy-dot: #446E43;
 
-  /* RECOVERY: Naranja / terracota suave no alarmista */
-  --health-recovery-bg: #fbe9e7;
-  --health-recovery-text: #a83212;
-  --health-recovery-border: #ffccbc;
-  --health-recovery-dot: #d84315;
+  --health-attention-bg: #F9F3EA;
+  --health-attention-text: #945922;
+  --health-attention-border: #EADBCA;
+  --health-attention-dot: #BA742E;
 
-  /* UNKNOWN: Gris neutral atenuado */
-  --health-unknown-bg: #eceff1;
-  --health-unknown-text: #455a64;
-  --health-unknown-border: #cfd8dc;
-  --health-unknown-dot: #78909c;
+  --health-recovery-bg: #F9ECE8;
+  --health-recovery-text: #8C3B2B;
+  --health-recovery-border: #E8CBC4;
+  --health-recovery-dot: #B04D38;
+
+  --health-unknown-bg: #F3EFEA;
+  --health-unknown-text: #686B65;
+  --health-unknown-border: #EBE7DF;
+  --health-unknown-dot: #93968F;
 
   /* Estados de Error / Danger */
-  --danger-bg: #fee2e2;
-  --danger-text: #991b1b;
-  --danger-border: #fca5a5;
+  --danger-bg: #FBEBE8;
+  --danger-text: #8C3B2B;
+  --danger-border: #E8CBC4;
 
   /* Radios */
-  --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
   --radius-full: 9999px;
 
-  /* Sombras */
-  --shadow-sm: 0 1px 2px rgba(25, 43, 29, 0.05);
-  --shadow-md: 0 4px 12px rgba(25, 43, 29, 0.08);
-  --shadow-lg: 0 10px 24px rgba(25, 43, 29, 0.12);
-  --shadow-bottom-nav: 0 -2px 10px rgba(25, 43, 29, 0.06);
+  /* Sombras (Mínimas / Casi imperceptibles) */
+  --shadow-sm: 0 1px 2px rgba(28, 30, 27, 0.03);
+  --shadow-md: 0 2px 6px rgba(28, 30, 27, 0.05);
+  --shadow-lg: 0 4px 12px rgba(28, 30, 27, 0.06);
+  --shadow-bottom-nav: 0 -1px 4px rgba(28, 30, 27, 0.04);
 
   /* Espaciados & Dimensiones */
   --topbar-height: 56px;
   --bottomnav-height: 64px;
-  --content-max-width: 640px; /* Ancho óptimo lectura mobile/tablet */
+  --content-max-width: 680px; /* Ancho editorial óptimo */
   --touch-target-min: 44px;
 
   /* Focus Ring */
-  --focus-ring: 0 0 0 3px rgba(45, 106, 79, 0.25);
+  --focus-ring: 0 0 0 2px rgba(54, 71, 52, 0.35);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-app: #121813;
-    --bg-surface: #1a221c;
-    --bg-surface-elevated: #232d26;
-    --bg-surface-subtle: #202a22;
-    --bg-surface-hover: #29362c;
+    --bg-app: #151815;
+    --bg-surface: #1E221E;
+    --bg-surface-elevated: #242924;
+    --bg-surface-subtle: #232823;
+    --bg-surface-hover: #2B322B;
 
-    --text-primary: #e6efe8;
-    --text-secondary: #a9beae;
-    --text-muted: #748979;
-    --text-inverse: #121813;
+    --text-primary: #EAE6DF;
+    --text-secondary: #A8A59C;
+    --text-muted: #7E7C74;
+    --text-inverse: #151815;
 
-    --border-subtle: #2a382d;
-    --border-default: #394d3e;
-    --border-focus: #52b788;
+    --border-subtle: #2E342E;
+    --border-default: #3E463E;
+    --border-focus: #7A8E77;
 
-    --brand-primary: #52b788;
-    --brand-primary-hover: #74c69d;
-    --brand-primary-active: #95d5b2;
-    --brand-primary-subtle: #192e22;
-    --brand-primary-contrast: #101c13;
+    --brand-primary: #7A8E77;
+    --brand-primary-hover: #8EA28B;
+    --brand-primary-active: #A2B69F;
+    --brand-primary-subtle: #232A23;
+    --brand-primary-contrast: #151815;
+    --brand-secondary: #5A6D57;
 
-    --health-healthy-bg: #142a17;
-    --health-healthy-text: #81c784;
-    --health-healthy-border: #2e5934;
-    --health-healthy-dot: #66bb6a;
+    --health-healthy-bg: #1B291D;
+    --health-healthy-text: #96CCA0;
+    --health-healthy-border: #2A422D;
+    --health-healthy-dot: #74B57F;
 
-    --health-attention-bg: #2d240e;
-    --health-attention-text: #ffd54f;
-    --health-attention-border: #5d4a1b;
-    --health-attention-dot: #ffca28;
+    --health-attention-bg: #2C2213;
+    --health-attention-text: #E5B26E;
+    --health-attention-border: #4D391A;
+    --health-attention-dot: #D69F54;
 
-    --health-recovery-bg: #2d1814;
-    --health-recovery-text: #ff8a65;
-    --health-recovery-border: #5d2e24;
-    --health-recovery-dot: #ff7043;
+    --health-recovery-bg: #2C1814;
+    --health-recovery-text: #E59585;
+    --health-recovery-border: #4D261E;
+    --health-recovery-dot: #D67A66;
 
-    --health-unknown-bg: #1e262a;
-    --health-unknown-text: #b0bec5;
-    --health-unknown-border: #37474f;
-    --health-unknown-dot: #90a4ae;
+    --health-unknown-bg: #232823;
+    --health-unknown-text: #A8A59C;
+    --health-unknown-border: #2E342E;
+    --health-unknown-dot: #7E7C74;
 
-    --danger-bg: #3a1515;
-    --danger-text: #fca5a5;
-    --danger-border: #6b2121;
+    --danger-bg: #331A1A;
+    --danger-text: #FCA5A5;
+    --danger-border: #5A2A2A;
 
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-    --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.6);
-    --shadow-bottom-nav: 0 -2px 10px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --shadow-bottom-nav: 0 -1px 4px rgba(0, 0, 0, 0.3);
 
-    --focus-ring: 0 0 0 3px rgba(82, 183, 136, 0.35);
+    --focus-ring: 0 0 0 2px rgba(122, 142, 119, 0.45);
   }
 }
 
@@ -151,7 +154,7 @@ body {
   overflow-x: hidden;
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans-family);
   background-color: var(--bg-app);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;

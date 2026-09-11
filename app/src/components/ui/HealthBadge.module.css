@@ -5,36 +5,36 @@
   border-radius: var(--radius-full);
   font-weight: 500;
   white-space: nowrap;
-  border: 1px solid transparent;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface-elevated);
   line-height: 1;
 }
 
 .sm {
-  padding: 3px 8px;
+  padding: 2px 7px;
   font-size: 0.75rem;
 }
 
 .md {
-  padding: 5px 10px;
+  padding: 3px 9px;
   font-size: 0.8125rem;
 }
 
 .dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .label {
   display: inline;
+  color: var(--text-secondary);
 }
 
 /* HEALTHY */
 .healthy {
-  background-color: var(--health-healthy-bg);
-  color: var(--health-healthy-text);
-  border-color: var(--health-healthy-border);
+  border-color: rgba(54, 71, 52, 0.2);
 }
 
 .healthy .dot {
@@ -43,9 +43,7 @@
 
 /* ATTENTION */
 .attention {
-  background-color: var(--health-attention-bg);
-  color: var(--health-attention-text);
-  border-color: var(--health-attention-border);
+  border-color: rgba(148, 89, 34, 0.25);
 }
 
 .attention .dot {
@@ -54,9 +52,7 @@
 
 /* RECOVERY */
 .recovery {
-  background-color: var(--health-recovery-bg);
-  color: var(--health-recovery-text);
-  border-color: var(--health-recovery-border);
+  border-color: rgba(140, 59, 43, 0.25);
 }
 
 .recovery .dot {
@@ -65,11 +61,10 @@
 
 /* UNKNOWN */
 .unknown {
-  background-color: var(--health-unknown-bg);
-  color: var(--health-unknown-text);
-  border-color: var(--health-unknown-border);
+  border-color: var(--border-subtle);
 }
 
 .unknown .dot {
   background-color: var(--health-unknown-dot);
 }
+

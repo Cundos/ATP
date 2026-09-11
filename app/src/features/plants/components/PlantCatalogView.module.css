@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .searchSortBar {
@@ -24,12 +24,12 @@
 .searchInputContainer {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   min-height: var(--touch-target-min);
-  padding: 0 12px;
+  padding: 0 14px;
   background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -49,7 +49,7 @@
   background: transparent;
   color: var(--text-primary);
   font-size: 0.9375rem;
-  padding: 8px 0;
+  padding: 10px 0;
   outline: none;
 }
 
@@ -65,19 +65,12 @@
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 8px;
-  min-height: var(--touch-target-min, 44px);
-  min-width: var(--touch-target-min, 44px);
+  padding: 4px;
   border-radius: var(--radius-xs);
 }
 
 .clearSearchBtn:hover {
   color: var(--text-primary);
-}
-
-.clearSearchBtn:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
 }
 
 .sortWrapper {
@@ -101,22 +94,22 @@
   align-items: center;
   gap: 8px;
   overflow-x: auto;
-  padding-bottom: 6px;
+  padding-bottom: 4px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
 
 .healthFiltersRow::-webkit-scrollbar {
-  height: 4px;
+  height: 3px;
 }
 
 .filterPill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 6px 12px;
   background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-full);
   cursor: pointer;
   white-space: nowrap;
@@ -124,24 +117,19 @@
   color: var(--text-secondary);
   transition: all 0.15s ease;
   user-select: none;
-  min-height: var(--touch-target-min, 44px);
+  min-height: 34px;
 }
 
 .filterPill:hover {
-  background-color: var(--bg-surface-hover);
-  border-color: var(--border-focus);
-}
-
-.filterPill:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+  border-color: var(--border-default);
+  color: var(--text-primary);
 }
 
 .filterPillActive {
   background-color: var(--brand-primary-subtle);
   border-color: var(--brand-primary);
   color: var(--brand-primary);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .pillLabel {
@@ -154,10 +142,11 @@
   justify-content: center;
   padding: 1px 6px;
   border-radius: var(--radius-full);
-  background-color: var(--bg-surface-subtle);
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  background-color: var(--bg-surface-sunken);
+  font-family: var(--font-mono-family);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--text-muted);
 }
 
 .filterPillActive .pillCount {
@@ -170,9 +159,9 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 10px 14px;
-  background-color: var(--bg-surface-subtle);
-  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  background-color: transparent;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 @media (min-width: 640px) {
@@ -187,13 +176,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 .locationFilterLabel {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-secondary);
@@ -201,15 +189,15 @@
 }
 
 .locationSelect {
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-default);
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-subtle);
   background-color: var(--bg-surface);
   color: var(--text-primary);
   font-size: 0.8125rem;
   outline: none;
   cursor: pointer;
-  min-height: var(--touch-target-min, 44px);
+  min-height: 32px;
 }
 
 .locationSelect:focus-visible {
@@ -222,6 +210,11 @@
   color: var(--text-muted);
 }
 
+.resultsCount strong {
+  color: var(--text-primary);
+  font-family: var(--font-mono-family);
+}
+
 /* Main Grid */
 .grid {
   display: grid;
@@ -232,7 +225,14 @@
 @media (min-width: 640px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
   }
 }
 
@@ -247,3 +247,4 @@
   white-space: nowrap;
   border-width: 0;
 }
+

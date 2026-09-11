@@ -2,21 +2,19 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 16px;
+  padding: 14px 16px;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-sm);
   text-decoration: none;
   color: inherit;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-  min-height: 100px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  min-height: 88px;
 }
 
 .card:hover {
-  transform: translateY(-2px);
   border-color: var(--border-default);
-  box-shadow: var(--shadow-md);
+  background-color: var(--bg-surface-hover);
 }
 
 .card:focus-visible {
@@ -29,7 +27,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .labelGroup {
@@ -42,6 +40,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .label {
@@ -54,11 +56,13 @@
   display: inline-flex;
   align-items: center;
   color: var(--text-muted);
-  transition: transform 0.15s ease;
+  opacity: 0.6;
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 .card:hover .arrowIcon {
   transform: translateX(2px);
+  opacity: 1;
   color: var(--text-primary);
 }
 
@@ -69,8 +73,9 @@
 }
 
 .value {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-family: var(--font-serif-family);
+  font-size: 1.625rem;
+  font-weight: 600;
   line-height: 1;
   color: var(--text-primary);
 }
@@ -80,10 +85,10 @@
   color: var(--text-muted);
 }
 
-/* Primary Highlight (Total) */
+/* Primary Highlight (Total Colección) */
 .primary {
-  background-color: var(--brand-primary-subtle);
-  border-color: rgba(45, 106, 79, 0.2);
+  background-color: var(--bg-surface);
+  border-color: var(--border-default);
 }
 
 .primary .value {
@@ -91,39 +96,23 @@
 }
 
 .primary .label {
-  color: var(--brand-primary);
+  color: var(--text-primary);
   font-weight: 600;
 }
 
 /* Health status variants */
-.healthy {
-  border-left: 4px solid var(--health-healthy-dot);
-}
-
 .healthy .icon {
-  color: var(--health-healthy-dot);
-}
-
-.attention {
-  border-left: 4px solid var(--health-attention-dot);
+  background-color: var(--health-healthy-dot);
 }
 
 .attention .icon {
-  color: var(--health-attention-dot);
-}
-
-.recovery {
-  border-left: 4px solid var(--health-recovery-dot);
+  background-color: var(--health-attention-dot);
 }
 
 .recovery .icon {
-  color: var(--health-recovery-dot);
-}
-
-.unknown {
-  border-left: 4px solid var(--health-unknown-dot);
+  background-color: var(--health-recovery-dot);
 }
 
 .unknown .icon {
-  color: var(--health-unknown-dot);
+  background-color: var(--health-unknown-dot);
 }

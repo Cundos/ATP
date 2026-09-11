@@ -585,7 +585,43 @@ Un Milestone se considera **COMPLETADO** cuando:
 
 ---
 
-## 7. Backlog POST-MVP (Fuera del Alcance de v0.1)
+---
+
+## 7. Actividades Operativas y Post-Release (Post-v0.1)
+
+#### `ATP-POST-001` — Enriquecimiento Botánico Inicial Asistido de las 13 Plantas Base
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Enriquecer las 13 plantas del catálogo base asociando snapshots canónicos de `PlantReference` desde Open Plantbook sin alterar identidades físicas, atributos propios ni la secuencia de códigos.
+- **Tipo:** `DATA_OPERATION` | **Prioridad:** `HIGH`
+- **Resultado Verificado en Base de Datos (Neon PostgreSQL):**
+  - **PlantReference:** 7 registros canónicos persistidos con requerimientos ambientales (temperatura, luz, humedad, EC) y guías de cultivo.
+  - **Plants:** 13 ejemplares del catálogo base.
+  - **Plants con `reference_id` != null:** 13/13 (100% vinculadas).
+  - **Secuencia `plant_code_seq`:** `last_value = 13`, `is_called = true`.
+  - **Próxima alta generada:** `AT-PL-014`.
+- **Mapping Verificado:**
+  - `AT-PL-001` (Gomero) $\rightarrow$ `ficus elastica` (*Ficus elastica*)
+  - `AT-PL-002` (Pothos N'Joy) $\rightarrow$ `epipremnum aureum` (*Epipremnum aureum*)
+  - `AT-PL-003` (Monstera adansonii) $\rightarrow$ `monstera friedrichsthalii` (*Monstera friedrichsthalii*)
+  - `AT-PL-004` (Pothos común) $\rightarrow$ `epipremnum aureum` (*Epipremnum aureum*)
+  - `AT-PL-005` (Philodendron Pink Princess) $\rightarrow$ `philodendron erubescens` (*Philodendron erubescens*)
+  - `AT-PL-006` (Philodendron hederaceum) $\rightarrow$ `philodendron hederaceum` (*Philodendron hederaceum*)
+  - `AT-PL-007` (Zamioculca) $\rightarrow$ `zamioculcas zamiifolia` (*Zamioculcas zamiifolia*)
+  - `AT-PL-008` (Pothos Marble Queen) $\rightarrow$ `epipremnum aureum` (*Epipremnum aureum*)
+  - `AT-PL-009` (Pothos Marble Queen) $\rightarrow$ `epipremnum aureum` (*Epipremnum aureum*)
+  - `AT-PL-010` (Golden Pothos) $\rightarrow$ `epipremnum aureum` (*Epipremnum aureum*)
+  - `AT-PL-011` (Zamioculca) $\rightarrow$ `zamioculcas zamiifolia` (*Zamioculcas zamiifolia*)
+  - `AT-PL-012` (Pothos verde/común) $\rightarrow$ `epipremnum aureum` (*Epipremnum aureum*)
+  - `AT-PL-013` (Croton) $\rightarrow$ `codiaeum variegatum` (*Codiaeum variegatum*)
+- **Aclaraciones Operativas y Trazabilidad:**
+  - La vinculación de datos se ejecutó **directamente contra Neon PostgreSQL** mediante sesión asistida interactiva.
+  - El commit `d229970` **NO es el commit de vinculación de DB**; dicho commit corresponde al fix del endpoint `/api/v1/plant/search` de Open Plantbook y configuración de credenciales OAuth2.
+  - Los scripts utilizados para la descarga y vinculación fueron **herramientas operativas temporales** y no forman parte del runtime de la aplicación.
+  - Los campos intrínsecos de cada ejemplar (`common_name`, `scientific_name`, `cultivar`, `health_status`, `notes`, `acquisition_date`, `location_id`) no sufrieron modificaciones.
+
+---
+
+## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)
 
 Las siguientes funcionalidades forman parte de las Etapas 2 a 6 del Roadmap (`00_PROJECT/ROADMAP.md`) y **no deben implementarse en el MVP v0.1**:
 
@@ -595,3 +631,4 @@ Las siguientes funcionalidades forman parte de las Etapas 2 a 6 del Roadmap (`00
 - **Etapa 5 (Motor de Cuidados):** Algoritmos y reglas de recomendación proactiva de riego, alertas de estrés hídrico y calendarios estacionales asistidos.
 - **Etapa 6 (IA y Visión):** Diagnóstico fitosanitario asistido por visión computacional, comparación temporal de crecimiento (timelapse) y agentes de IA botánicos.
 - **Infraestructura Avanzada:** Autenticación multi-usuario con roles, soporte PWA offline-first total con IndexedDB en navegador, y migración a Object Storage S3 en la nube.
+

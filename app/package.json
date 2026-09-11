@@ -8,6 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "test:unit": "vitest run --exclude \"**/db/**\" --exclude \"**/storage/**\" --exclude \"**/e2e/**\"",
+    "test:integration": "vitest run src/infrastructure/db/__tests__ src/infrastructure/storage/__tests__",
+    "test:e2e": "vitest run src/e2e/__tests__",
+    "test:all": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "db:seed": "prisma db seed"
@@ -27,6 +31,7 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^24",

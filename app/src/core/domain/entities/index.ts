@@ -2,6 +2,10 @@
 export type HealthStatus = 'UNKNOWN' | 'HEALTHY' | 'ATTENTION' | 'RECOVERY';
 export type LifecycleStatus = 'ACTIVE' | 'ARCHIVED';
 
+// Constantes y Tipos de Proveedores Botánicos
+export const OPEN_PLANTBOOK_PROVIDER = 'OPEN_PLANTBOOK' as const;
+export type BotanicalReferenceProvider = typeof OPEN_PLANTBOOK_PROVIDER | string;
+
 // Entidad pura: Location
 export interface LocationEntity {
   id: string;

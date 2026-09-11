@@ -1,7 +1,9 @@
+import { IPlantReferenceMapper } from '../../core/domain/services/IPlantReferenceMapper';
 import { OpenPlantbookDetailResponse } from '../../core/domain/services/IOpenPlantbookClient';
 import { CreatePlantReferencePersistenceDTO } from '../../core/domain/repositories';
+import { OPEN_PLANTBOOK_PROVIDER } from '../../core/domain/entities';
 
-export const OPEN_PLANTBOOK_PROVIDER = 'OPEN_PLANTBOOK' as const;
+export { OPEN_PLANTBOOK_PROVIDER };
 
 /**
  * OpenPlantbookMapper
@@ -10,12 +12,19 @@ export const OPEN_PLANTBOOK_PROVIDER = 'OPEN_PLANTBOOK' as const;
  * internal domain/persistence DTOs without performing side effects,
  * network calls or database mutations.
  */
-export class OpenPlantbookMapper {
+export class OpenPlantbookMapper implements IPlantReferenceMapper {
   /**
-   * Maps an OpenPlantbookDetailResponse into a CreatePlantReferencePersistenceDTO.
-   *
-   * @param detail The validated detail response from OpenPlantbookClient.
-   * @param timestamp Optional provenance timestamp (defaults to new Date()).
+   * Instance method implementing IPlantReferenceMapper contract.
+   */
+  toPersistenceDTO(
+    detail: OpenPlantbookDetailResponse,
+    timestamp: Date = new Date()
+  ): CreatePlantReferencePersistenceDTO {
+    return OpenPlantbookMapper.toPersistenceDTO(detail, timestamp);
+  }
+
+  /**
+   * Static convenience method for mapping without instantiating.
    */
   static toPersistenceDTO(
     detail: OpenPlantbookDetailResponse,

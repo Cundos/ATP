@@ -1,11 +1,8 @@
 import { IPlantReferenceRepository } from '../../domain/repositories';
 import { IOpenPlantbookClient } from '../../domain/services/IOpenPlantbookClient';
-import { PlantReferenceEntity } from '../../domain/entities';
+import { IPlantReferenceMapper } from '../../domain/services/IPlantReferenceMapper';
+import { PlantReferenceEntity, OPEN_PLANTBOOK_PROVIDER } from '../../domain/entities';
 import { PlantReferenceValidationError } from '../errors';
-import {
-  OpenPlantbookMapper,
-  OPEN_PLANTBOOK_PROVIDER,
-} from '../../../infrastructure/open-plantbook/OpenPlantbookMapper';
 
 export interface GetOrCreatePlantReferenceCommand {
   provider: string;
@@ -24,6 +21,7 @@ export class GetOrCreatePlantReferenceUseCase {
   constructor(
     private readonly referenceRepo: IPlantReferenceRepository,
     private readonly openPlantbookClient: IOpenPlantbookClient,
+    private readonly plantReferenceMapper: IPlantReferenceMapper,
     private readonly clock: () => Date = () => new Date()
   ) {}
 
@@ -59,7 +57,7 @@ export class GetOrCreatePlantReferenceUseCase {
     const detailResponse = await this.openPlantbookClient.getPlantDetail(externalId);
 
     // 3. Map to persistence DTO
-    const persistenceDto = OpenPlantbookMapper.toPersistenceDTO(
+    const persistenceDto = this.plantReferenceMapper.toPersistenceDTO(
       detailResponse,
       this.clock()
     );

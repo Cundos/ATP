@@ -7,7 +7,8 @@ import {
   CreatePlantReferencePersistenceDTO,
 } from '@/core/domain/repositories';
 import { IOpenPlantbookClient } from '@/core/domain/services/IOpenPlantbookClient';
-import { PlantReferenceEntity } from '@/core/domain/entities';
+import { IPlantReferenceMapper } from '@/core/domain/services/IPlantReferenceMapper';
+import { PlantReferenceEntity, OPEN_PLANTBOOK_PROVIDER } from '@/core/domain/entities';
 import { PlantReferenceValidationError } from '../errors';
 import { OpenPlantbookPlantNotFoundError } from '@/core/domain/errors';
 
@@ -16,11 +17,11 @@ describe('GetOrCreatePlantReferenceUseCase (ATP-IMP-023)', () => {
 
   let mockRepo: IPlantReferenceRepository;
   let mockClient: IOpenPlantbookClient;
+  let mockMapper: IPlantReferenceMapper;
   let useCase: GetOrCreatePlantReferenceUseCase;
 
-  const sampleEntity: PlantReferenceEntity = {
-    id: '01918a00-1111-7000-8000-000000000001',
-    provider: 'OPEN_PLANTBOOK',
+  const samplePersistenceDto: CreatePlantReferencePersistenceDTO = {
+    provider: OPEN_PLANTBOOK_PROVIDER,
     external_id: 'monstera deliciosa',
     scientific_name: 'Monstera deliciosa',
     common_names: ['Costilla de Adán'],
@@ -29,6 +30,19 @@ describe('GetOrCreatePlantReferenceUseCase (ATP-IMP-023)', () => {
     fetched_at: fixedDate,
     last_sync_at: fixedDate,
     raw_data: { pid: 'monstera deliciosa' },
+  };
+
+  const sampleEntity: PlantReferenceEntity = {
+    id: '01918a00-1111-7000-8000-000000000001',
+    provider: samplePersistenceDto.provider,
+    external_id: samplePersistenceDto.external_id,
+    scientific_name: samplePersistenceDto.scientific_name,
+    common_names: samplePersistenceDto.common_names ?? null,
+    reference_care: samplePersistenceDto.reference_care ?? null,
+    image_url: samplePersistenceDto.image_url ?? null,
+    fetched_at: samplePersistenceDto.fetched_at ?? fixedDate,
+    last_sync_at: samplePersistenceDto.last_sync_at ?? fixedDate,
+    raw_data: samplePersistenceDto.raw_data,
   };
 
   beforeEach(() => {
@@ -43,16 +57,20 @@ describe('GetOrCreatePlantReferenceUseCase (ATP-IMP-023)', () => {
       getPlantDetail: vi.fn(),
     };
 
+    mockMapper = {
+      toPersistenceDTO: vi.fn(),
+    };
+
     useCase = new GetOrCreatePlantReferenceUseCase(
       mockRepo,
       mockClient,
+      mockMapper,
       () => fixedDate
     );
   });
 
-  it('J. creates and persists a new reference when it does not exist locally', async () => {
-    vi.mocked(mockRepo.findByProviderAndExternalId).mockResolvedValue(null);
-    vi.mocked(mockClient.getPlantDetail).mockResolvedValue({
+  it('J. creates and persists a new reference when it does not exist locally (calls client + mapper + repo)', async () => {
+    const detailResponse = {
       data: {
         pid: 'monstera deliciosa',
         display_pid: 'Monstera deliciosa',
@@ -62,7 +80,11 @@ describe('GetOrCreatePlantReferenceUseCase (ATP-IMP-023)', () => {
         max_temp: 30,
       },
       raw: { pid: 'monstera deliciosa', vendor: 'open_plantbook' },
-    });
+    };
+
+    vi.mocked(mockRepo.findByProviderAndExternalId).mockResolvedValue(null);
+    vi.mocked(mockClient.getPlantDetail).mockResolvedValue(detailResponse);
+    vi.mocked(mockMapper.toPersistenceDTO).mockReturnValue(samplePersistenceDto);
     vi.mocked(mockRepo.create).mockResolvedValue(sampleEntity);
 
     const result = await useCase.execute({
@@ -75,17 +97,12 @@ describe('GetOrCreatePlantReferenceUseCase (ATP-IMP-023)', () => {
       'monstera deliciosa'
     );
     expect(mockClient.getPlantDetail).toHaveBeenCalledWith('monstera deliciosa');
-    expect(mockRepo.create).toHaveBeenCalledOnce();
-    const createCallArg = vi.mocked(mockRepo.create).mock.calls[0]![0] as CreatePlantReferencePersistenceDTO;
-    expect(createCallArg.provider).toBe('OPEN_PLANTBOOK');
-    expect(createCallArg.external_id).toBe('monstera deliciosa');
-    expect(createCallArg.scientific_name).toBe('Monstera deliciosa');
-    expect(createCallArg.common_names).toEqual(['Costilla de Adán']);
-    expect(createCallArg.fetched_at).toEqual(fixedDate);
+    expect(mockMapper.toPersistenceDTO).toHaveBeenCalledWith(detailResponse, fixedDate);
+    expect(mockRepo.create).toHaveBeenCalledWith(samplePersistenceDto);
     expect(result).toBe(sampleEntity);
   });
 
-  it('K. returns existing snapshot without calling external client (Local-First)', async () => {
+  it('K. returns existing snapshot without calling client or mapper (Local-First)', async () => {
     vi.mocked(mockRepo.findByProviderAndExternalId).mockResolvedValue(sampleEntity);
 
     const result = await useCase.execute({
@@ -98,11 +115,12 @@ describe('GetOrCreatePlantReferenceUseCase (ATP-IMP-023)', () => {
       'monstera deliciosa'
     );
     expect(mockClient.getPlantDetail).not.toHaveBeenCalled();
+    expect(mockMapper.toPersistenceDTO).not.toHaveBeenCalled();
     expect(mockRepo.create).not.toHaveBeenCalled();
     expect(result).toBe(sampleEntity);
   });
 
-  it('L. propagates external provider errors without persisting partial data', async () => {
+  it('L. propagates external provider errors without calling mapper or persisting', async () => {
     vi.mocked(mockRepo.findByProviderAndExternalId).mockResolvedValue(null);
     vi.mocked(mockClient.getPlantDetail).mockRejectedValue(
       new OpenPlantbookPlantNotFoundError('unknown species')
@@ -115,10 +133,31 @@ describe('GetOrCreatePlantReferenceUseCase (ATP-IMP-023)', () => {
       })
     ).rejects.toThrow(OpenPlantbookPlantNotFoundError);
 
+    expect(mockMapper.toPersistenceDTO).not.toHaveBeenCalled();
     expect(mockRepo.create).not.toHaveBeenCalled();
   });
 
-  it('M. handles case-insensitive provider normalization', async () => {
+  it('M. does not persist in repository if mapper throws an error', async () => {
+    vi.mocked(mockRepo.findByProviderAndExternalId).mockResolvedValue(null);
+    vi.mocked(mockClient.getPlantDetail).mockResolvedValue({
+      data: { pid: 'corrupted-plant' },
+      raw: {},
+    });
+    vi.mocked(mockMapper.toPersistenceDTO).mockImplementation(() => {
+      throw new Error('Mapping failure');
+    });
+
+    await expect(
+      useCase.execute({
+        provider: 'OPEN_PLANTBOOK',
+        external_id: 'corrupted-plant',
+      })
+    ).rejects.toThrow('Mapping failure');
+
+    expect(mockRepo.create).not.toHaveBeenCalled();
+  });
+
+  it('N. handles case-insensitive provider normalization', async () => {
     vi.mocked(mockRepo.findByProviderAndExternalId).mockResolvedValue(sampleEntity);
 
     await useCase.execute({
@@ -132,7 +171,7 @@ describe('GetOrCreatePlantReferenceUseCase (ATP-IMP-023)', () => {
     );
   });
 
-  it('N. throws PlantReferenceValidationError on empty provider or external_id', async () => {
+  it('O. throws PlantReferenceValidationError on empty provider or external_id', async () => {
     await expect(
       useCase.execute({ provider: '', external_id: 'monstera' })
     ).rejects.toThrow(PlantReferenceValidationError);
@@ -142,7 +181,7 @@ describe('GetOrCreatePlantReferenceUseCase (ATP-IMP-023)', () => {
     ).rejects.toThrow(PlantReferenceValidationError);
   });
 
-  it('O. throws PlantReferenceValidationError on unsupported provider', async () => {
+  it('P. throws PlantReferenceValidationError on unsupported provider', async () => {
     vi.mocked(mockRepo.findByProviderAndExternalId).mockResolvedValue(null);
 
     await expect(
@@ -150,3 +189,4 @@ describe('GetOrCreatePlantReferenceUseCase (ATP-IMP-023)', () => {
     ).rejects.toThrow(/Proveedor botánico no soportado/i);
   });
 });
+

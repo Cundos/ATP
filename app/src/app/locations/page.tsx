@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { PrismaLocationRepository } from '@/infrastructure/db/repositories/PrismaLocationRepository';
@@ -76,7 +76,11 @@ export default async function LocationsPage() {
         </p>
       </div>
 
-      <LocationListView initialLocations={locations} plantCounts={plantCounts} />
+      <LocationListView
+        key={locations.map((l) => `${l.id}-${l.name}-${l.lifecycle_status}`).join('|')}
+        initialLocations={locations}
+        plantCounts={plantCounts}
+      />
     </section>
   );
 }

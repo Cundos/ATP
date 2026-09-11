@@ -504,18 +504,19 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Soporte de navegación por teclado y labels accesibles en campos de formulario.
 - **Resultado:** Aplicación responsiva, ergonómica y accesible en navegadores móviles con suite de tests específica.
 
-#### `ATP-IMP-027` — Suite Automatizada de Pruebas (Unit, Integration & E2E)
+#### `ATP-IMP-027` — Suite Automatizada de Pruebas (Unit, Integration & Real Playwright E2E)
 - **Estado:** `COMPLETADO`
-- **Objetivo:** Validar exhaustivamente la lógica del sistema mediante pruebas automatizadas.
+- **Objetivo:** Validar exhaustivamente la lógica del sistema mediante pruebas automatizadas multi-capa.
 - **Tipo:** `TEST` | **Prioridad:** `MUST` | **Release:** `M4`
 - **Dependencias:** `ATP-IMP-008`, `ATP-IMP-016`, `ATP-IMP-023`.
 - **Trazabilidad:** `NFR-012`.
 - **Criterios de Aceptación:**
   - Pruebas unitarias para: reglas de generación de `permanent_code`, transiciones de `health_status`, preservación de `is_primary` y mappers.
   - Pruebas de integración: Repositorios Prisma contra PostgreSQL real (Neon) y operaciones de storage.
-  - Pruebas E2E (Vitest + Testing Library): 9 flujos completos de ciclo de vida, inventario, catálogo, fotos y resiliencia Open Plantbook.
-  - Scripts dedicados `test:unit`, `test:integration`, `test:e2e`, `test:all` ejecutando 449+ tests pasando.
-- **Resultado:** Suite completa de tests automatizados verde y reproducible.
+  - Pruebas de integración de componentes UI (Vitest + Testing Library): 9 flujos de ciclo de vida.
+  - Pruebas End-to-End en navegador real (Playwright con Chromium): 9 flujos completos (Dashboard, Inventario, Alta, Edición, Archivo/Restauración, Subida de Fotos real, Degrada Open Plantbook 429, Catálogo de Ubicaciones, Mobile BottomNav).
+  - Scripts dedicados `test:unit`, `test:integration`, `test:e2e`, `test:all` ejecutando 449+ tests de Vitest y 9 tests de Playwright pasando al 100%.
+- **Resultado:** Suite integral de tests automatizados verde, aislada y determinista.
 
 #### `ATP-IMP-028` — Manejo Centralizado de Errores, Toasts y Sanitización de Entradas
 - **Estado:** `COMPLETADO`

@@ -12,6 +12,7 @@ export default defineConfig({
     fileParallelism: false,
     testTimeout: 60000,
     hookTimeout: 60000,
+    exclude: ['**/node_modules/**', '**/e2e/**', '**/dist/**', '**/.next/**'],
   },
   resolve: {
     alias: {

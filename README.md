@@ -8,7 +8,7 @@ Sistema de gestión botánica doméstica de interior con arquitectura limpia (Cl
 
 - **Gestión de Inventario & Ejemplares:**
   - Código permanente secuencial (`AT-PL-001`, `AT-PL-002`, etc.) generado de forma transaccional mediante secuencia PostgreSQL nativa (`plant_code_seq`).
-  - Estados sanitarios (`HEALTHY`, `WARNING`, `CRITICAL`), estados de ciclo de vida (`ACTIVE`, `ARCHIVED`) y ubicaciones físicas configurables con protección de unicidad (`LOWER(name)`).
+  - Estados sanitarios (`HEALTHY`, `ATTENTION`, `RECOVERY`, `UNKNOWN`), estados de ciclo de vida (`ACTIVE`, `ARCHIVED`) y ubicaciones físicas configurables con protección de unicidad case-insensitive (`LOWER(name)`).
   - Vistas dedicadas: Dashboard con métricas sanitarias, inventario activo filtrable y buscable, historial de ejemplares archivados y detalle individual.
 
 - **Fotografía & Procesamiento Resiliente:**
@@ -30,12 +30,12 @@ Sistema de gestión botánica doméstica de interior con arquitectura limpia (Cl
 
 - **Framework:** [Next.js 16](https://nextjs.org/) (App Router, Server Actions, Turbopack)
 - **Lenguaje:** [TypeScript 5](https://www.typescriptlang.org/) (Strict Mode)
-- **Estilos:** [Tailwind CSS 4](https://tailwindcss.com/)
+- **Estilos:** [Tailwind CSS 4](https://tailwindcss.com/) / CSS Modules
 - **Base de Datos & ORM:** [Neon PostgreSQL](https://neon.tech/) (Serverless Postgres 16+) / [Prisma ORM](https://www.prisma.io/)
 - **Procesamiento de Imágenes:** [Sharp](https://sharp.pixelplumbing.com/)
 - **Almacenamiento de Archivos:** `@vercel/blob` / Local FS Driver
 - **Validación & Sanitización:** [Zod](https://zod.dev/)
-- **Testing:** [Vitest 5](https://vitest.dev/) (Unit, Integration, E2E) + React Testing Library + MSW (Mock Service Worker)
+- **Testing:** [Vitest 5](https://vitest.dev/) (Unit, Integration, Component Flows) + [Playwright](https://playwright.dev/) (E2E Real Browser) + React Testing Library + MSW
 
 ---
 
@@ -81,8 +81,9 @@ Configurar las siguientes variables en `.env.local`:
 DATABASE_URL=postgresql://USER:PASSWORD@HOST/DB?sslmode=require
 DIRECT_URL=postgresql://USER:PASSWORD@DIRECT_HOST/DB?sslmode=require
 
-# Almacenamiento de Fotos (Vercel Blob en producción)
+# Almacenamiento de Fotos (Vercel Blob en producción o local_fs en local)
 BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxxxxxxxxxxx
+STORAGE_DRIVER=local_fs
 
 # Integración Open Plantbook (Server-Side Only)
 OPEN_PLANTBOOK_CLIENT_ID=tu_client_id
@@ -115,19 +116,22 @@ La aplicación estará disponible en [http://localhost:3000](http://localhost:30
 
 ## 🧪 Suite de Pruebas Automatizadas
 
-La aplicación cuenta con una suite completa de pruebas unitarias, de integración con PostgreSQL real y flujos E2E:
+La aplicación cuenta con una suite completa de pruebas unitarias y de componentes (Vitest), integración con PostgreSQL real (Neon) y pruebas End-to-End reales en navegador Chromium (Playwright):
 
 ```bash
-# Ejecutar toda la suite de pruebas (449+ tests)
+# 1. Instalar binarios de navegador para Playwright E2E (solo primera vez)
+npx playwright install chromium
+
+# 2. Ejecutar toda la suite de pruebas (Vitest 449+ tests + Playwright 9 flows)
 npm run test:all
 
-# Ejecutar únicamente pruebas unitarias (dominio, casos de uso, componentes aislados)
+# Ejecutar únicamente pruebas unitarias y de componentes (dominio, casos de uso, UI)
 npm run test:unit
 
-# Ejecutar pruebas de integración con base de datos real y storage
+# Ejecutar pruebas de integración con base de datos real (PostgreSQL / Neon) y storage
 npm run test:integration
 
-# Ejecutar pruebas de flujos E2E completos
+# Ejecutar pruebas End-to-End reales en navegador Chromium (Playwright)
 npm run test:e2e
 
 # Verificación de tipos TypeScript

@@ -39,26 +39,29 @@ export class PrismaPhotoRepository implements IPhotoRepository {
 
     if (isPrimary) {
       // Transacción atómica: desmarcar primarias previas de la planta y crear la nueva como primaria
-      return await prisma.$transaction(async (tx) => {
-        await tx.photo.updateMany({
-          where: { plant_id: dto.plant_id, is_primary: true },
-          data: { is_primary: false },
-        });
+      return await prisma.$transaction(
+        async (tx) => {
+          await tx.photo.updateMany({
+            where: { plant_id: dto.plant_id, is_primary: true },
+            data: { is_primary: false },
+          });
 
-        const created = await tx.photo.create({
-          data: {
-            id,
-            plant_id: dto.plant_id,
-            file_path: dto.file_path,
-            file_name: dto.file_name,
-            mime_type: dto.mime_type,
-            file_size: dto.file_size,
-            is_primary: true,
-            captured_at: dto.captured_at,
-          },
-        });
-        return created as unknown as PhotoEntity;
-      });
+          const created = await tx.photo.create({
+            data: {
+              id,
+              plant_id: dto.plant_id,
+              file_path: dto.file_path,
+              file_name: dto.file_name,
+              mime_type: dto.mime_type,
+              file_size: dto.file_size,
+              is_primary: true,
+              captured_at: dto.captured_at,
+            },
+          });
+          return created as unknown as PhotoEntity;
+        },
+        { maxWait: 10000, timeout: 20000 }
+      );
     }
 
     const created = await prisma.photo.create({
@@ -77,20 +80,23 @@ export class PrismaPhotoRepository implements IPhotoRepository {
   }
 
   async setPrimary(plantId: string, photoId: string): Promise<PhotoEntity> {
-    return await prisma.$transaction(async (tx) => {
-      // 1. Desmarcar todas las fotos primarias existentes de esta planta
-      await tx.photo.updateMany({
-        where: { plant_id: plantId, is_primary: true },
-        data: { is_primary: false },
-      });
+    return await prisma.$transaction(
+      async (tx) => {
+        // 1. Desmarcar todas las fotos primarias existentes de esta planta
+        await tx.photo.updateMany({
+          where: { plant_id: plantId, is_primary: true },
+          data: { is_primary: false },
+        });
 
-      // 2. Establecer la foto seleccionada como primaria
-      const updated = await tx.photo.update({
-        where: { id: photoId, plant_id: plantId },
-        data: { is_primary: true },
-      });
+        // 2. Establecer la foto seleccionada como primaria
+        const updated = await tx.photo.update({
+          where: { id: photoId, plant_id: plantId },
+          data: { is_primary: true },
+        });
 
-      return updated as unknown as PhotoEntity;
-    });
+        return updated as unknown as PhotoEntity;
+      },
+      { maxWait: 10000, timeout: 20000 }
+    );
   }
 }

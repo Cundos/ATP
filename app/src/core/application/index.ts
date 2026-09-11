@@ -14,3 +14,5 @@ export * from './use-cases/RegisterPlantPhotoUseCase';
 export * from './use-cases/SetPrimaryPhotoUseCase';
 export * from './use-cases/ListPlantPhotosUseCase';
 export * from './use-cases/GetPrimaryPhotoUseCase';
+export * from './use-cases/GetOrCreatePlantReferenceUseCase';
+

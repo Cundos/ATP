@@ -450,16 +450,16 @@ Un Milestone se considera **COMPLETADO** cuando:
 
 #### `ATP-IMP-023` — Mapper y Persistencia del Snapshot Local `PlantReference`
 - **Objetivo:** Mapear payloads externos a entidades de dominio y persistirlos en PostgreSQL.
-- **Tipo:** `DATA` | **Prioridad:** `MUST` | **Release:** `M3`
+- **Tipo:** `DATA` | **Prioridad:** `MUST` | **Release:** `M3` | **Estado:** `COMPLETADO`
 - **Dependencias:** `ATP-IMP-005`, `ATP-IMP-022`.
 - **Trazabilidad:** `FR-046` a `FR-050`, `US-014`, `ADR-012`.
 - **Criterios de Aceptación:**
   - `OpenPlantbookMapper` transforma el JSON crudo en la entidad `PlantReference` extrayendo: nombres botánicos, umbrales numéricos (luz, temperatura, humedad) e instrucciones cualitativas en `reference_care` (JSONB).
   - Persiste el payload íntegro en `raw_data` (JSONB).
-  - Clave lógica compuesta única `(provider = 'OPEN_PLANTBOOK', external_id = pid)`.
-  - Si una referencia ya fue descargada previamente, se reutiliza su `reference_id` sin duplicar filas en base de datos.
+  - Clave lógica compuesta única `(provider = 'OPEN_PLANTBOOK', external_id = pid)` con manejo seguro de concurrencia.
+  - Caso de uso `GetOrCreatePlantReferenceUseCase` reutiliza snapshots locales de forma local-first sin round-trips externos innecesarios.
   - El snapshot local es permanente ante caídas posteriores de Open Plantbook.
-- **Resultado:** Snapshots botánicos guardados en PostgreSQL de forma desacoplada de `Plant`.
+- **Resultado:** Repositorio `PrismaPlantReferenceRepository`, mapper `OpenPlantbookMapper` y caso de uso `GetOrCreatePlantReferenceUseCase` implementados y certificados con tests unitarios y de integración real en PostgreSQL (JSONB round-trip y concurrencia).
 
 #### `ATP-IMP-024` — Búsqueda y Vinculación Asistida en Formulario de Alta (`SCR-004`)
 - **Objetivo:** Permitir al usuario buscar y vincular una especie dentro del flujo de creación/edición de planta.

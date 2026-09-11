@@ -77,3 +77,23 @@ export class PhotoOwnershipError extends Error {
     this.name = 'PhotoOwnershipError';
   }
 }
+
+/**
+ * Error de aplicación lanzado cuando una referencia botánica no existe.
+ */
+export class PlantReferenceNotFoundError extends Error {
+  constructor(identifier: string) {
+    super(`No se encontró la referencia botánica con identificador: ${identifier}`);
+    this.name = 'PlantReferenceNotFoundError';
+  }
+}
+
+/**
+ * Error de aplicación lanzado cuando los datos de entrada para una operación de referencia no son válidos.
+ */
+export class PlantReferenceValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PlantReferenceValidationError';
+  }
+}

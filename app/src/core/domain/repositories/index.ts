@@ -2,9 +2,11 @@ import {
   PlantEntity,
   LocationEntity,
   PhotoEntity,
+  PlantReferenceEntity,
   HealthStatus,
   LifecycleStatus,
 } from '../entities';
+
 
 export interface CreatePlantPersistenceDTO {
   permanent_code: string;
@@ -92,4 +94,26 @@ export interface IPhotoRepository {
   findPrimaryByPlant(plantId: string): Promise<PhotoEntity | null>;
   create(dto: CreatePhotoPersistenceDTO): Promise<PhotoEntity>;
   setPrimary(plantId: string, photoId: string): Promise<PhotoEntity>;
+}
+
+export interface CreatePlantReferencePersistenceDTO {
+  id?: string;
+  provider: string;
+  external_id: string;
+  scientific_name: string;
+  common_names?: string[] | null;
+  reference_care?: Record<string, unknown> | null;
+  image_url?: string | null;
+  fetched_at?: Date;
+  last_sync_at?: Date;
+  raw_data: Record<string, unknown>;
+}
+
+export interface IPlantReferenceRepository {
+  findById(id: string): Promise<PlantReferenceEntity | null>;
+  findByProviderAndExternalId(
+    provider: string,
+    externalId: string
+  ): Promise<PlantReferenceEntity | null>;
+  create(dto: CreatePlantReferencePersistenceDTO): Promise<PlantReferenceEntity>;
 }

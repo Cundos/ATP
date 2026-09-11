@@ -12,6 +12,12 @@ describe.skipIf(isLocalhostPlaceholder)('Bootstrap Seed Validation (ATP-IMP-007)
   const plantRepo = new PrismaPlantRepository();
 
   beforeAll(async () => {
+    // Limpiar tablas accesorias de pruebas antes de verificar el baseline del seed
+    await prisma.photo.deleteMany({});
+    await prisma.plant.updateMany({ data: { location_id: null, reference_id: null } });
+    await prisma.location.deleteMany({});
+    await prisma.plantReference.deleteMany({});
+    await prisma.plantCultivationProfile.deleteMany({});
     // Ejecutar seed para asegurar estado
     await seed(prisma);
   });

@@ -13,6 +13,15 @@ describe('PostgreSQL Photo Lifecycle & Transaction Integration Tests (ATP-IMP-01
   let photo3Id: string;
 
   beforeAll(async () => {
+    // 0. Clean up any leftover plant with the test code from previous runs
+    const existing = await prisma.plant.findUnique({
+      where: { permanent_code: testPermanentCode },
+    });
+    if (existing) {
+      await prisma.photo.deleteMany({ where: { plant_id: existing.id } });
+      await prisma.plant.delete({ where: { id: existing.id } });
+    }
+
     // 1. Create a dedicated isolated test plant
     await prisma.plant.create({
       data: {

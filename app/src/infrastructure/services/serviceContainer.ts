@@ -6,13 +6,22 @@ import {
   IOAuth2TokenManager,
   IHomeAssistantClient,
 } from '../../core/domain/services';
-import { IPlantReferenceRepository } from '../../core/domain/repositories';
-import { GetOrCreatePlantReferenceUseCase } from '../../core/application';
+import {
+  IPlantReferenceRepository,
+  IPlantRepository,
+  IPlantHomeAssistantBindingRepository,
+} from '../../core/domain/repositories';
+import {
+  GetOrCreatePlantReferenceUseCase,
+  GetPlantLiveTelemetryUseCase,
+} from '../../core/application';
 import { StorageUnavailableError } from '../../core/domain/errors';
 import { LocalFileStorageService } from '../storage/LocalFileStorageService';
 import { VercelBlobStorageService } from '../storage/VercelBlobStorageService';
 import { SharpImageProcessingService } from '../image/SharpImageProcessingService';
 import { PrismaPlantReferenceRepository } from '../db/repositories/PrismaPlantReferenceRepository';
+import { PrismaPlantRepository } from '../db/repositories/PrismaPlantRepository';
+import { PrismaPlantHomeAssistantBindingRepository } from '../db/repositories/PrismaPlantHomeAssistantBindingRepository';
 import { OpenPlantbookMapper } from '../open-plantbook/OpenPlantbookMapper';
 import { OpenPlantbookClient } from '../open-plantbook/OpenPlantbookClient';
 import { OAuth2TokenManager } from '../open-plantbook/OAuth2TokenManager';
@@ -21,6 +30,8 @@ import { HomeAssistantRestClient } from '../home-assistant/HomeAssistantRestClie
 let customFileStorageService: IFileStorageService | null = null;
 let customImageProcessingService: IImageProcessingService | null = null;
 let customPlantReferenceRepository: IPlantReferenceRepository | null = null;
+let customPlantRepository: IPlantRepository | null = null;
+let customPlantHomeAssistantBindingRepository: IPlantHomeAssistantBindingRepository | null = null;
 let customPlantReferenceMapper: IPlantReferenceMapper | null = null;
 let customOpenPlantbookClient: IOpenPlantbookClient | null = null;
 let customOAuth2TokenManager: IOAuth2TokenManager | null = null;
@@ -36,6 +47,14 @@ export function setImageProcessingService(service: IImageProcessingService | nul
 
 export function setPlantReferenceRepository(repo: IPlantReferenceRepository | null): void {
   customPlantReferenceRepository = repo;
+}
+
+export function setPlantRepository(repo: IPlantRepository | null): void {
+  customPlantRepository = repo;
+}
+
+export function setPlantHomeAssistantBindingRepository(repo: IPlantHomeAssistantBindingRepository | null): void {
+  customPlantHomeAssistantBindingRepository = repo;
 }
 
 export function setPlantReferenceMapper(mapper: IPlantReferenceMapper | null): void {
@@ -93,6 +112,20 @@ export function getPlantReferenceRepository(): IPlantReferenceRepository {
   return new PrismaPlantReferenceRepository();
 }
 
+export function getPlantRepository(): IPlantRepository {
+  if (customPlantRepository) {
+    return customPlantRepository;
+  }
+  return new PrismaPlantRepository();
+}
+
+export function getPlantHomeAssistantBindingRepository(): IPlantHomeAssistantBindingRepository {
+  if (customPlantHomeAssistantBindingRepository) {
+    return customPlantHomeAssistantBindingRepository;
+  }
+  return new PrismaPlantHomeAssistantBindingRepository();
+}
+
 export function getPlantReferenceMapper(): IPlantReferenceMapper {
   if (customPlantReferenceMapper) {
     return customPlantReferenceMapper;
@@ -128,4 +161,13 @@ export function getOrCreatePlantReferenceUseCase(): GetOrCreatePlantReferenceUse
     getPlantReferenceMapper()
   );
 }
+
+export function getPlantLiveTelemetryUseCase(): GetPlantLiveTelemetryUseCase {
+  return new GetPlantLiveTelemetryUseCase(
+    getPlantRepository(),
+    getHomeAssistantClient(),
+    getPlantHomeAssistantBindingRepository()
+  );
+}
+
 

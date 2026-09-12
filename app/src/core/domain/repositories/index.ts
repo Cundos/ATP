@@ -117,3 +117,19 @@ export interface IPlantReferenceRepository {
   ): Promise<PlantReferenceEntity | null>;
   create(dto: CreatePlantReferencePersistenceDTO): Promise<PlantReferenceEntity>;
 }
+
+export interface UpsertPlantHomeAssistantBindingDTO {
+  plant_id: string;
+  moisture_entity_id?: string | null;
+  battery_entity_id?: string | null;
+  online_entity_id?: string | null;
+  stale_entity_id?: string | null;
+  visual_state_entity_id?: string | null;
+}
+
+export interface IPlantHomeAssistantBindingRepository {
+  findByPlantId(plantId: string): Promise<import('../entities').PlantHomeAssistantBindingEntity | null>;
+  findByPermanentCode(permanentCode: string): Promise<import('../entities').PlantHomeAssistantBindingEntity | null>;
+  upsert(dto: UpsertPlantHomeAssistantBindingDTO): Promise<import('../entities').PlantHomeAssistantBindingEntity>;
+  deleteByPlantId(plantId: string): Promise<void>;
+}

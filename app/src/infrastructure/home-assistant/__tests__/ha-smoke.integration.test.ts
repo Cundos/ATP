@@ -26,4 +26,26 @@ describe('Home Assistant Real Smoke Test (Server-Side)', () => {
       // Do not fail automated builds if live HA instance is unreachable / in reboot
     }
   });
+
+  it('attempts to query full live telemetry for specimen AT-PL-007 (Zamioculca)', async () => {
+    const baseUrl = process.env.HOME_ASSISTANT_BASE_URL;
+    const token = process.env.HOME_ASSISTANT_TOKEN;
+
+    if (!baseUrl || !token) {
+      console.log('[HA Smoke AT-PL-007] Skipped: HOME_ASSISTANT_BASE_URL / TOKEN not set');
+      return;
+    }
+
+    try {
+      const { getPlantLiveTelemetryUseCase } = await import('../../services/serviceContainer');
+      const useCase = getPlantLiveTelemetryUseCase();
+      const telemetry = await useCase.executeByPermanentCode('AT-PL-007');
+      console.log('[HA Smoke AT-PL-007] Live Telemetry Result:');
+      console.log(JSON.stringify(telemetry, null, 2));
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.log(`[HA Smoke AT-PL-007] Response: ${error.name} - ${error.message}`);
+    }
+  });
 });
+

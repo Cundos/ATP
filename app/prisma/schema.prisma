@@ -69,6 +69,7 @@ model Plant {
   reference        PlantReference?          @relation(fields: [reference_id], references: [id], onDelete: SetNull)
   photos           Photo[]
   profile          PlantCultivationProfile?
+  ha_binding       PlantHomeAssistantBinding?
 
   @@index([location_id])
   @@index([reference_id])
@@ -90,6 +91,22 @@ model PlantCultivationProfile {
   plant            Plant    @relation(fields: [plant_id], references: [id], onDelete: Cascade)
 
   @@map("plant_cultivation_profiles")
+}
+
+model PlantHomeAssistantBinding {
+  id                     String   @id // UUIDv7
+  plant_id               String   @unique
+  moisture_entity_id     String?
+  battery_entity_id      String?
+  online_entity_id       String?
+  stale_entity_id        String?
+  visual_state_entity_id String?
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  plant                  Plant    @relation(fields: [plant_id], references: [id], onDelete: Cascade)
+
+  @@map("plant_ha_bindings")
 }
 
 model Photo {

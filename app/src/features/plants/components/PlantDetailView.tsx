@@ -23,6 +23,8 @@ import { HealthBadge, Button, Modal, Toast } from '@/components/ui';
 import { archivePlantAction } from '../actions';
 import { PlantThumbnail } from './PlantThumbnail';
 import { BotanicalReferenceSection } from './BotanicalReferenceSection';
+import { PlantLiveTelemetrySection } from './PlantLiveTelemetrySection';
+import { PlantLiveTelemetryDTO } from '@/core/application/use-cases/GetPlantLiveTelemetryUseCase';
 import {
   BotanicalReferenceViewModel,
   parseBotanicalReferenceViewModel,
@@ -32,11 +34,13 @@ import styles from './PlantDetailView.module.css';
 export interface PlantDetailViewProps {
   plant: PlantEntity;
   botanicalReference?: BotanicalReferenceViewModel | null;
+  liveTelemetry?: PlantLiveTelemetryDTO | null;
 }
 
 export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
   plant,
   botanicalReference,
+  liveTelemetry,
 }) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -275,6 +279,11 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
           </section>
         </div>
       </div>
+ 
+      {/* Sección: Estado en tiempo real / Telemetría Home Assistant (ATP-HA-002) */}
+      {liveTelemetry && (
+        <PlantLiveTelemetrySection telemetry={liveTelemetry} />
+      )}
 
       {/* Sección: Conocimiento Botánico de Referencia (ATP-IMP-025) */}
       {botanicalRefVm && (

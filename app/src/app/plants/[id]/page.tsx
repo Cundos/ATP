@@ -2,8 +2,10 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import { PrismaPlantRepository } from '@/infrastructure/db/repositories/PrismaPlantRepository';
 import { GetPlantUseCase } from '@/core/application/use-cases/GetPlantUseCase';
+import { getPlantLiveTelemetryUseCase } from '@/infrastructure/services/serviceContainer';
 import { PlantDetailView } from '@/features/plants/components';
 import { parseBotanicalReferenceViewModel } from '@/features/plants/view-models/botanical-reference.vm';
+import { PlantLiveTelemetryDTO } from '@/core/application/use-cases/GetPlantLiveTelemetryUseCase';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,10 +44,34 @@ export default async function PlantDetailPage({ params }: PlantDetailPageProps) 
     ? parseBotanicalReferenceViewModel(plant.reference)
     : null;
 
+  // Retrieve server-side live telemetry from Home Assistant if binding exists
+  let liveTelemetry: PlantLiveTelemetryDTO | null = null;
+  if (plant.ha_binding) {
+    try {
+      const liveTelemetryUseCase = getPlantLiveTelemetryUseCase();
+      liveTelemetry = await liveTelemetryUseCase.execute(plant);
+    } catch {
+      liveTelemetry = {
+        plant_id: plant.id,
+        permanent_code: plant.permanent_code,
+        binding_configured: true,
+        available: false,
+        moisture: null,
+        hardware: null,
+        error_reason: 'Home Assistant no disponible',
+      };
+    }
+  }
+
   return (
     <section>
-      <PlantDetailView plant={plant} botanicalReference={botanicalReference} />
+      <PlantDetailView
+        plant={plant}
+        botanicalReference={botanicalReference}
+        liveTelemetry={liveTelemetry}
+      />
     </section>
   );
 }
+
 

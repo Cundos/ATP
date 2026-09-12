@@ -8,4 +8,5 @@ export * from './PlantThumbnail';
 export * from './BotanicalReferencePicker';
 export * from './BotanicalReferenceSection';
 export * from './ReferenceBotanicalImage';
+export * from './PlantLiveTelemetrySection';
 

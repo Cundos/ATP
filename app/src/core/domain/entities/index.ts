@@ -54,6 +54,19 @@ export interface PlantCultivationProfileEntity {
   updated_at: Date;
 }
 
+// Entidad pura: PlantHomeAssistantBinding
+export interface PlantHomeAssistantBindingEntity {
+  id: string;
+  plant_id: string;
+  moisture_entity_id: string | null;
+  battery_entity_id: string | null;
+  online_entity_id: string | null;
+  stale_entity_id: string | null;
+  visual_state_entity_id: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
 // Entidad pura: Plant
 export interface PlantEntity {
   id: string;
@@ -75,4 +88,5 @@ export interface PlantEntity {
   reference?: PlantReferenceEntity | null;
   photos?: PhotoEntity[];
   profile?: PlantCultivationProfileEntity | null;
+  ha_binding?: PlantHomeAssistantBindingEntity | null;
 }

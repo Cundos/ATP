@@ -28,6 +28,7 @@ export class PrismaPlantRepository implements IPlantRepository {
         location: true,
         reference: true,
         profile: true,
+        ha_binding: true,
         photos: {
           orderBy: [{ is_primary: 'desc' }, { created_at: 'desc' }],
         },
@@ -43,6 +44,7 @@ export class PrismaPlantRepository implements IPlantRepository {
         location: true,
         reference: true,
         profile: true,
+        ha_binding: true,
         photos: {
           orderBy: [{ is_primary: 'desc' }, { created_at: 'desc' }],
         },

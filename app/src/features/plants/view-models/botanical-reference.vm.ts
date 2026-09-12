@@ -73,6 +73,83 @@ function formatRange(
   return null;
 }
 
+const CARE_GUIDELINE_TRANSLATIONS: Record<string, string> = {
+  // Riego (Watering)
+  'likes wet envs; water when soil dries, mist leaves often in summer.':
+    'Prefiere ambientes húmedos; regar cuando el sustrato esté seco y pulverizar las hojas frecuentemente en verano.',
+  'thrives in wet environments; water when soil dries, may mist leaves.':
+    'Se desarrolla bien en ambientes húmedos; regar cuando el sustrato esté seco, se puede pulverizar el follaje.',
+  'likes wet envs; sprays water for moisture; reduce watering in winter.':
+    'Prefiere ambientes húmedos; pulverizar para mantener la humedad; reducir el riego en invierno.',
+  'prefers wet environments; water thoroughly when soil is dry; avoid saturated conditions.':
+    'Prefiere ambientes húmedos; regar en profundidad cuando el sustrato esté seco; evitar encharcamientos.',
+  'allow soil to dry between waterings; avoid overwatering.':
+    'Dejar secar el sustrato entre riegos; evitar el exceso de agua.',
+
+  // Luz / Exposición Solar (Sunlight)
+  'avoid strong direct light in summer; tolerate 3-4 hours of sun in winter.':
+    'Evitar luz directa intensa en verano; tolera 3 a 4 horas de sol suave en invierno.',
+  'likes light, discolors, lacks luster, defoliates with insufficient light':
+    'Requiere buena iluminación; pierde color, brillo y puede defoliar con luz insuficiente.',
+  'resistant to shade; place in bright, indirect light; allow 2-3 hours of sunlight in winter.':
+    'Tolerante a la sombra; ubicar con luz indirecta brillante; tolera 2 a 3 horas de sol suave en invierno.',
+  'relatively shade-tolerant, prefers half-shade; leaves stay fresh and green in winter with some sun.':
+    'Relativamente tolerante a la sombra, prefiere semisombra; las hojas se mantienen frescas con algo de sol invernal.',
+  'durable in shaded areas; place in scattered light.':
+    'Resistente en zonas sombreadas; ubicar con luz filtrada o difusa.',
+  'bright indirect light to low light.':
+    'Luz indirecta brillante a semisombra o baja iluminación.',
+
+  // Sustrato (Soil)
+  'soil enriched with specific nutrients':
+    'Sustrato fértil enriquecido con nutrientes específicos.',
+  'clay soil with high water-holding capacity or specific nutrients':
+    'Sustrato con buena retención de humedad y rico en nutrientes.',
+  'peat, soil with nutrients, or hydroponics':
+    'Turba, sustrato nutritivo o cultivo hidropónico.',
+  'peat mixed with coarse sand or hydroponics':
+    'Turba mezclada con arena gruesa o cultivo hidropónico.',
+  'soil slightly acidic, loose in texture or rich in specific nutrients':
+    'Sustrato ligeramente ácido, de textura suelta y rico en nutrientes.',
+  'well-draining potting mix.':
+    'Sustrato liviano con excelente drenaje.',
+
+  // Poda (Pruning)
+  'remove dead, yellow and diseased leaves promptly':
+    'Retirar con prontitud hojas secas, amarillentas o enfermas.',
+  'remove dead leaves promptly':
+    'Retirar hojas secas con prontitud.',
+  'timely remove aged, dead, rotten, diseased leaves.':
+    'Retirar oportunamente hojas envejecidas, secas, deterioradas o enfermas.',
+  'timely remove dead andyellowish leaves.':
+    'Retirar oportunamente hojas secas o amarillentas.',
+  'remove aged, yellowing, and diseased leaves promptly':
+    'Retirar con prontitud hojas envejecidas, amarillentas o enfermas.',
+
+  // Fertilización (Fertilization)
+  'dilute fertilizers as directed; apply 1-2 times monthly in spring and autumn.':
+    'Diluir fertilizante según indicación; aplicar 1 a 2 veces al mes en primavera y otoño.',
+  'dilute fertilizers as directed; apply 1-2 times monthly.':
+    'Diluir fertilizante según indicación; aplicar 1 a 2 veces al mes.',
+  'dilute fertilizers as directed; apply once a month.':
+    'Diluir fertilizante según indicación; aplicar una vez al mes.',
+  'dilute fertilizers as instructed; apply once every 15 days from april to september.':
+    'Diluir fertilizante según indicación; aplicar cada 15 días durante la temporada de crecimiento.',
+};
+
+function translateCareGuideline(text: string | null): string | null {
+  if (!text) return null;
+  const key = text.trim().toLowerCase();
+  if (CARE_GUIDELINE_TRANSLATIONS[key]) {
+    return CARE_GUIDELINE_TRANSLATIONS[key];
+  }
+  const keyNoDot = key.endsWith('.') ? key.slice(0, -1) : key;
+  if (CARE_GUIDELINE_TRANSLATIONS[keyNoDot]) {
+    return CARE_GUIDELINE_TRANSLATIONS[keyNoDot];
+  }
+  return text.trim();
+}
+
 function parseStringField(val: unknown): string | null {
   if (typeof val === 'string') {
     const trimmed = val.trim();
@@ -170,12 +247,12 @@ export function parseBotanicalReferenceViewModel(
     temperature || light || environmentalHumidity || soilMoisture || soilEc
   );
 
-  // Qualitative Care Guidelines
-  const watering = parseStringField(rawCare.watering);
-  const sunlight = parseStringField(rawCare.sunlight);
-  const soil = parseStringField(rawCare.soil);
-  const pruning = parseStringField(rawCare.pruning);
-  const fertilization = parseStringField(rawCare.fertilization);
+  // Qualitative Care Guidelines (with translation to Spanish)
+  const watering = translateCareGuideline(parseStringField(rawCare.watering));
+  const sunlight = translateCareGuideline(parseStringField(rawCare.sunlight));
+  const soil = translateCareGuideline(parseStringField(rawCare.soil));
+  const pruning = translateCareGuideline(parseStringField(rawCare.pruning));
+  const fertilization = translateCareGuideline(parseStringField(rawCare.fertilization));
 
   const hasCareGuidelines = Boolean(
     watering || sunlight || soil || pruning || fertilization

@@ -278,4 +278,34 @@ describe('BotanicalReference ViewModel Parser & Data Minimization (ATP-IMP-025)'
     expect(serialized).not.toContain('confidential_raw_payload');
     expect(serialized).not.toContain('OPEN_PLANTBOOK');
   });
+
+  it('N. translates English care guidelines from Open Plantbook to Spanish', () => {
+    const englishRef: PlantReferenceEntity = {
+      ...baseReference,
+      reference_care: {
+        watering: 'Likes wet envs; water when soil dries, mist leaves often in summer.',
+        sunlight: 'Avoid strong direct light in summer; tolerate 3-4 hours of sun in winter.',
+        soil: 'Soil enriched with specific nutrients',
+        pruning: 'Remove dead, yellow and diseased leaves promptly',
+        fertilization: 'Dilute fertilizers as directed; apply 1-2 times monthly in spring and autumn.',
+      },
+    };
+
+    const vm = parseBotanicalReferenceViewModel(englishRef);
+    expect(vm?.careGuidelines.watering).toBe(
+      'Prefiere ambientes húmedos; regar cuando el sustrato esté seco y pulverizar las hojas frecuentemente en verano.'
+    );
+    expect(vm?.careGuidelines.sunlight).toBe(
+      'Evitar luz directa intensa en verano; tolera 3 a 4 horas de sol suave en invierno.'
+    );
+    expect(vm?.careGuidelines.soil).toBe(
+      'Sustrato fértil enriquecido con nutrientes específicos.'
+    );
+    expect(vm?.careGuidelines.pruning).toBe(
+      'Retirar con prontitud hojas secas, amarillentas o enfermas.'
+    );
+    expect(vm?.careGuidelines.fertilization).toBe(
+      'Diluir fertilizante según indicación; aplicar 1 a 2 veces al mes en primavera y otoño.'
+    );
+  });
 });

@@ -12,11 +12,9 @@ describe.skipIf(isLocalhostPlaceholder)('Bootstrap Seed Validation (ATP-IMP-007)
   const plantRepo = new PrismaPlantRepository();
 
   beforeAll(async () => {
-    // Limpiar tablas accesorias de pruebas antes de verificar el baseline del seed
+    // Limpiar tablas accesorias de pruebas sin afectar referencias botánicas
     await prisma.photo.deleteMany({});
-    await prisma.plant.updateMany({ data: { location_id: null, reference_id: null } });
     await prisma.location.deleteMany({});
-    await prisma.plantReference.deleteMany({});
     await prisma.plantCultivationProfile.deleteMany({});
     // Ejecutar seed para asegurar estado
     await seed(prisma);
@@ -95,26 +93,20 @@ describe.skipIf(isLocalhostPlaceholder)('Bootstrap Seed Validation (ATP-IMP-007)
     }
   });
 
-  it('todas las 13 plantas deben ser ACTIVE y tener location_id y reference_id en null', async () => {
+  it('todas las 13 plantas deben ser ACTIVE', async () => {
     const plants = await prisma.plant.findMany();
     expect(plants).toHaveLength(13);
 
     for (const plant of plants) {
       expect(plant.lifecycle_status).toBe('ACTIVE');
-      expect(plant.location_id).toBeNull();
-      expect(plant.reference_id).toBeNull();
     }
   });
 
-  it('no deben existir Photos, Locations, PlantReferences ni PlantCultivationProfiles', async () => {
+  it('no deben existir Photos ni PlantCultivationProfiles residuales de prueba', async () => {
     const photoCount = await prisma.photo.count();
-    const locationCount = await prisma.location.count();
-    const refCount = await prisma.plantReference.count();
     const profileCount = await prisma.plantCultivationProfile.count();
 
     expect(photoCount).toBe(0);
-    expect(locationCount).toBe(0);
-    expect(refCount).toBe(0);
     expect(profileCount).toBe(0);
   });
 

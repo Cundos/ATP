@@ -154,6 +154,14 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .metricsGrid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    padding: 16px 20px;
+  }
+}
+
 .metricCard {
   display: flex;
   flex-direction: column;
@@ -188,8 +196,6 @@
   }
 }
 
-
-
 /* Guidelines - Clean Editorial Flow */
 .guidelinesContainer {
   display: flex;
@@ -204,6 +210,14 @@
   padding: 0;
 }
 
+@media (min-width: 1024px) {
+  .guidelinesList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 24px;
+  }
+}
+
 .guidelineItem {
   display: flex;
   flex-direction: column;
@@ -215,6 +229,13 @@
 .guidelineItem:last-child {
   padding-bottom: 0;
   border-bottom: none;
+}
+
+@media (min-width: 1024px) {
+  .guidelineItem {
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
 }
 
 .guidelineTitle {

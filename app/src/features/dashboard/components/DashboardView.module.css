@@ -72,6 +72,29 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .metricsSection {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .totalRow {
+    margin-bottom: 0;
+    display: flex;
+  }
+
+  .totalRow > * {
+    width: 100%;
+  }
+
+  .healthGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+}
+
 /* Attention / Tracking Section */
 .attentionSection {
   display: flex;
@@ -116,6 +139,14 @@
 @media (min-width: 640px) {
   .attentionGrid {
     grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .attentionGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
   }
 }
 
@@ -170,7 +201,6 @@
   flex-shrink: 0;
 }
 
-
 .attentionName {
   font-size: 0.875rem;
   font-weight: 600;
@@ -183,6 +213,12 @@
 /* CTA Section */
 .ctaSection {
   margin: 4px 0;
+}
+
+@media (min-width: 1024px) {
+  .ctaSection {
+    max-width: 280px;
+  }
 }
 
 .ctaLink {
@@ -213,7 +249,7 @@
   background: transparent;
   text-decoration: none;
   color: inherit;
-  transition: color 0.15s ease;
+  transition: all 0.15s ease;
   min-height: var(--touch-target-min);
 }
 
@@ -224,6 +260,27 @@
 .quickNavLink:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
+}
+
+@media (min-width: 1024px) {
+  .quickNavGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    border-top: none;
+  }
+
+  .quickNavLink {
+    padding: 16px 18px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-surface);
+  }
+
+  .quickNavLink:hover {
+    border-color: var(--border-default);
+    background-color: var(--bg-surface-hover);
+  }
 }
 
 .quickNavText {

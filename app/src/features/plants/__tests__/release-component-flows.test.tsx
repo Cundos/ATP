@@ -260,7 +260,7 @@ describe('Release v0.1 Component Flow Integration Tests (ATP-IMP-027)', () => {
     );
 
     expect(screen.getByRole('navigation', { name: /navegación principal inferior/i })).toBeDefined();
-    expect(screen.getByRole('link', { name: /inventario/i })).toBeDefined();
+    expect(screen.getAllByRole('link', { name: /inventario/i }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole('link', { name: /registrar nueva planta/i })).toBeDefined();
 
     const menuTrigger = screen.getByRole('button', { name: /abrir menú secundario/i });

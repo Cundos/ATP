@@ -1,4 +1,4 @@
-﻿.formContainer {
+.formContainer {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -6,6 +6,12 @@
   max-width: 680px;
   margin: 0 auto;
   padding-bottom: 40px;
+}
+
+@media (min-width: 1024px) {
+  .formContainer {
+    max-width: 820px;
+  }
 }
 
 .sectionCard {

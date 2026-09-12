@@ -44,6 +44,16 @@ export const TopBar: React.FC = () => {
     };
   }, [isMenuOpen]);
 
+  const isHomeActive = pathname === '/';
+  const isInventoryActive =
+    pathname === '/inventory' ||
+    (pathname.startsWith('/plants/') &&
+      pathname !== '/plants/new' &&
+      pathname !== '/plants/archived');
+  const isNewActive = pathname === '/plants/new';
+  const isLocationsActive = pathname.startsWith('/locations');
+  const isArchivedActive = pathname.startsWith('/plants/archived');
+
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
@@ -55,7 +65,46 @@ export const TopBar: React.FC = () => {
           <span className={styles.brandName}>Atilio Plants</span>
         </Link>
 
-        {/* Secondary Navigation Menu Toggle */}
+        {/* Desktop Permanent Navigation (>= 1024px) */}
+        <nav className={styles.desktopNav} aria-label="Navegación principal">
+          <Link
+            href="/"
+            className={`${styles.desktopNavLink} ${isHomeActive ? styles.desktopNavActive : ''}`}
+            aria-current={isHomeActive ? 'page' : undefined}
+          >
+            Inicio
+          </Link>
+          <Link
+            href="/inventory"
+            className={`${styles.desktopNavLink} ${isInventoryActive ? styles.desktopNavActive : ''}`}
+            aria-current={isInventoryActive ? 'page' : undefined}
+          >
+            Inventario
+          </Link>
+          <Link
+            href="/plants/new"
+            className={`${styles.desktopNavLink} ${isNewActive ? styles.desktopNavActive : ''}`}
+            aria-current={isNewActive ? 'page' : undefined}
+          >
+            Nueva Planta
+          </Link>
+          <Link
+            href="/locations"
+            className={`${styles.desktopNavLink} ${isLocationsActive ? styles.desktopNavActive : ''}`}
+            aria-current={isLocationsActive ? 'page' : undefined}
+          >
+            Ubicaciones
+          </Link>
+          <Link
+            href="/plants/archived"
+            className={`${styles.desktopNavLink} ${isArchivedActive ? styles.desktopNavActive : ''}`}
+            aria-current={isArchivedActive ? 'page' : undefined}
+          >
+            Archivadas
+          </Link>
+        </nav>
+
+        {/* Mobile Secondary Navigation Menu Toggle (< 1024px) */}
         <div className={styles.menuWrapper} ref={menuRef}>
           <button
             type="button"

@@ -84,6 +84,16 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .searchSortBar {
+    gap: 16px;
+  }
+
+  .sortWrapper {
+    width: 240px;
+  }
+}
+
 .sortSelect {
   margin: 0;
 }
@@ -97,6 +107,14 @@
   padding-bottom: 4px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
+}
+
+@media (min-width: 1024px) {
+  .healthFiltersRow {
+    overflow-x: visible;
+    flex-wrap: wrap;
+    padding-bottom: 0;
+  }
 }
 
 .healthFiltersRow::-webkit-scrollbar {
@@ -232,6 +250,13 @@
 @media (min-width: 1024px) {
   .grid {
     grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
     gap: 24px;
   }
 }

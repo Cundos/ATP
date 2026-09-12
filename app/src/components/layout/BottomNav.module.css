@@ -13,6 +13,12 @@
   justify-content: center;
 }
 
+@media (min-width: 1024px) {
+  .nav {
+    display: none !important;
+  }
+}
+
 .inner {
   display: flex;
   align-items: center;

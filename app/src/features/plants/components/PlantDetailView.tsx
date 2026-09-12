@@ -110,163 +110,171 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
         </Link>
       </nav>
 
-      {/* Cabecera / Hero */}
-      <header className={styles.headerCard}>
-        <div className={styles.photoBannerWrapper}>
-          <PlantThumbnail
-            photoPath={plant.photos?.find((p) => p.is_primary)?.file_path || plant.photos?.[0]?.file_path}
-            plantName={plant.common_name}
-            size="lg"
-            className={styles.heroThumbnail}
-          />
+      {/* Cabecera / Hero Grid (2-Column on Desktop) */}
+      <div className={styles.heroGrid}>
+        {/* Columna Izquierda: Fotografía */}
+        <div className={styles.mediaColumn}>
+          <div className={styles.photoBannerWrapper}>
+            <PlantThumbnail
+              photoPath={plant.photos?.find((p) => p.is_primary)?.file_path || plant.photos?.[0]?.file_path}
+              plantName={plant.common_name}
+              size="lg"
+              className={styles.heroThumbnail}
+            />
+          </div>
         </div>
 
-        <div className={styles.headerTop}>
-          <span className={styles.permanentCodeBadge}>
-            <Tag size={14} aria-hidden="true" />
-            <span>{plant.permanent_code}</span>
-          </span>
-          <HealthBadge status={plant.health_status} size="md" />
-        </div>
-
-        <h1 className={styles.commonName}>{plant.common_name}</h1>
-
-        {plant.scientific_name && (
-          <p className={styles.scientificName}>{plant.scientific_name}</p>
-        )}
-
-        {plant.cultivar && (
-          <p className={styles.cultivarBadge}>
-            <span className={styles.cultivarLabel}>Cultivar:</span> {plant.cultivar}
-          </p>
-        )}
-      </header>
-
-      {/* Barra de Acciones Principales */}
-      <section className={styles.actionsBar} aria-label="Acciones sobre el ejemplar">
-        <Link href={`/plants/${plant.permanent_code}/edit`} className={styles.actionBtnLink}>
-          <Button variant="secondary" fullWidth leftIcon={<Edit size={16} />}>
-            Editar
-          </Button>
-        </Link>
-        <Button
-          variant="ghost"
-          onClick={() => setIsArchiveModalOpen(true)}
-          leftIcon={<Archive size={16} />}
-          className={styles.archiveBtn}
-          aria-label={`Archivar ejemplar ${plant.permanent_code}`}
-        >
-          Archivar
-        </Button>
-      </section>
-
-      {/* Sección: Taxonomía y Datos de Adquisición */}
-      <section className={styles.sectionCard} aria-labelledby="section-taxonomy-title">
-        <h2 id="section-taxonomy-title" className={styles.sectionTitle}>
-          <Info size={18} aria-hidden="true" />
-          <span>Información General</span>
-        </h2>
-        <dl className={styles.dataList}>
-          <div className={styles.dataRow}>
-            <dt className={styles.dataTerm}>Nombre Científico</dt>
-            <dd className={styles.dataValue}>
-              {plant.scientific_name ? (
-                <em>{plant.scientific_name}</em>
-              ) : (
-                <span className={styles.emptyText}>No registrado</span>
-              )}
-            </dd>
-          </div>
-
-          <div className={styles.dataRow}>
-            <dt className={styles.dataTerm}>Cultivar / Variedad</dt>
-            <dd className={styles.dataValue}>
-              {plant.cultivar || <span className={styles.emptyText}>No declarado</span>}
-            </dd>
-          </div>
-
-          <div className={styles.dataRow}>
-            <dt className={styles.dataTerm}>
-              <span className={styles.termWithIcon}>
-                <Calendar size={14} aria-hidden="true" /> Fecha de Adquisición
+        {/* Columna Derecha: Identidad, Acciones e Información General */}
+        <div className={styles.detailsColumn}>
+          <header className={styles.headerCard}>
+            <div className={styles.headerTop}>
+              <span className={styles.permanentCodeBadge}>
+                <Tag size={14} aria-hidden="true" />
+                <span>{plant.permanent_code}</span>
               </span>
-            </dt>
-            <dd className={styles.dataValue}>{formattedAcquisitionDate}</dd>
-          </div>
-        </dl>
-      </section>
+              <HealthBadge status={plant.health_status} size="md" />
+            </div>
 
-      {/* Sección: Ubicación Física */}
-      <section className={styles.sectionCard} aria-labelledby="section-location-title">
-        <h2 id="section-location-title" className={styles.sectionTitle}>
-          <MapPin size={18} aria-hidden="true" />
-          <span>Ubicación Física</span>
-        </h2>
-        <div className={styles.locationContainer}>
-          <p className={plant.location ? styles.locationName : styles.emptyLocation}>
-            {locationName}
-          </p>
-          {isLocationArchived && (
-            <span className={styles.archivedLocationNote}>
-              (Ubicación archivada en el catálogo)
-            </span>
-          )}
+            <h1 className={styles.commonName}>{plant.common_name}</h1>
+
+            {plant.scientific_name && (
+              <p className={styles.scientificName}>{plant.scientific_name}</p>
+            )}
+
+            {plant.cultivar && (
+              <p className={styles.cultivarBadge}>
+                <span className={styles.cultivarLabel}>Cultivar:</span> {plant.cultivar}
+              </p>
+            )}
+          </header>
+
+          {/* Barra de Acciones Principales */}
+          <section className={styles.actionsBar} aria-label="Acciones sobre el ejemplar">
+            <Link href={`/plants/${plant.permanent_code}/edit`} className={styles.actionBtnLink}>
+              <Button variant="secondary" fullWidth leftIcon={<Edit size={16} />}>
+                Editar
+              </Button>
+            </Link>
+            <Button
+              variant="ghost"
+              onClick={() => setIsArchiveModalOpen(true)}
+              leftIcon={<Archive size={16} />}
+              className={styles.archiveBtn}
+              aria-label={`Archivar ejemplar ${plant.permanent_code}`}
+            >
+              Archivar
+            </Button>
+          </section>
+
+          {/* Sección: Taxonomía y Datos de Adquisición */}
+          <section className={styles.sectionCard} aria-labelledby="section-taxonomy-title">
+            <h2 id="section-taxonomy-title" className={styles.sectionTitle}>
+              <Info size={18} aria-hidden="true" />
+              <span>Información General</span>
+            </h2>
+            <dl className={styles.dataList}>
+              <div className={styles.dataRow}>
+                <dt className={styles.dataTerm}>Nombre Científico</dt>
+                <dd className={styles.dataValue}>
+                  {plant.scientific_name ? (
+                    <em>{plant.scientific_name}</em>
+                  ) : (
+                    <span className={styles.emptyText}>No registrado</span>
+                  )}
+                </dd>
+              </div>
+
+              <div className={styles.dataRow}>
+                <dt className={styles.dataTerm}>Cultivar / Variedad</dt>
+                <dd className={styles.dataValue}>
+                  {plant.cultivar || <span className={styles.emptyText}>No declarado</span>}
+                </dd>
+              </div>
+
+              <div className={styles.dataRow}>
+                <dt className={styles.dataTerm}>
+                  <span className={styles.termWithIcon}>
+                    <Calendar size={14} aria-hidden="true" /> Fecha de Adquisición
+                  </span>
+                </dt>
+                <dd className={styles.dataValue}>{formattedAcquisitionDate}</dd>
+              </div>
+            </dl>
+          </section>
+
+          {/* Sección: Ubicación Física */}
+          <section className={styles.sectionCard} aria-labelledby="section-location-title">
+            <h2 id="section-location-title" className={styles.sectionTitle}>
+              <MapPin size={18} aria-hidden="true" />
+              <span>Ubicación Física</span>
+            </h2>
+            <div className={styles.locationContainer}>
+              <p className={plant.location ? styles.locationName : styles.emptyLocation}>
+                {locationName}
+              </p>
+              {isLocationArchived && (
+                <span className={styles.archivedLocationNote}>
+                  (Ubicación archivada en el catálogo)
+                </span>
+              )}
+            </div>
+          </section>
+
+          {/* Sección: Perfil de Cultivo */}
+          <section className={styles.sectionCard} aria-labelledby="section-profile-title">
+            <h2 id="section-profile-title" className={styles.sectionTitle}>
+              <Droplets size={18} aria-hidden="true" />
+              <span>Perfil de Cultivo</span>
+            </h2>
+            {hasProfileData && profile ? (
+              <dl className={styles.dataList}>
+                {profile.pot_info && (
+                  <div className={styles.dataRow}>
+                    <dt className={styles.dataTerm}>
+                      <span className={styles.termWithIcon}>
+                        <Box size={14} aria-hidden="true" /> Maceta / Recipiente
+                      </span>
+                    </dt>
+                    <dd className={styles.dataValue}>{profile.pot_info}</dd>
+                  </div>
+                )}
+                {profile.substrate_info && (
+                  <div className={styles.dataRow}>
+                    <dt className={styles.dataTerm}>
+                      <span className={styles.termWithIcon}>
+                        <Layers size={14} aria-hidden="true" /> Sustrato
+                      </span>
+                    </dt>
+                    <dd className={styles.dataValue}>{profile.substrate_info}</dd>
+                  </div>
+                )}
+                {profile.light_conditions && (
+                  <div className={styles.dataRow}>
+                    <dt className={styles.dataTerm}>
+                      <span className={styles.termWithIcon}>
+                        <Sun size={14} aria-hidden="true" /> Condiciones Lumínicas
+                      </span>
+                    </dt>
+                    <dd className={styles.dataValue}>{profile.light_conditions}</dd>
+                  </div>
+                )}
+                {profile.watering_notes && (
+                  <div className={styles.dataRow}>
+                    <dt className={styles.dataTerm}>
+                      <span className={styles.termWithIcon}>
+                        <Droplets size={14} aria-hidden="true" /> Pautas de Riego
+                      </span>
+                    </dt>
+                    <dd className={styles.dataValue}>{profile.watering_notes}</dd>
+                  </div>
+                )}
+              </dl>
+            ) : (
+              <p className={styles.emptyText}>Sin datos de cultivo</p>
+            )}
+          </section>
         </div>
-      </section>
-
-      {/* Sección: Perfil de Cultivo */}
-      <section className={styles.sectionCard} aria-labelledby="section-profile-title">
-        <h2 id="section-profile-title" className={styles.sectionTitle}>
-          <Droplets size={18} aria-hidden="true" />
-          <span>Perfil de Cultivo</span>
-        </h2>
-        {hasProfileData && profile ? (
-          <dl className={styles.dataList}>
-            {profile.pot_info && (
-              <div className={styles.dataRow}>
-                <dt className={styles.dataTerm}>
-                  <span className={styles.termWithIcon}>
-                    <Box size={14} aria-hidden="true" /> Maceta / Recipiente
-                  </span>
-                </dt>
-                <dd className={styles.dataValue}>{profile.pot_info}</dd>
-              </div>
-            )}
-            {profile.substrate_info && (
-              <div className={styles.dataRow}>
-                <dt className={styles.dataTerm}>
-                  <span className={styles.termWithIcon}>
-                    <Layers size={14} aria-hidden="true" /> Sustrato
-                  </span>
-                </dt>
-                <dd className={styles.dataValue}>{profile.substrate_info}</dd>
-              </div>
-            )}
-            {profile.light_conditions && (
-              <div className={styles.dataRow}>
-                <dt className={styles.dataTerm}>
-                  <span className={styles.termWithIcon}>
-                    <Sun size={14} aria-hidden="true" /> Condiciones Lumínicas
-                  </span>
-                </dt>
-                <dd className={styles.dataValue}>{profile.light_conditions}</dd>
-              </div>
-            )}
-            {profile.watering_notes && (
-              <div className={styles.dataRow}>
-                <dt className={styles.dataTerm}>
-                  <span className={styles.termWithIcon}>
-                    <Droplets size={14} aria-hidden="true" /> Pautas de Riego
-                  </span>
-                </dt>
-                <dd className={styles.dataValue}>{profile.watering_notes}</dd>
-              </div>
-            )}
-          </dl>
-        ) : (
-          <p className={styles.emptyText}>Sin datos de cultivo</p>
-        )}
-      </section>
+      </div>
 
       {/* Sección: Conocimiento Botánico de Referencia (ATP-IMP-025) */}
       {botanicalRefVm && (

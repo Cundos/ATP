@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { PrismaPlantRepository } from '@/infrastructure/db/repositories/PrismaPlantRepository';
@@ -35,8 +35,9 @@ export default async function ArchivedPlantsPage() {
         </Link>
         <h1
           style={{
-            fontSize: '1.5rem',
-            fontWeight: 700,
+            fontFamily: 'var(--font-serif-family)',
+            fontSize: '1.75rem',
+            fontWeight: 600,
             margin: '0 0 6px 0',
             color: 'var(--text-primary)',
           }}

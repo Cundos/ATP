@@ -66,7 +66,10 @@
   font-weight: 500;
   color: var(--brand-primary);
   letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
+
 
 .commonName {
   font-family: var(--font-serif-family);

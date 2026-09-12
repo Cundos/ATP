@@ -57,8 +57,9 @@ export default async function LocationsPage() {
         </Link>
         <h1
           style={{
-            fontSize: '1.5rem',
-            fontWeight: 700,
+            fontFamily: 'var(--font-serif-family)',
+            fontSize: '1.75rem',
+            fontWeight: 600,
             margin: '0 0 6px 0',
             color: 'var(--text-primary)',
           }}

@@ -24,11 +24,11 @@ export default async function InventoryPage() {
   return (
     <section>
       <div style={{ marginBottom: '20px' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 6px 0', color: 'var(--text-primary)' }}>
+        <h1 style={{ fontFamily: 'var(--font-serif-family)', fontSize: '1.75rem', fontWeight: 600, margin: '0 0 6px 0', color: 'var(--text-primary)' }}>
           Inventario de Plantas
         </h1>
         <p style={{ margin: 0, fontSize: '0.9375rem', color: 'var(--text-secondary)' }}>
-          Catálogo completo de ejemplares activos (SCR-002).
+          Catálogo completo de ejemplares activos en cultivo.
         </p>
       </div>
 

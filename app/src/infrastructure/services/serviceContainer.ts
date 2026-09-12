@@ -4,6 +4,7 @@ import {
   IOpenPlantbookClient,
   IPlantReferenceMapper,
   IOAuth2TokenManager,
+  IHomeAssistantClient,
 } from '../../core/domain/services';
 import { IPlantReferenceRepository } from '../../core/domain/repositories';
 import { GetOrCreatePlantReferenceUseCase } from '../../core/application';
@@ -15,6 +16,7 @@ import { PrismaPlantReferenceRepository } from '../db/repositories/PrismaPlantRe
 import { OpenPlantbookMapper } from '../open-plantbook/OpenPlantbookMapper';
 import { OpenPlantbookClient } from '../open-plantbook/OpenPlantbookClient';
 import { OAuth2TokenManager } from '../open-plantbook/OAuth2TokenManager';
+import { HomeAssistantRestClient } from '../home-assistant/HomeAssistantRestClient';
 
 let customFileStorageService: IFileStorageService | null = null;
 let customImageProcessingService: IImageProcessingService | null = null;
@@ -22,6 +24,7 @@ let customPlantReferenceRepository: IPlantReferenceRepository | null = null;
 let customPlantReferenceMapper: IPlantReferenceMapper | null = null;
 let customOpenPlantbookClient: IOpenPlantbookClient | null = null;
 let customOAuth2TokenManager: IOAuth2TokenManager | null = null;
+let customHomeAssistantClient: IHomeAssistantClient | null = null;
 
 export function setFileStorageService(service: IFileStorageService | null): void {
   customFileStorageService = service;
@@ -45,6 +48,10 @@ export function setOpenPlantbookClient(client: IOpenPlantbookClient | null): voi
 
 export function setOAuth2TokenManager(manager: IOAuth2TokenManager | null): void {
   customOAuth2TokenManager = manager;
+}
+
+export function setHomeAssistantClient(client: IHomeAssistantClient | null): void {
+  customHomeAssistantClient = client;
 }
 
 export function getFileStorageService(): IFileStorageService {
@@ -105,6 +112,13 @@ export function getOpenPlantbookClient(): IOpenPlantbookClient {
     return customOpenPlantbookClient;
   }
   return new OpenPlantbookClient(getOAuth2TokenManager());
+}
+
+export function getHomeAssistantClient(): IHomeAssistantClient {
+  if (customHomeAssistantClient) {
+    return customHomeAssistantClient;
+  }
+  return new HomeAssistantRestClient();
 }
 
 export function getOrCreatePlantReferenceUseCase(): GetOrCreatePlantReferenceUseCase {

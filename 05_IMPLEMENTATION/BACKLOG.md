@@ -619,6 +619,21 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Los scripts utilizados para la descarga y vinculación fueron **herramientas operativas temporales** y no forman parte del runtime de la aplicación.
   - Los campos intrínsecos de cada ejemplar (`common_name`, `scientific_name`, `cultivar`, `health_status`, `notes`, `acquisition_date`, `location_id`) no sufrieron modificaciones.
 
+#### `ATP-HA-001` — Home Assistant Read-Only Integration Foundation
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Crear la capa técnica server-side para que Atilio Plants pueda consultar estados reales de Home Assistant mediante Nabu Casa + REST API (`GET /api/states/{entity_id}`).
+- **Tipo:** `INTEGRATION_FOUNDATION` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Contrato: `IHomeAssistantClient` y DTO sanitizado `HomeAssistantState` en `src/core/domain/services/IHomeAssistantClient.ts`.
+  - Excepciones de Dominio: `HomeAssistantError`, `HomeAssistantAuthenticationError`, `HomeAssistantForbiddenError`, `HomeAssistantEntityNotFoundError`, `HomeAssistantRateLimitError`, `HomeAssistantServiceUnavailableError`, `HomeAssistantResponseError`, `HomeAssistantConfigurationError` en `src/core/domain/errors/HomeAssistantErrors.ts`.
+  - Cliente REST: `HomeAssistantRestClient` en `src/infrastructure/home-assistant/HomeAssistantRestClient.ts`.
+  - Service Container: Inyección de dependencias con `getHomeAssistantClient()` y `setHomeAssistantClient()`.
+- **Criterios de Seguridad y Límites de Dominio:**
+  - Exclusivamente server-side (variables `HOME_ASSISTANT_BASE_URL` y `HOME_ASSISTANT_TOKEN`).
+  - Sin endpoints públicos proxy abiertos.
+  - Sanitización estricta de atributos (`friendly_name`, `unit_of_measurement`, `device_class`).
+  - Home Assistant NO es fuente de identidad ni base de datos de las plantas.
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)

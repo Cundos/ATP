@@ -2,10 +2,14 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import { PrismaPlantRepository } from '@/infrastructure/db/repositories/PrismaPlantRepository';
 import { GetPlantUseCase } from '@/core/application/use-cases/GetPlantUseCase';
-import { getPlantLiveTelemetryUseCase } from '@/infrastructure/services/serviceContainer';
+import {
+  getPlantLiveTelemetryUseCase,
+  getPlantOperationalEventRepository,
+} from '@/infrastructure/services/serviceContainer';
 import { PlantDetailView } from '@/features/plants/components';
 import { parseBotanicalReferenceViewModel } from '@/features/plants/view-models/botanical-reference.vm';
 import { PlantLiveTelemetryDTO } from '@/core/application/use-cases/GetPlantLiveTelemetryUseCase';
+import { PlantOperationalEventEntity } from '@/core/domain/entities';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,15 +67,26 @@ export default async function PlantDetailPage({ params }: PlantDetailPageProps) 
     }
   }
 
+  // Retrieve recent operational events
+  let recentEvents: PlantOperationalEventEntity[] = [];
+  try {
+    const eventRepo = getPlantOperationalEventRepository();
+    recentEvents = await eventRepo.findRecentByPlantId(plant.id, 5);
+  } catch {
+    recentEvents = [];
+  }
+
   return (
     <section>
       <PlantDetailView
         plant={plant}
         botanicalReference={botanicalReference}
         liveTelemetry={liveTelemetry}
+        recentEvents={recentEvents}
       />
     </section>
   );
 }
+
 
 

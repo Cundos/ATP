@@ -18,12 +18,13 @@ import {
   Info,
   Tag,
 } from 'lucide-react';
-import { PlantEntity } from '@/core/domain/entities';
+import { PlantEntity, PlantOperationalEventEntity } from '@/core/domain/entities';
 import { HealthBadge, Button, Modal, Toast } from '@/components/ui';
 import { archivePlantAction } from '../actions';
 import { PlantThumbnail } from './PlantThumbnail';
 import { BotanicalReferenceSection } from './BotanicalReferenceSection';
 import { PlantLiveTelemetrySection } from './PlantLiveTelemetrySection';
+import { PlantRecentActivitySection } from './PlantRecentActivitySection';
 import { PlantLiveTelemetryDTO } from '@/core/application/use-cases/GetPlantLiveTelemetryUseCase';
 import {
   BotanicalReferenceViewModel,
@@ -35,12 +36,14 @@ export interface PlantDetailViewProps {
   plant: PlantEntity;
   botanicalReference?: BotanicalReferenceViewModel | null;
   liveTelemetry?: PlantLiveTelemetryDTO | null;
+  recentEvents?: PlantOperationalEventEntity[];
 }
 
 export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
   plant,
   botanicalReference,
   liveTelemetry,
+  recentEvents,
 }) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -283,6 +286,11 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
       {/* Sección: Estado en tiempo real / Telemetría Home Assistant (ATP-HA-002) */}
       {liveTelemetry && (
         <PlantLiveTelemetrySection telemetry={liveTelemetry} />
+      )}
+
+      {/* Sección: Actividad Reciente / Historial Operativo (ATP-HA-003) */}
+      {recentEvents && recentEvents.length > 0 && (
+        <PlantRecentActivitySection events={recentEvents} />
       )}
 
       {/* Sección: Conocimiento Botánico de Referencia (ATP-IMP-025) */}

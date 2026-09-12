@@ -132,4 +132,24 @@ export interface IPlantHomeAssistantBindingRepository {
   findByPermanentCode(permanentCode: string): Promise<import('../entities').PlantHomeAssistantBindingEntity | null>;
   upsert(dto: UpsertPlantHomeAssistantBindingDTO): Promise<import('../entities').PlantHomeAssistantBindingEntity>;
   deleteByPlantId(plantId: string): Promise<void>;
-}
+}
+
+export interface CreatePlantOperationalEventPersistenceDTO {
+  plant_id: string;
+  source?: import('../entities').EventSource;
+  event_type: string;
+  event_key: string;
+  occurred_at: Date;
+  received_at?: Date;
+  value_number?: number | null;
+  value_text?: string | null;
+  unit?: string | null;
+  metadata?: Record<string, unknown> | null;
+}
+
+export interface IPlantOperationalEventRepository {
+  findByEventKey(eventKey: string): Promise<import('../entities').PlantOperationalEventEntity | null>;
+  create(dto: CreatePlantOperationalEventPersistenceDTO): Promise<import('../entities').PlantOperationalEventEntity>;
+  findRecentByPlantId(plantId: string, limit?: number): Promise<import('../entities').PlantOperationalEventEntity[]>;
+}
+

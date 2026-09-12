@@ -1,6 +1,18 @@
 // Enums del Dominio
 export type HealthStatus = 'UNKNOWN' | 'HEALTHY' | 'ATTENTION' | 'RECOVERY';
 export type LifecycleStatus = 'ACTIVE' | 'ARCHIVED';
+export type EventSource = 'HOME_ASSISTANT' | 'MANUAL';
+
+export const ALLOWED_OPERATIONAL_EVENT_TYPES = [
+  'SOIL_MOISTURE_LOW',
+  'SOIL_MOISTURE_RECOVERED',
+  'SENSOR_OFFLINE',
+  'SENSOR_ONLINE',
+  'IRRIGATION_STARTED',
+  'IRRIGATION_FINISHED',
+] as const;
+
+export type PlantOperationalEventType = (typeof ALLOWED_OPERATIONAL_EVENT_TYPES)[number];
 
 // Constantes y Tipos de Proveedores Botánicos
 export const OPEN_PLANTBOOK_PROVIDER = 'OPEN_PLANTBOOK' as const;
@@ -67,6 +79,22 @@ export interface PlantHomeAssistantBindingEntity {
   updated_at: Date;
 }
 
+// Entidad pura: PlantOperationalEvent
+export interface PlantOperationalEventEntity {
+  id: string;
+  plant_id: string;
+  source: EventSource;
+  event_type: string;
+  event_key: string;
+  occurred_at: Date;
+  received_at: Date;
+  value_number: number | null;
+  value_text: string | null;
+  unit: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: Date;
+}
+
 // Entidad pura: Plant
 export interface PlantEntity {
   id: string;
@@ -89,4 +117,5 @@ export interface PlantEntity {
   photos?: PhotoEntity[];
   profile?: PlantCultivationProfileEntity | null;
   ha_binding?: PlantHomeAssistantBindingEntity | null;
+  events?: PlantOperationalEventEntity[];
 }

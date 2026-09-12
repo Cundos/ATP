@@ -29,6 +29,8 @@ erDiagram
     PLANT_REFERENCE ||--o{ PLANT : "clasifica como especie (0..N)"
     PLANT ||--o{ PHOTO : "posee fotos propias (0..N)"
     PLANT ||--o| PLANT_CULTIVATION_PROFILE : "define condiciones actuales (0..1)"
+    PLANT ||--o| PLANT_HOME_ASSISTANT_BINDING : "vincula telemetria viva (0..1)"
+    PLANT ||--o{ PLANT_OPERATIONAL_EVENT : "registra historial operativo (0..N)"
 
     LOCATION {
         id string PK "Identificador técnico interno"
@@ -76,6 +78,33 @@ erDiagram
         watering_notes string "Notas y observaciones reales sobre el riego"
         created_at timestamp "Fecha de creación del perfil"
         updated_at timestamp "Fecha de última modificación"
+    }
+
+    PLANT_HOME_ASSISTANT_BINDING {
+        id string PK "Identificador técnico interno (UUIDv7)"
+        plant_id string FK, UK "Referencia 1:1 a Plant"
+        moisture_entity_id string "Entidad sensor de humedad de suelo"
+        battery_entity_id string "Entidad sensor de batería"
+        online_entity_id string "Entidad sensor/binario de conectividad"
+        stale_entity_id string "Entidad sensor/binario de dato desactualizado"
+        visual_state_entity_id string "Entidad helper de estado visual"
+        created_at timestamp "Fecha de creación del binding"
+        updated_at timestamp "Fecha de última modificación"
+    }
+
+    PLANT_OPERATIONAL_EVENT {
+        id string PK "Identificador técnico interno (UUIDv7)"
+        plant_id string FK "Referencia N:1 a Plant"
+        source enum "HOME_ASSISTANT | MANUAL"
+        event_type string "Tipo de evento operativo (SOIL_MOISTURE_LOW, etc.)"
+        event_key string UK "Clave única e inmutable para idempotencia"
+        occurred_at timestamp "Momento real del suceso"
+        received_at timestamp "Momento de ingesta en backend"
+        value_number float "Valor numérico asociado al evento (opcional)"
+        value_text string "Valor textual complementario (opcional)"
+        unit string "Unidad de medida (ej. %, °C) (opcional)"
+        metadata json "Payload JSONB sanitizado (entity_id, state, etc.)"
+        created_at timestamp "Fecha de registro en base de datos"
     }
 
     PHOTO {
@@ -182,6 +211,41 @@ erDiagram
 - **Alcance y Delimitación:**
   - Representa única y estrictamente las condiciones reales del ejemplar en el mundo físico.
   - Los requerimientos generales y teóricos de la especie pertenecen a `PlantReference.reference_care`.
+
+### 3.6. Entidad: `PlantHomeAssistantBinding` (Vinculación con Home Assistant)
+- **Propósito:** Asociar un ejemplar físico a entidades de sensores de Home Assistant para telemetría en vivo read-only (ATP-HA-002).
+- **Atributos:**
+  - `id`: Identificador técnico interno primario (UUIDv7).
+  - `plant_id`: Clave foránea hacia `Plant` con restricción UNIQUE (1:0..1).
+  - `moisture_entity_id`: Entity ID del sensor de humedad de suelo (opcional).
+  - `battery_entity_id`: Entity ID del sensor de batería (opcional).
+  - `online_entity_id`: Entity ID del sensor/binario de conectividad (opcional).
+  - `stale_entity_id`: Entity ID del sensor/binario de dato desactualizado (opcional).
+  - `visual_state_entity_id`: Entity ID del helper/sensor de estado visual consolidado (opcional).
+  - `created_at`: Timestamp de creación.
+  - `updated_at`: Timestamp de última modificación.
+- **Reglas de Dominio:**
+  - Máximo 1 binding activo por ejemplar físico.
+  - Home Assistant **no** es fuente de identidad ni base de datos primaria de la planta.
+
+### 3.7. Entidad: `PlantOperationalEvent` (Historial Operativo de Eventos)
+- **Propósito:** Ingesta y persistencia de sucesos operativos significativos (humedad baja/recuperada, sensor offline/online, riego) emitidos por Home Assistant o registrados manualmente (ATP-HA-003).
+- **Atributos:**
+  - `id`: Identificador técnico interno primario (UUIDv7).
+  - `plant_id`: Clave foránea hacia `Plant` (N:1).
+  - `source`: Origen del evento (`HOME_ASSISTANT` o `MANUAL`).
+  - `event_type`: Tipo de evento (`SOIL_MOISTURE_LOW`, `SOIL_MOISTURE_RECOVERED`, `SENSOR_OFFLINE`, `SENSOR_ONLINE`, `IRRIGATION_STARTED`, `IRRIGATION_FINISHED`).
+  - `event_key`: Clave determinística única para garantizar idempotencia (`UNIQUE`). Formato HA: `home-assistant:<event_id>`.
+  - `occurred_at`: Timestamp UTC en que ocurrió el suceso.
+  - `received_at`: Timestamp UTC de ingesta en el servidor (default: `now()`).
+  - `value_number`: Valor numérico opcional (ej. porcentaje de humedad).
+  - `value_text`: Valor textual opcional descriptivo.
+  - `unit`: Unidad de medida (ej. `%`, `V`).
+  - `metadata`: Objeto JSONB sanitizado con allowlist de campos (`entity_id`, `state`, `automation_id`, `trigger`).
+  - `created_at`: Timestamp de registro en base de datos.
+- **Reglas de Idempotencia y Eficiencia:**
+  - Un evento con el mismo `event_key` no genera duplicados (retorna HTTP 200 con `status = DUPLICATE`).
+  - No se persiste telemetría periódica en crudo; únicamente eventos discretos con valor histórico operativo.
 
 ---
 

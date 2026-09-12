@@ -20,6 +20,11 @@ enum LifecycleStatus {
   ARCHIVED
 }
 
+enum EventSource {
+  HOME_ASSISTANT
+  MANUAL
+}
+
 model Location {
   id               String          @id // UUIDv7
   name             String
@@ -70,6 +75,7 @@ model Plant {
   photos           Photo[]
   profile          PlantCultivationProfile?
   ha_binding       PlantHomeAssistantBinding?
+  events           PlantOperationalEvent[]
 
   @@index([location_id])
   @@index([reference_id])
@@ -107,6 +113,26 @@ model PlantHomeAssistantBinding {
   plant                  Plant    @relation(fields: [plant_id], references: [id], onDelete: Cascade)
 
   @@map("plant_ha_bindings")
+}
+
+model PlantOperationalEvent {
+  id           String      @id // UUIDv7
+  plant_id     String
+  source       EventSource @default(HOME_ASSISTANT)
+  event_type   String
+  event_key    String      @unique
+  occurred_at  DateTime
+  received_at  DateTime    @default(now())
+  value_number Float?
+  value_text   String?
+  unit         String?
+  metadata     Json?
+  created_at   DateTime    @default(now())
+
+  plant        Plant       @relation(fields: [plant_id], references: [id], onDelete: Cascade)
+
+  @@index([plant_id, occurred_at(sort: Desc)])
+  @@map("plant_operational_events")
 }
 
 model Photo {

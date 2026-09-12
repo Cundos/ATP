@@ -9,4 +9,5 @@ export * from './BotanicalReferencePicker';
 export * from './BotanicalReferenceSection';
 export * from './ReferenceBotanicalImage';
 export * from './PlantLiveTelemetrySection';
+export * from './PlantRecentActivitySection';
 

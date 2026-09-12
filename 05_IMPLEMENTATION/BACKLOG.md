@@ -634,6 +634,29 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Sanitización estricta de atributos (`friendly_name`, `unit_of_measurement`, `device_class`).
   - Home Assistant NO es fuente de identidad ni base de datos de las plantas.
 
+#### `ATP-HA-002` — Plant ↔ Home Assistant Sensor Binding & Live Telemetry
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Vincular un ejemplar físico (`Plant`) con entidades de Home Assistant para telemetría en vivo read-only en la ficha de planta.
+- **Tipo:** `INTEGRATION` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Modelo Prisma: `PlantHomeAssistantBinding` (1:1 con `Plant`, UUIDv7).
+  - Repositorio y Entidad: `IPlantHomeAssistantBindingRepository`, `PrismaPlantHomeAssistantBindingRepository`.
+  - Caso de Uso: `GetPlantLiveTelemetryUseCase`.
+  - UI: `PlantLiveTelemetrySection` con fallback resiliente ("Sin datos de telemetría", "Sensor sin conexión", etc.).
+  - Vinculación Real: `AT-PL-007` (Zamioculca chica) asociada al sensor `sensor.beta_zz_plant_soil_moisture`.
+
+#### `ATP-HA-003` — Telemetry Sync & Event Ingestion (Webhook)
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Ingestar eventos operativos discretos desde Home Assistant hacia Atilio Plants vía webhook seguro e idempotente, construyendo el historial operativo del ejemplar.
+- **Tipo:** `INTEGRATION` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Modelo Prisma: `PlantOperationalEvent` y enum `EventSource` (`HOME_ASSISTANT`, `MANUAL`).
+  - Repositorio y Entidades: `IPlantOperationalEventRepository`, `PrismaPlantOperationalEventRepository`, tipos y DTOs en `src/core/domain/`.
+  - Caso de Uso: `IngestHomeAssistantEventUseCase` (validación, deduplicación por `event_key`, sanitización de metadata con allowlist).
+  - Route Handler: `POST /api/integrations/home-assistant/events` con autenticación Bearer en tiempo constante (`crypto.timingSafeEqual`) y códigos semánticos (201 Created, 200 Duplicate, 400 Bad Request, 401 Unauthorized, 404 Not Found).
+  - UI: Sección "Actividad reciente" (`PlantRecentActivitySection`) en la ficha de planta (`SCR-003`).
+  - Verificación Smoke: Evento `atp-ha-003-smoke-001` probado exitosamente en Neon PostgreSQL contra `AT-PL-007`.
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)

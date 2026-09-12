@@ -135,3 +135,54 @@ En una arquitectura Next.js full-stack monolítica moderna, no es necesario expo
 - **Payload:** `{"pid": "monstera deliciosa"}`
 - **Comportamiento:** Consulta detalle en Open Plantbook, transforma el payload mediante `OpenPlantbookMapper` y persiste o recupera la entidad local `PlantReference` como snapshot de dominio en PostgreSQL (`ADR-012`).
 - **Respuesta (200 OK / 201 Created):** Retorna el `referenceId` local (UUIDv7) para asociar al ejemplar en el formulario.
+
+### 3.5 Ingesta de Eventos Operativos de Home Assistant (ATP-HA-003)
+- **Método / Ruta:** `POST /api/integrations/home-assistant/events`
+- **Autenticación:** Cabecera `Authorization: Bearer <HOME_ASSISTANT_WEBHOOK_SECRET>` comparada en tiempo constante (`crypto.timingSafeEqual`).
+- **Payload de Ingesta:**
+  ```json
+  {
+    "plant_id": "0191aa10-0001-7000-8000-000000000001",  // o "plant_code": "AT-PL-007"
+    "event_type": "SOIL_MOISTURE_LOW",                    // SOIL_MOISTURE_LOW | SOIL_MOISTURE_RECOVERED | SENSOR_OFFLINE | SENSOR_ONLINE | IRRIGATION_STARTED | IRRIGATION_FINISHED
+    "event_id": "zz-moist-low-20260912-1500",             // Clave determinística de HA
+    "occurred_at": "2026-09-12T15:00:00.000Z",           // Timestamp ISO8601
+    "value_number": 14.5,                                 // Opcional: número
+    "value_text": null,                                   // Opcional: string
+    "unit": "%",                                          // Opcional: string
+    "metadata": {                                         // Opcional: objeto sanitizado
+      "entity_id": "sensor.beta_zz_plant_soil_moisture",
+      "state": "14.5",
+      "automation_id": "auto_moisture_low_zz",
+      "trigger": "numeric_state"
+    }
+  }
+  ```
+- **Respuestas:**
+  - `201 Created` (Nuevo evento registrado):
+    ```json
+    {
+      "success": true,
+      "data": {
+        "id": "01993da8-0001-7000-8000-000000000001",
+        "plantId": "0191aa10-0001-7000-8000-000000000001",
+        "eventType": "SOIL_MOISTURE_LOW",
+        "status": "CREATED"
+      }
+    }
+    ```
+  - `200 OK` (Evento duplicado / idempotencia aplicada):
+    ```json
+    {
+      "success": true,
+      "data": {
+        "id": "01993da8-0001-7000-8000-000000000001",
+        "plantId": "0191aa10-0001-7000-8000-000000000001",
+        "eventType": "SOIL_MOISTURE_LOW",
+        "status": "DUPLICATE"
+      }
+    }
+    ```
+  - `400 Bad Request`: Payload inválido, tipos incorrectos o `event_type` no soportado.
+  - `401 Unauthorized`: Token de webhook ausente o inválido.
+  - `404 Not Found`: Planta no encontrada por `plant_id` o `plant_code`.
+

@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { describe, it } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { HomeAssistantRestClient } from '../HomeAssistantRestClient';
 
 describe('Home Assistant Real Smoke Test (Server-Side)', () => {
@@ -45,6 +45,44 @@ describe('Home Assistant Real Smoke Test (Server-Side)', () => {
     } catch (err: unknown) {
       const error = err as Error;
       console.log(`[HA Smoke AT-PL-007] Response: ${error.name} - ${error.message}`);
+    }
+  });
+
+  it('attempts end-to-end event ingestion smoke test for AT-PL-007 (ATP-HA-003)', async () => {
+    const { getIngestHomeAssistantEventUseCase, getPlantOperationalEventRepository, getPlantRepository } =
+      await import('../../services/serviceContainer');
+    const useCase = getIngestHomeAssistantEventUseCase();
+    const eventRepo = getPlantOperationalEventRepository();
+    const plantRepo = getPlantRepository();
+
+    const smokePayload = {
+      event_id: 'atp-ha-003-smoke-001',
+      permanent_code: 'AT-PL-007',
+      event_type: 'SENSOR_ONLINE',
+      occurred_at: '2026-09-12T22:15:00Z',
+      metadata: {
+        entity_id: 'binary_sensor.sensor_humedad_beta_online',
+        state: 'on',
+      },
+    };
+
+    // First delivery
+    const firstResult = await useCase.execute(smokePayload);
+    console.log('[HA Smoke Event Ingestion] First Result:', firstResult.status, firstResult.event.id);
+
+    // Second delivery -> must return DUPLICATE
+    const secondResult = await useCase.execute(smokePayload);
+    console.log('[HA Smoke Event Ingestion] Second Result (Idempotency):', secondResult.status);
+    expect(secondResult.status).toBe('DUPLICATE');
+    expect(secondResult.event.id).toBe(firstResult.event.id);
+
+    // Verify recent events query includes the event
+    const plant = await plantRepo.findByPermanentCode('AT-PL-007');
+    if (plant) {
+      const recent = await eventRepo.findRecentByPlantId(plant.id, 5);
+      const found = recent.some((e) => e.event_key === 'home-assistant:atp-ha-003-smoke-001');
+      expect(found).toBe(true);
+      console.log('[HA Smoke Event Ingestion] Successfully verified in recent activity for AT-PL-007');
     }
   });
 });

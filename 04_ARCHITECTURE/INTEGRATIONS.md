@@ -75,3 +75,101 @@ En estricta observancia de los lineamientos de arquitectura:
 2. **Sin Proxies Abiertos:** No existen endpoints públicos genéricos tipo `/api/ha?entity=...`. El acceso ocurre exclusivamente mediante casos de uso internos autorizados.
 3. **Sanitización Estricta de DTO (`HomeAssistantState`):** Se descartan contextos internos, tokens y atributos no autorizados. Solo se exponen atributos aprobados (`friendly_name`, `unit_of_measurement`, `device_class`).
 4. **Manejo Resiliente de Errores:** Errores 401, 403, 404, 429, 5xx, timeouts y fallas de red se traducen a excepciones de dominio sin filtrar tokens ni cabeceras en los mensajes de error.
+
+---
+
+## 3. Ingesta de Eventos Operativos de Home Assistant (ATP-HA-003)
+
+Home Assistant puede empujar eventos operativos significativos hacia Atilio Plants mediante un webhook HTTP seguro.
+
+### 3.1 Principio Operativo:
+- **Home Assistant:** Ejecuta automatizaciones y detecta eventos (`SOIL_MOISTURE_LOW`, `SOIL_MOISTURE_RECOVERED`, `SENSOR_OFFLINE`, `SENSOR_ONLINE`, `IRRIGATION_STARTED`, `IRRIGATION_FINISHED`).
+- **Atilio Plants:** Recibe y persiste **únicamente eventos discretos** que aportan valor histórico a la bitácora del ejemplar.
+- **NO se almacena telemetría periódica cruda minuto a minuto.**
+
+### 3.2 Arquitectura del Flujo de Ingesta:
+
+```text
+┌──────────────────────────────────────┐
+│        Home Assistant Core           │
+│   (Automation / rest_command)        │
+└──────────────────┬───────────────────┘
+                   │ POST /api/integrations/home-assistant/events
+                   │ Authorization: Bearer <HOME_ASSISTANT_WEBHOOK_SECRET>
+                   │ Content-Type: application/json
+                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                        Atilio Plants Backend                           │
+│                                                                        │
+│   [Timing-Safe Auth Verification (crypto.timingSafeEqual)]             │
+│                        │                                               │
+│                        ▼                                               │
+│   [IngestHomeAssistantEventUseCase]                                    │
+│        ├── Valida payload (plant_id / permanent_code, event_type, etc) │
+│        ├── Resuelve ejemplar (PlantEntity)                             │
+│        ├── Aplica idempotencia via event_key (UNIQUE)                  │
+│        └── Sanitiza metadata (entity_id, state, automation_id, trigger)│
+│                        │                                               │
+│                        ▼                                               │
+│   [PrismaPlantOperationalEventRepository]                              │
+│                        │                                               │
+│                        ▼                                               │
+│   [Neon PostgreSQL (PlantOperationalEvent)]                            │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### 3.3 Tipos de Eventos Soportados:
+
+| Event Type | Semántica | Valores Típicos |
+| :--- | :--- | :--- |
+| `SOIL_MOISTURE_LOW` | Humedad de suelo descendió por debajo del umbral de alerta | `value_number: 14.5`, `unit: "%"` |
+| `SOIL_MOISTURE_RECOVERED` | Humedad de suelo recuperó niveles adecuados tras riego o absorción | `value_number: 48.0`, `unit: "%"` |
+| `SENSOR_OFFLINE` | Sensor o dispositivo dejó de emitir telemetría | `value_text: "offline"`, `metadata.entity_id` |
+| `SENSOR_ONLINE` | Sensor o dispositivo recuperó conectividad | `value_text: "online"`, `metadata.entity_id` |
+| `IRRIGATION_STARTED` | Inicio de ciclo de riego automático o manual | `value_text: "started"` |
+| `IRRIGATION_FINISHED` | Finalización de ciclo de riego | `value_number: 120` (segundos) |
+
+### 3.4 Ejemplo de Automatización en Home Assistant (`rest_command` + `automation`):
+
+```yaml
+# configuration.yaml
+rest_command:
+  atp_post_event:
+    url: "https://<tu-app>.vercel.app/api/integrations/home-assistant/events"
+    method: POST
+    headers:
+      Authorization: "Bearer !secret atp_webhook_secret"
+      Content-Type: "application/json"
+    payload: >
+      {
+        "plant_code": "{{ plant_code }}",
+        "event_type": "{{ event_type }}",
+        "event_id": "{{ event_id }}",
+        "occurred_at": "{{ now().isoformat() }}",
+        "value_number": {{ value_number | default('null') }},
+        "value_text": "{{ value_text | default('') }}",
+        "unit": "{{ unit | default('') }}",
+        "metadata": {
+          "entity_id": "{{ trigger.entity_id | default('') }}",
+          "state": "{{ trigger.to_state.state | default('') }}",
+          "automation_id": "auto_moisture_low_zz"
+        }
+      }
+
+# automations.yaml
+- id: auto_moisture_low_zz
+  alias: "Alerta Humedad Baja - ZZ Plant"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.beta_zz_plant_soil_moisture
+      below: 15
+      for: "00:10:00"
+  action:
+    - service: rest_command.atp_post_event
+      data:
+        plant_code: "AT-PL-007"
+        event_type: "SOIL_MOISTURE_LOW"
+        event_id: "zz-moist-low-{{ now().strftime('%Y%m%d%H%M') }}"
+        value_number: "{{ states('sensor.beta_zz_plant_soil_moisture') | float }}"
+        unit: "%"
+```

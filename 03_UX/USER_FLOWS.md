@@ -176,3 +176,18 @@ Este documento especifica los recorridos de navegación interactivos clave para 
   4. Pulsa *"Guardar cambios"*.
   5. El sistema almacena la nueva imagen en `photos/{permanent_code}/<uuid>.<ext>`, actualiza `Photo.is_primary` y preserva intacto el binario de la imagen anterior en disco.
   6. Redirige a SCR-003 exhibiendo la nueva foto principal.
+
+---
+
+## FLOW-012 — Identificación y Acceso por Código QR
+
+- **Trazabilidad:** ATP-FEAT-001 | SCR-003, SCR-008
+- **Punto de entrada:** Ficha de Planta (SCR-003) o escaneo físico de tarjeta/etiqueta QR.
+- **Paso a paso (Generación y Descarga):**
+  1. El usuario visualiza la sección *"Identificación QR"* en la ficha del ejemplar (SCR-003).
+  2. Puede pulsar *"Copiar enlace"* para obtener la URL canónica `{APP_PUBLIC_BASE_URL}/plants/{permanent_code}`.
+  3. Puede pulsar *"Descargar SVG"* para obtener el archivo vectorial limpio `{permanent_code}-qr.svg`.
+  4. Puede pulsar *"Vista imprimible"* para abrir la tarjeta de impresión y recorte (SCR-008 en `/plants/[permanent_code]/qr`) y disparar la impresión.
+- **Paso a paso (Acceso Físico desde Smartphone):**
+  1. El usuario escanea el código QR físico de la maceta con la cámara de su teléfono celular.
+  2. El navegador abre directamente la ficha canónica `/plants/AT-PL-XXX` mostrando identidad, telemetría y estado.

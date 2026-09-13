@@ -657,6 +657,17 @@ Un Milestone se considera **COMPLETADO** cuando:
   - UI: Sección "Actividad reciente" (`PlantRecentActivitySection`) en la ficha de planta (`SCR-003`).
   - Verificación Smoke: Evento `atp-ha-003-smoke-001` probado exitosamente en Neon PostgreSQL contra `AT-PL-007`.
 
+#### `ATP-FEAT-001` — QR por Planta (Identificación QR y Ficha Imprimible)
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Generar y mostrar un código QR único por ejemplar para abrir directamente su ficha en Atilio Plants desde dispositivos móviles mediante la URL canónica `{APP_PUBLIC_BASE_URL}/plants/{permanent_code}`.
+- **Tipo:** `FEATURE` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Servicio de Dominio: `getPlantCanonicalUrl` y `getAppPublicBaseUrl` en `src/core/domain/services/canonicalUrl.ts`.
+  - Componente UI: `PlantQrCode` en `src/features/plants/components/PlantQrCode.tsx` (generación SVG de alto contraste, copiado de enlace, descarga de `{permanent_code}-qr.svg` y acceso a vista imprimible).
+  - Vista Imprimible: `/plants/[id]/qr` (`PlantQrPrintView`) con estilos específicos de `@media print` para corte y colocación en macetas.
+  - Integración en Ficha: Sección "Identificación QR" en `PlantDetailView` (`SCR-003`).
+  - Pruebas Automatizadas: Unit tests (`canonical-url.test.ts`, `plant-qr.test.tsx`) y E2E (`plant-qr.spec.ts`).
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)

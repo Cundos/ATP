@@ -66,7 +66,7 @@ describe('ATP-IMP-013: PlantDetailView (SCR-003) Tests', () => {
   it('renderiza permanent_code, common_name, scientific_name y HealthBadge', () => {
     render(<PlantDetailView plant={mockPlantFull} />);
 
-    expect(screen.getByText('AT-PL-001')).toBeDefined();
+    expect(screen.getAllByText('AT-PL-001').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Monstera Deliciosa')).toBeDefined();
     expect(screen.getAllByText(/monstera deliciosa/i).length).toBeGreaterThan(0);
     expect(screen.getByText('Saludable')).toBeDefined();

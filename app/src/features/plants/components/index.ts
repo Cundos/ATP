@@ -10,4 +10,5 @@ export * from './BotanicalReferenceSection';
 export * from './ReferenceBotanicalImage';
 export * from './PlantLiveTelemetrySection';
 export * from './PlantRecentActivitySection';
-
+export * from './PlantQrCode';
+export * from './PlantQrPrintView';

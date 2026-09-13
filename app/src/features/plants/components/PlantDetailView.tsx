@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   Info,
   Tag,
+  QrCode,
 } from 'lucide-react';
 import { PlantEntity, PlantOperationalEventEntity } from '@/core/domain/entities';
 import { HealthBadge, Button, Modal, Toast } from '@/components/ui';
@@ -25,6 +26,7 @@ import { PlantThumbnail } from './PlantThumbnail';
 import { BotanicalReferenceSection } from './BotanicalReferenceSection';
 import { PlantLiveTelemetrySection } from './PlantLiveTelemetrySection';
 import { PlantRecentActivitySection } from './PlantRecentActivitySection';
+import { PlantQrCode } from './PlantQrCode';
 import { PlantLiveTelemetryDTO } from '@/core/application/use-cases/GetPlantLiveTelemetryUseCase';
 import {
   BotanicalReferenceViewModel,
@@ -297,6 +299,17 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
       {botanicalRefVm && (
         <BotanicalReferenceSection viewModel={botanicalRefVm} />
       )}
+
+      {/* Sección: Identificación QR (ATP-FEAT-001) */}
+      <section className={styles.sectionCard} aria-labelledby="section-qr-title" data-testid="section-qr">
+        <h2 id="section-qr-title" className={styles.sectionTitle}>
+          <QrCode size={18} aria-hidden="true" />
+          <span>Identificación QR</span>
+        </h2>
+        <div className={styles.qrSectionContent}>
+          <PlantQrCode permanentCode={plant.permanent_code} />
+        </div>
+      </section>
 
       {/* Sección: Observaciones y Notas */}
       {plant.notes && (

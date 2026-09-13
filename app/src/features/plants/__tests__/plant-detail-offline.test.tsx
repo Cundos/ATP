@@ -72,7 +72,7 @@ describe('PlantDetailView Local-First & Offline Verification (ATP-IMP-025)', () 
     render(<PlantDetailView plant={mockPlantWithReference} />);
 
     // Physical plant details
-    expect(screen.getByText('AT-PL-001')).toBeInTheDocument();
+    expect(screen.getAllByText('AT-PL-001').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Gomero Austral')).toBeInTheDocument();
 
     // Botanical Reference section
@@ -101,7 +101,7 @@ describe('PlantDetailView Local-First & Offline Verification (ATP-IMP-025)', () 
 
     render(<PlantDetailView plant={mockPlantNoRef} />);
 
-    expect(screen.getByText('AT-PL-001')).toBeInTheDocument();
+    expect(screen.getAllByText('AT-PL-001').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Gomero Austral')).toBeInTheDocument();
 
     // Botanical reference section is NOT rendered

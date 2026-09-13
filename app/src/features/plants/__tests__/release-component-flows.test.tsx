@@ -245,7 +245,7 @@ describe('Release v0.1 Component Flow Integration Tests (ATP-IMP-027)', () => {
   it('E2E Flow 8: Ficha de planta sin referencia botánica renderiza limpiamente', () => {
     render(<PlantDetailView plant={testPlants[0]} />);
 
-    expect(screen.getByText('AT-PL-001')).toBeDefined();
+    expect(screen.getAllByText('AT-PL-001').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Ficus Pandurata')).toBeDefined();
     expect(screen.queryByText(/conocimiento botánico de referencia/i)).toBeNull();
   });

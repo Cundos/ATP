@@ -144,7 +144,11 @@ graph TD
     - Luz real: condiciones de iluminación en su ubicación o *"Sin especificar"*.
     - Riego real: notas y observaciones sobre el riego de este ejemplar o *"Sin especificar"*.
   - **Sección 5: Administración:** Fecha de incorporación (ej. *"15 de enero de 2026"*), estado en el ciclo de vida (*Activo* o *Archivado*), fecha de creación y timestamp de última actualización.
-  - **Sección 6: Referencia Botánica Externa (Open Plantbook, cuando exista):** Bloque secundario claramente diferenciado que exhibe:
+  - **Sección 6: Identificación QR (ATP-FEAT-001):**
+    - Código QR vectorial de alto contraste generado a partir de la URL canónica `{APP_PUBLIC_BASE_URL}/plants/{permanent_code}`.
+    - Identificador permanente visible `AT-PL-XXX`.
+    - Acciones: Copiar enlace canónico, Descargar SVG (`AT-PL-XXX-qr.svg`) y acceso a vista imprimible/recortable (SCR-008).
+  - **Sección 7: Referencia Botánica Externa (Open Plantbook, cuando exista):** Bloque secundario claramente diferenciado que exhibe:
     - Nombre científico de referencia y nombres comunes sugeridos.
     - Cuidados teóricos de la especie: rangos recomendados de temperatura, luz (lux), humedad ambiental y de suelo.
     - Pautas generales de la especie: riego, poda y sustrato ideal teórico.
@@ -156,7 +160,7 @@ graph TD
 - **Acciones secundarias y de Ciclo de Vida:**
   - Botón secundario en pie de ficha: **"Archivar planta"** (en ejemplar activo) o **"Restaurar planta"** (en ejemplar archivado).
   - La acción de archivar se ubica deliberadamente al final de la pantalla, con tratamiento visual neutral/discreto (no botón rojo de borrado destructivo) para evitar confusiones con eliminación de datos.
-- **Trazabilidad:** FR-015, FR-016, FR-017, FR-026, FR-028, FR-032, FR-034, FR-049, FR-055 | US-004, US-008, US-009, US-010, US-015.
+- **Trazabilidad:** FR-015, FR-016, FR-017, FR-026, FR-028, FR-032, FR-034, FR-049, FR-055, ATP-FEAT-001 | US-004, US-008, US-009, US-010, US-015.
 
 ---
 
@@ -227,6 +231,25 @@ graph TD
   - Sección inferior colapsable: *"Ubicaciones archivadas"*, permitiendo reactivarlas si vuelven a utilizarse.
 - **Regla visual y de integridad:** Al archivar un ambiente con plantas asignadas, un diálogo informa: *"Este ambiente se archivará y no aparecerá para nuevas plantas. Las 4 plantas que están en él conservarán su historial."*
 - **Trazabilidad:** FR-037, FR-038, FR-039, FR-040, FR-041 | US-011, US-012.
+
+---
+
+### SCR-008: Vista Imprimible de Identificación QR (`/plants/[permanent_code]/qr`)
+- **Objetivo:** Generar una tarjeta física minimalista y recortable para colocar junto a la maceta o tutor del ejemplar.
+- **Información mostrada:**
+  - Código QR vectorial de gran tamaño (~220-250px) apuntando a `{APP_PUBLIC_BASE_URL}/plants/{permanent_code}`.
+  - Código permanente destacado `AT-PL-XXX` en tipografía monoespaciada de alta legibilidad.
+  - Nombre común del ejemplar (`common_name`) en tipografía serif botánica.
+  - Nombre científico en cursiva (`scientific_name`, si existe).
+  - Instrucción concisa: *"Escanear para abrir ficha"*.
+  - Guía sutil de línea de recorte (*"— Línea de recorte —"*).
+- **Acciones en pantalla:**
+  - Botón: **"Imprimir"** -> Dispara el diálogo de impresión nativo del navegador (`window.print()`).
+  - Enlace: **"Volver a la ficha"** -> Retorna a SCR-003 (`/plants/[permanent_code]`).
+- **Comportamiento `@media print`:**
+  - Oculta completamente barras de navegación, botones y encabezados de la aplicación.
+  - Centra la tarjeta y ajusta márgenes para corte limpio en hoja estándar.
+- **Trazabilidad:** ATP-FEAT-001.
 
 ---
 

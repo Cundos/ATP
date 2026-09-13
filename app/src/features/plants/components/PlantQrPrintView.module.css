@@ -1,0 +1,171 @@
+/* ==========================================================================
+   PLANT QR PRINT VIEW — CONTEMPORARY HERBARIUM (ATP-FEAT-001)
+   ========================================================================== */
+
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: calc(100vh - 120px);
+  padding: 24px 16px;
+  gap: 24px;
+}
+
+.screenNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 480px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: var(--text-secondary, #686B65);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.backLink:hover {
+  color: var(--brand-primary, #364734);
+}
+
+/* Printable Plant Tag Card */
+.printCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  max-width: 360px;
+  padding: 32px 24px;
+  background-color: #FFFFFF;
+  border: 1.5px dashed var(--border-default, #DCD7CC);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.cutlineNotice {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted, #93968F);
+  margin-bottom: 16px;
+}
+
+.qrSvgWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  margin-bottom: 16px;
+}
+
+.qrSvgWrapper svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.permanentCode {
+  font-family: var(--font-mono-family, 'JetBrains Mono', monospace);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--brand-primary, #364734);
+  margin: 0 0 8px 0;
+}
+
+.commonName {
+  font-family: var(--font-serif-family, 'Lora', Georgia, serif);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary, #1C1E1B);
+  margin: 0 0 4px 0;
+}
+
+.scientificName {
+  font-family: var(--font-serif-family, 'Lora', Georgia, serif);
+  font-style: italic;
+  font-size: 0.875rem;
+  color: var(--text-secondary, #686B65);
+  margin: 0 0 16px 0;
+}
+
+.scanInstruction {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #686B65);
+  border-top: 1px solid var(--border-subtle, #EBE7DF);
+  padding-top: 12px;
+  width: 100%;
+  margin: 0;
+}
+
+.screenActions {
+  display: flex;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   PRINT STYLES
+   ========================================================================== */
+@media print {
+  @page {
+    size: auto;
+    margin: 15mm;
+  }
+
+  :global(body) {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+  }
+
+  /* Ocultar elementos de navegación general y controles de pantalla */
+  .screenNav,
+  .screenActions,
+  .cutlineNotice,
+  :global(nav),
+  :global(header),
+  :global(footer),
+  :global([data-testid="bottom-nav"]),
+  :global([data-testid="top-bar"]) {
+    display: none !important;
+  }
+
+  .pageContainer {
+    padding: 0 !important;
+    min-height: auto !important;
+    display: block !important;
+  }
+
+  .printCard {
+    box-shadow: none !important;
+    border: 1px dashed #888888 !important;
+    margin: 0 auto !important;
+    max-width: 320px !important;
+    padding: 24px 16px !important;
+    page-break-inside: avoid;
+  }
+
+  .permanentCode {
+    color: #000000 !important;
+  }
+
+  .commonName {
+    color: #000000 !important;
+  }
+
+  .scientificName {
+    color: #444444 !important;
+  }
+
+  .scanInstruction {
+    color: #555555 !important;
+    border-top-color: #CCCCCC !important;
+  }
+}

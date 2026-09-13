@@ -144,6 +144,14 @@ graph TD
     - Luz real: condiciones de iluminación en su ubicación o *"Sin especificar"*.
     - Riego real: notas y observaciones sobre el riego de este ejemplar o *"Sin especificar"*.
   - **Sección 5: Administración:** Fecha de incorporación (ej. *"15 de enero de 2026"*), estado en el ciclo de vida (*Activo* o *Archivado*), fecha de creación y timestamp de última actualización.
+  - **Sección 5.1: Evolución Visual / Historial de Fotos (ATP-FEAT-002):**
+    - Timeline cronológico ordenado en forma descendente (`COALESCE(taken_at, created_at) DESC`).
+    - Miniaturas de alta calidad con fecha de toma, nota/observación breve y badge de "Foto principal".
+    - Acciones:
+      - **"Agregar foto":** Modal con selector de cámara/galería, selector de fecha de toma, campo de nota y opción de marcar como principal.
+      - **"Comparar fotos":** Modo de selección de 2 fotos para visualización lado a lado (desktop) o apiladas (mobile).
+      - **Modal / Lightbox:** Inspección ampliada con opciones de marcar como principal, editar nota/fecha, y eliminación segura (con reasignación automática de foto principal a la más reciente restante).
+    - Estado vacío: *"Todavía no hay fotografías históricas."* con botón para agregar la primera foto.
   - **Sección 6: Identificación QR (ATP-FEAT-001):**
     - Código QR vectorial de alto contraste generado a partir de la URL canónica `{APP_PUBLIC_BASE_URL}/plants/{permanent_code}`.
     - Identificador permanente visible `AT-PL-XXX`.
@@ -160,7 +168,7 @@ graph TD
 - **Acciones secundarias y de Ciclo de Vida:**
   - Botón secundario en pie de ficha: **"Archivar planta"** (en ejemplar activo) o **"Restaurar planta"** (en ejemplar archivado).
   - La acción de archivar se ubica deliberadamente al final de la pantalla, con tratamiento visual neutral/discreto (no botón rojo de borrado destructivo) para evitar confusiones con eliminación de datos.
-- **Trazabilidad:** FR-015, FR-016, FR-017, FR-026, FR-028, FR-032, FR-034, FR-049, FR-055, ATP-FEAT-001 | US-004, US-008, US-009, US-010, US-015.
+- **Trazabilidad:** FR-015, FR-016, FR-017, FR-026, FR-028, FR-032, FR-034, FR-049, FR-055, ATP-FEAT-001, ATP-FEAT-002 | US-004, US-008, US-009, US-010, US-015.
 
 ---
 

@@ -191,3 +191,28 @@ Este documento especifica los recorridos de navegación interactivos clave para 
 - **Paso a paso (Acceso Físico desde Smartphone):**
   1. El usuario escanea el código QR físico de la maceta con la cámara de su teléfono celular.
   2. El navegador abre directamente la ficha canónica `/plants/AT-PL-XXX` mostrando identidad, telemetría y estado.
+
+---
+
+### FLOW-013: Gestión de Evolución Visual y Comparación de Fotografías (ATP-FEAT-002)
+- **Actor:** Usuario (cuidador/coleccionista).
+- **Objetivo:** Registrar el desarrollo histórico de un ejemplar mediante fotografías cronológicas, mantener la foto principal, inspeccionar fotos en lightbox y comparar 2 estados temporales.
+- **Precondiciones:** El usuario está visualizando la ficha de una planta (SCR-003).
+- **Paso a paso (Registro de Nueva Foto de Evolución):**
+  1. El usuario se desplaza a la sección *"Evolución visual"* y pulsa *"Agregar foto"*.
+  2. Se despliega el modal de carga donde puede seleccionar una imagen (cámara o galería), asignar la fecha real de la toma y agregar una nota u observación (ej. *"Primer brote de primavera"*).
+  3. Opcionalmente puede marcar el checkbox *"Establecer como fotografía principal"*.
+  4. Pulsa *"Guardar Foto"*. La imagen es optimizada a WebP, almacenada y registrada en el historial cronológico.
+- **Paso a paso (Inspección y Gestión en Lightbox):**
+  1. El usuario toca cualquier fotografía del timeline.
+  2. Se abre el lightbox en alta resolución con fecha formateada, nota y badge de foto principal si aplica.
+  3. Desde el modal, el usuario puede pulsar:
+     - *"Marcar como principal"*: actualiza la foto de portada del ejemplar sin alterar el historial.
+     - *"Editar nota / fecha"*: modifica los metadatos de la fotografía.
+     - *"Eliminar foto"*: confirma la eliminación física y lógica; si era la foto principal, el sistema promueve automáticamente la foto más reciente restante.
+- **Paso a paso (Comparación Temporal de Desarrollo):**
+  1. El usuario pulsa *"Comparar fotos"* en la cabecera de la sección de evolución visual.
+  2. Selecciona exactamente 2 fotografías del historial.
+  3. Pulsa *"Comparar seleccionadas"*.
+  4. El sistema presenta una vista comparativa lado a lado (desktop) o apilada (mobile) con las fechas y notas visibles para evaluar el crecimiento.
+

@@ -12,3 +12,7 @@ export * from './PlantLiveTelemetrySection';
 export * from './PlantRecentActivitySection';
 export * from './PlantQrCode';
 export * from './PlantQrPrintView';
+export * from './PlantPhotoTimeline';
+export * from './PlantPhotoLightboxModal';
+export * from './PlantPhotoComparisonModal';
+export * from './PlantPhotoUploadModal';

@@ -50,7 +50,9 @@ export interface PhotoEntity {
   mime_type: string;
   file_size: number | null;
   is_primary: boolean;
-  captured_at: Date | null;
+  captured_at?: Date | null;
+  taken_at?: Date | null;
+  caption?: string | null;
   created_at: Date;
 }
 

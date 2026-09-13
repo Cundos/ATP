@@ -1,6 +1,7 @@
 import { IPlantRepository, IPhotoRepository } from '@/core/domain/repositories';
 import { PhotoEntity } from '@/core/domain/entities';
 import { isValidPermanentCode } from '@/core/domain/permanent-code';
+import { sortPhotosChronologically } from '@/core/domain/services';
 import { PlantNotFoundError, PhotoValidationError } from '../errors';
 
 export class ListPlantPhotosUseCase {
@@ -27,6 +28,7 @@ export class ListPlantPhotosUseCase {
       throw new PlantNotFoundError(trimmed);
     }
 
-    return await this.photoRepository.listByPlant(plant.id);
+    const photos = await this.photoRepository.listByPlant(plant.id);
+    return sortPhotosChronologically(photos, 'desc');
   }
 }

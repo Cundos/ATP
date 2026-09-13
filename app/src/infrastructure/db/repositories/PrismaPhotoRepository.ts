@@ -1,7 +1,12 @@
 import { prisma } from '../prisma';
-import { IPhotoRepository, CreatePhotoPersistenceDTO } from '@/core/domain/repositories';
+import {
+  IPhotoRepository,
+  CreatePhotoPersistenceDTO,
+  UpdatePhotoMetadataDTO,
+} from '@/core/domain/repositories';
 import { PhotoEntity } from '@/core/domain/entities';
 import { generateUUIDv7 } from '@/core/domain/uuid';
+import { sortPhotosChronologically } from '@/core/domain/services';
 
 export class PrismaPhotoRepository implements IPhotoRepository {
   async findById(id: string): Promise<PhotoEntity | null> {
@@ -23,7 +28,7 @@ export class PrismaPhotoRepository implements IPhotoRepository {
       where: { plant_id: plantId },
       orderBy: { created_at: 'desc' },
     });
-    return records as unknown as PhotoEntity[];
+    return sortPhotosChronologically(records as unknown as PhotoEntity[], 'desc');
   }
 
   async findPrimaryByPlant(plantId: string): Promise<PhotoEntity | null> {
@@ -56,6 +61,8 @@ export class PrismaPhotoRepository implements IPhotoRepository {
               file_size: dto.file_size,
               is_primary: true,
               captured_at: dto.captured_at,
+              taken_at: dto.taken_at,
+              caption: dto.caption,
             },
           });
           return created as unknown as PhotoEntity;
@@ -74,6 +81,8 @@ export class PrismaPhotoRepository implements IPhotoRepository {
         file_size: dto.file_size,
         is_primary: false,
         captured_at: dto.captured_at,
+        taken_at: dto.taken_at,
+        caption: dto.caption,
       },
     });
     return created as unknown as PhotoEntity;
@@ -99,4 +108,22 @@ export class PrismaPhotoRepository implements IPhotoRepository {
       { maxWait: 10000, timeout: 20000 }
     );
   }
+
+  async updateMetadata(id: string, dto: UpdatePhotoMetadataDTO): Promise<PhotoEntity> {
+    const updated = await prisma.photo.update({
+      where: { id },
+      data: {
+        ...(dto.taken_at !== undefined ? { taken_at: dto.taken_at } : {}),
+        ...(dto.caption !== undefined ? { caption: dto.caption } : {}),
+      },
+    });
+    return updated as unknown as PhotoEntity;
+  }
+
+  async delete(id: string): Promise<void> {
+    await prisma.photo.delete({
+      where: { id },
+    });
+  }
 }
+

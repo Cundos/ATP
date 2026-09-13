@@ -15,6 +15,8 @@ export interface RegisterPlantPhotoCommand {
   file_size?: number | null;
   make_primary?: boolean;
   captured_at?: Date | null;
+  taken_at?: Date | null;
+  caption?: string | null;
 }
 
 export class RegisterPlantPhotoUseCase {
@@ -84,6 +86,7 @@ export class RegisterPlantPhotoUseCase {
 
     const parts = sanitizedKey.split('/');
     const fileName = command.file_name?.trim() || parts[parts.length - 1] || 'photo.webp';
+    const caption = command.caption?.trim() || null;
 
     return await this.photoRepository.create({
       plant_id: plant.id,
@@ -93,6 +96,9 @@ export class RegisterPlantPhotoUseCase {
       file_size: command.file_size ?? null,
       is_primary: isPrimary,
       captured_at: command.captured_at ?? null,
+      taken_at: command.taken_at ?? command.captured_at ?? null,
+      caption,
     });
   }
 }
+

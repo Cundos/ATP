@@ -144,6 +144,8 @@ model Photo {
   file_size   Int?      // Tamaño en bytes
   is_primary  Boolean   @default(false)
   captured_at DateTime?
+  taken_at    DateTime?
+  caption     String?   @db.Text
   created_at  DateTime  @default(now())
 
   plant       Plant     @relation(fields: [plant_id], references: [id], onDelete: Cascade)

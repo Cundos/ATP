@@ -201,4 +201,37 @@ describe('PostgreSQL Photo Lifecycle & Transaction Integration Tests (ATP-IMP-01
 
     expect(constraintViolated).toBe(true);
   });
+
+  it('H. creates photo with taken_at and caption, updates metadata and deletes correctly (ATP-FEAT-002)', async () => {
+    const photoWithMeta = await photoRepo.create({
+      plant_id: testPlantId,
+      file_path: 'photos/AT-TEST-099/photo-meta.webp',
+      file_name: 'photo-meta.webp',
+      mime_type: 'image/webp',
+      is_primary: false,
+      taken_at: new Date('2026-02-14T09:00:00Z'),
+      caption: 'Foto de San Valentín',
+    });
+
+    expect(photoWithMeta.caption).toBe('Foto de San Valentín');
+    expect(photoWithMeta.taken_at).toEqual(new Date('2026-02-14T09:00:00Z'));
+
+    // Update metadata
+    const updated = await photoRepo.updateMetadata(photoWithMeta.id, {
+      caption: 'Foto actualizada con nuevo brote',
+      taken_at: new Date('2026-02-15T09:00:00Z'),
+    });
+
+    expect(updated.caption).toBe('Foto actualizada con nuevo brote');
+    expect(updated.taken_at).toEqual(new Date('2026-02-15T09:00:00Z'));
+
+    // Verify in DB
+    const fetched = await photoRepo.findById(photoWithMeta.id);
+    expect(fetched?.caption).toBe('Foto actualizada con nuevo brote');
+
+    // Delete photo
+    await photoRepo.delete(photoWithMeta.id);
+    const afterDelete = await photoRepo.findById(photoWithMeta.id);
+    expect(afterDelete).toBeNull();
+  });
 });

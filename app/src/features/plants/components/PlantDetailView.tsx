@@ -23,6 +23,7 @@ import { PlantEntity, PlantOperationalEventEntity } from '@/core/domain/entities
 import { HealthBadge, Button, Modal, Toast } from '@/components/ui';
 import { archivePlantAction } from '../actions';
 import { PlantThumbnail } from './PlantThumbnail';
+import { PlantPhotoTimeline } from './PlantPhotoTimeline';
 import { BotanicalReferenceSection } from './BotanicalReferenceSection';
 import { PlantLiveTelemetrySection } from './PlantLiveTelemetrySection';
 import { PlantRecentActivitySection } from './PlantRecentActivitySection';
@@ -285,7 +286,14 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
         </div>
       </div>
  
-      {/* Sección: Estado en tiempo real / Telemetría Home Assistant (ATP-HA-002) */}
+       {/* Sección: Evolución Visual / Historial de Fotografías (ATP-FEAT-002) */}
+       <PlantPhotoTimeline
+         plantId={plant.id}
+         permanentCode={plant.permanent_code}
+         photos={plant.photos}
+       />
+
+       {/* Sección: Estado en tiempo real / Telemetría Home Assistant (ATP-HA-002) */}
       {liveTelemetry && (
         <PlantLiveTelemetrySection telemetry={liveTelemetry} />
       )}

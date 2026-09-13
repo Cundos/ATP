@@ -13,6 +13,8 @@ export interface UploadAndRegisterPhotoParams {
   fileBuffer: Buffer;
   fileName?: string;
   makePrimary?: boolean;
+  takenAt?: Date | null;
+  caption?: string | null;
 }
 
 export interface UploadAndRegisterPhotoResult {
@@ -41,7 +43,15 @@ export async function uploadAndRegisterPlantPhoto(
   params: UploadAndRegisterPhotoParams,
   deps?: PhotoOrchestrationDependencies
 ): Promise<UploadAndRegisterPhotoResult> {
-  const { plantId, permanentCode, fileBuffer, fileName, makePrimary = true } = params;
+  const {
+    plantId,
+    permanentCode,
+    fileBuffer,
+    fileName,
+    makePrimary = true,
+    takenAt,
+    caption,
+  } = params;
 
   if (!fileBuffer || fileBuffer.length === 0) {
     throw new Error('El archivo de imagen no contiene datos válidos.');
@@ -76,6 +86,8 @@ export async function uploadAndRegisterPlantPhoto(
       width: processed.width,
       height: processed.height,
       make_primary: makePrimary,
+      taken_at: takenAt,
+      caption: caption,
     });
 
     const url = fileStorage.resolveUrl(storageKey);

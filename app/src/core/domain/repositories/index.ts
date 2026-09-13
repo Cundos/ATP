@@ -85,6 +85,13 @@ export interface CreatePhotoPersistenceDTO {
   file_size?: number | null;
   is_primary?: boolean;
   captured_at?: Date | null;
+  taken_at?: Date | null;
+  caption?: string | null;
+}
+
+export interface UpdatePhotoMetadataDTO {
+  taken_at?: Date | null;
+  caption?: string | null;
 }
 
 export interface IPhotoRepository {
@@ -94,6 +101,8 @@ export interface IPhotoRepository {
   findPrimaryByPlant(plantId: string): Promise<PhotoEntity | null>;
   create(dto: CreatePhotoPersistenceDTO): Promise<PhotoEntity>;
   setPrimary(plantId: string, photoId: string): Promise<PhotoEntity>;
+  updateMetadata(id: string, dto: UpdatePhotoMetadataDTO): Promise<PhotoEntity>;
+  delete(id: string): Promise<void>;
 }
 
 export interface CreatePlantReferencePersistenceDTO {

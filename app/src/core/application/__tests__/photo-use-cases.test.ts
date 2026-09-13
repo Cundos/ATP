@@ -4,12 +4,15 @@ import {
   SetPrimaryPhotoUseCase,
   ListPlantPhotosUseCase,
   GetPrimaryPhotoUseCase,
+  UpdatePlantPhotoMetadataUseCase,
+  DeletePlantPhotoUseCase,
   PlantNotFoundError,
   PhotoNotFoundError,
   PhotoOwnershipError,
   PhotoValidationError,
 } from '../index';
 import { IPlantRepository, IPhotoRepository, CreatePhotoPersistenceDTO } from '@/core/domain/repositories';
+import { IFileStorageService } from '@/core/domain/services';
 import { PlantEntity, PhotoEntity } from '@/core/domain/entities';
 
 describe('Photo Application Use Cases (ATP-IMP-019)', () => {
@@ -91,6 +94,8 @@ describe('Photo Application Use Cases (ATP-IMP-019)', () => {
           file_size: dto.file_size ?? null,
           is_primary: Boolean(dto.is_primary),
           captured_at: dto.captured_at ?? null,
+          taken_at: dto.taken_at ?? null,
+          caption: dto.caption ?? null,
           created_at: new Date(),
         };
         photos.push(created);
@@ -108,6 +113,19 @@ describe('Photo Application Use Cases (ATP-IMP-019)', () => {
           return target;
         }
         throw new Error('Photo not found');
+      }),
+      updateMetadata: vi.fn(async (id: string, dto: { taken_at?: Date | null; caption?: string | null }) => {
+        const target = photos.find((p) => p.id === id);
+        if (!target) throw new Error('Photo not found');
+        if (dto.taken_at !== undefined) target.taken_at = dto.taken_at;
+        if (dto.caption !== undefined) target.caption = dto.caption;
+        return target;
+      }),
+      delete: vi.fn(async (id: string) => {
+        const index = photos.findIndex((p) => p.id === id);
+        if (index !== -1) {
+          photos.splice(index, 1);
+        }
       }),
     };
   });
@@ -376,4 +394,162 @@ describe('Photo Application Use Cases (ATP-IMP-019)', () => {
       expect(hasPhoto?.id).toBe('p-primary');
     });
   });
+
+  describe('UpdatePlantPhotoMetadataUseCase', () => {
+    it('updates taken_at and caption of an existing photo', async () => {
+      photos.push({
+        id: 'photo-meta-1',
+        plant_id: '01932f91-plant-1',
+        file_path: 'photos/AT-PL-001/meta.webp',
+        file_name: 'meta.webp',
+        mime_type: 'image/webp',
+        file_size: 100,
+        is_primary: true,
+        captured_at: null,
+        taken_at: null,
+        caption: null,
+        created_at: new Date(),
+      });
+
+      const useCase = new UpdatePlantPhotoMetadataUseCase(mockPlantRepo, mockPhotoRepo);
+      const updated = await useCase.execute({
+        plant_id: '01932f91-plant-1',
+        photo_id: 'photo-meta-1',
+        taken_at: new Date('2026-04-10T10:00:00Z'),
+        caption: 'Brote de primavera',
+      });
+
+      expect(updated.taken_at).toEqual(new Date('2026-04-10T10:00:00Z'));
+      expect(updated.caption).toBe('Brote de primavera');
+    });
+
+    it('rejects update if photo belongs to another plant', async () => {
+      photos.push({
+        id: 'photo-meta-other',
+        plant_id: '01932f91-plant-2',
+        file_path: 'photos/AT-PL-002/meta.webp',
+        file_name: 'meta.webp',
+        mime_type: 'image/webp',
+        file_size: 100,
+        is_primary: true,
+        captured_at: null,
+        taken_at: null,
+        caption: null,
+        created_at: new Date(),
+      });
+
+      const useCase = new UpdatePlantPhotoMetadataUseCase(mockPlantRepo, mockPhotoRepo);
+      await expect(
+        useCase.execute({
+          plant_id: '01932f91-plant-1',
+          photo_id: 'photo-meta-other',
+          caption: 'Hack attempt',
+        })
+      ).rejects.toThrow(PhotoOwnershipError);
+    });
+  });
+
+  describe('DeletePlantPhotoUseCase', () => {
+    let mockStorage: IFileStorageService;
+
+    beforeEach(() => {
+      mockStorage = {
+        saveFile: vi.fn().mockResolvedValue(undefined),
+        readFile: vi.fn().mockResolvedValue(Buffer.from('')),
+        deleteFile: vi.fn().mockResolvedValue(undefined),
+        fileExists: vi.fn().mockResolvedValue(true),
+        resolveUrl: vi.fn((key) => `/api/photos/view/${key}`),
+      };
+    });
+
+    it('deletes a non-primary photo and deletes its storage binary', async () => {
+      photos.push(
+        {
+          id: 'p-primary',
+          plant_id: '01932f91-plant-1',
+          file_path: 'photos/AT-PL-001/primary.webp',
+          file_name: 'primary.webp',
+          mime_type: 'image/webp',
+          file_size: 100,
+          is_primary: true,
+          captured_at: null,
+          created_at: new Date('2026-01-01'),
+        },
+        {
+          id: 'p-secondary',
+          plant_id: '01932f91-plant-1',
+          file_path: 'photos/AT-PL-001/secondary.webp',
+          file_name: 'secondary.webp',
+          mime_type: 'image/webp',
+          file_size: 100,
+          is_primary: false,
+          captured_at: null,
+          created_at: new Date('2026-01-02'),
+        }
+      );
+
+      const useCase = new DeletePlantPhotoUseCase(mockPlantRepo, mockPhotoRepo, mockStorage);
+      const result = await useCase.execute({
+        plant_id: '01932f91-plant-1',
+        photo_id: 'p-secondary',
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.deleted_photo_id).toBe('p-secondary');
+      expect(result.new_primary_photo_id).toBeNull();
+      expect(photos.some((p) => p.id === 'p-secondary')).toBe(false);
+      expect(mockStorage.deleteFile).toHaveBeenCalledWith('photos/AT-PL-001/secondary.webp');
+      expect(photos.find((p) => p.id === 'p-primary')?.is_primary).toBe(true);
+    });
+
+    it('automatically reassigns primary to the most recent photo when primary is deleted', async () => {
+      photos.push(
+        {
+          id: 'p-old',
+          plant_id: '01932f91-plant-1',
+          file_path: 'photos/AT-PL-001/old.webp',
+          file_name: 'old.webp',
+          mime_type: 'image/webp',
+          file_size: 100,
+          is_primary: false,
+          captured_at: null,
+          created_at: new Date('2026-01-01'),
+        },
+        {
+          id: 'p-recent',
+          plant_id: '01932f91-plant-1',
+          file_path: 'photos/AT-PL-001/recent.webp',
+          file_name: 'recent.webp',
+          mime_type: 'image/webp',
+          file_size: 100,
+          is_primary: false,
+          captured_at: null,
+          created_at: new Date('2026-02-01'),
+        },
+        {
+          id: 'p-primary-to-delete',
+          plant_id: '01932f91-plant-1',
+          file_path: 'photos/AT-PL-001/primary.webp',
+          file_name: 'primary.webp',
+          mime_type: 'image/webp',
+          file_size: 100,
+          is_primary: true,
+          captured_at: null,
+          created_at: new Date('2026-03-01'),
+        }
+      );
+
+      const useCase = new DeletePlantPhotoUseCase(mockPlantRepo, mockPhotoRepo, mockStorage);
+      const result = await useCase.execute({
+        plant_id: '01932f91-plant-1',
+        photo_id: 'p-primary-to-delete',
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.new_primary_photo_id).toBe('p-recent');
+      expect(photos.find((p) => p.id === 'p-recent')?.is_primary).toBe(true);
+      expect(mockStorage.deleteFile).toHaveBeenCalledWith('photos/AT-PL-001/primary.webp');
+    });
+  });
 });
+

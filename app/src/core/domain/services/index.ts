@@ -5,4 +5,6 @@ export * from './IOpenPlantbookClient';
 export * from './IHomeAssistantClient';
 export * from './IPlantReferenceMapper';
 export * from './storage-keys';
+export * from './canonicalUrl';
+export * from './photoTimeline';
 

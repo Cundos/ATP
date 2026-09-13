@@ -668,6 +668,18 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Integración en Ficha: Sección "Identificación QR" en `PlantDetailView` (`SCR-003`).
   - Pruebas Automatizadas: Unit tests (`canonical-url.test.ts`, `plant-qr.test.tsx`) y E2E (`plant-qr.spec.ts`).
 
+#### `ATP-FEAT-002` — Photo Timeline / Evolución Visual
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Convertir las fotografías de cada planta en un historial visual cronológico, preservando la foto principal, sin borrar imágenes previas al actualizar la foto de portada y permitiendo comparación visual entre fechas.
+- **Tipo:** `FEATURE` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Modelo Prisma: Extensión de `Photo` con campos opcionales `taken_at DateTime?` y `caption String? @db.Text`.
+  - Servicios y Casos de Uso: `getPhotoEffectiveDate`, `sortPhotosChronologically`, `UpdatePlantPhotoMetadataUseCase`, `DeletePlantPhotoUseCase` (con reasignación determinista de foto principal a la más reciente), y actualización de `RegisterPlantPhotoUseCase` / `ListPlantPhotosUseCase`.
+  - Server Actions: `addPlantPhotoAction`, `setPrimaryPlantPhotoAction`, `updatePlantPhotoMetadataAction`, `deletePlantPhotoAction` en `src/features/plants/actions.ts`.
+  - Componentes UI (Herbario Contemporáneo): `PlantPhotoTimeline`, `PlantPhotoLightboxModal`, `PlantPhotoComparisonModal`, `PlantPhotoUploadModal` integrados en `PlantDetailView` (`SCR-003`).
+  - Pruebas Automatizadas: Unit tests (`photo-timeline.test.ts`, `photo-use-cases.test.ts`, `plant-photo-timeline.test.tsx`), Integration tests (`photo-integration.test.ts`), y E2E (`plant-photo-timeline.spec.ts`).
+
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)

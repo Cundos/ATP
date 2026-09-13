@@ -77,10 +77,14 @@ describe('uploadAndRegisterPlantPhoto Orchestration', () => {
           file_size: dto.file_size,
           is_primary: dto.is_primary,
           captured_at: dto.captured_at || null,
+          taken_at: dto.taken_at || null,
+          caption: dto.caption || null,
           created_at: new Date(),
         } as PhotoEntity)
       ),
       setPrimary: vi.fn(),
+      updateMetadata: vi.fn(),
+      delete: vi.fn(),
     };
   });
 

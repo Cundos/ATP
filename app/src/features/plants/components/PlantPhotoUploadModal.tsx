@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, FileText, CheckCircle2 } from 'lucide-react';
-import { Modal, Button, Toast } from '@/components/ui';
+import { Modal, Button } from '@/components/ui';
 import { PhotoUpload } from './PhotoUpload';
 import { addPlantPhotoAction } from '../actions';
 import styles from './PlantPhotoUploadModal.module.css';
@@ -14,6 +14,7 @@ export interface PlantPhotoUploadModalProps {
   plantId: string;
   permanentCode: string;
   hasExistingPhotos: boolean;
+  onSuccessToast?: (msg: string) => void;
 }
 
 export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
@@ -22,6 +23,7 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
   plantId,
   permanentCode,
   hasExistingPhotos,
+  onSuccessToast,
 }) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -32,7 +34,6 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
   const [caption, setCaption] = useState<string>('');
   const [makePrimary, setMakePrimary] = useState<boolean>(!hasExistingPhotos);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const resetForm = () => {
     setSelectedFile(null);
@@ -71,7 +72,7 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
     startTransition(async () => {
       const result = await addPlantPhotoAction(plantId, null, formData);
       if (result.success) {
-        setToastMessage(result.message || 'Fotografía guardada con éxito.');
+        onSuccessToast?.(result.message || 'Fotografía guardada con éxito.');
         handleClose();
         router.refresh();
       } else {
@@ -82,13 +83,6 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
 
   return (
     <>
-      {toastMessage && (
-        <Toast
-          type="success"
-          message={toastMessage}
-          onClose={() => setToastMessage(null)}
-        />
-      )}
       <Modal
         isOpen={isOpen}
         onClose={handleClose}

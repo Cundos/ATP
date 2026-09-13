@@ -129,7 +129,7 @@ export const PlantQrCode: React.FC<PlantQrCodeProps> = ({
         )}
       </div>
 
-      <p className={styles.canonicalUrlPreview} title={canonicalUrl}>
+      <p className={styles.canonicalUrlPreview} title={canonicalUrl} suppressHydrationWarning>
         {canonicalUrl}
       </p>
 

@@ -119,7 +119,7 @@ export const PlantLiveTelemetrySection: React.FC<PlantLiveTelemetrySectionProps>
               )}
             </div>
 
-            <div className={styles.timestamp}>
+            <div className={styles.timestamp} suppressHydrationWarning>
               Última lectura:{' '}
               {moisture?.last_updated
                 ? formatTelemetryTimestamp(moisture.last_updated)
@@ -188,7 +188,7 @@ export const PlantLiveTelemetrySection: React.FC<PlantLiveTelemetrySectionProps>
             </dl>
 
             {hardware?.last_seen && (
-              <div className={styles.timestamp}>
+              <div className={styles.timestamp} suppressHydrationWarning>
                 Última sincronización: {formatTelemetryTimestamp(hardware.last_seen)}
               </div>
             )}

@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { PhotoEntity } from '@/core/domain/entities';
 import { formatPhotoDate, getPhotoEffectiveDate } from '@/core/domain/services';
-import { Modal, Button, Toast } from '@/components/ui';
+import { Modal, Button } from '@/components/ui';
 import {
   setPrimaryPlantPhotoAction,
   updatePlantPhotoMetadataAction,
@@ -28,6 +28,7 @@ export interface PlantPhotoLightboxModalProps {
   plantId: string;
   permanentCode: string;
   totalPhotosCount: number;
+  onSuccessToast?: (msg: string) => void;
 }
 
 export const PlantPhotoLightboxModal: React.FC<PlantPhotoLightboxModalProps> = ({
@@ -37,6 +38,7 @@ export const PlantPhotoLightboxModal: React.FC<PlantPhotoLightboxModalProps> = (
   plantId,
   permanentCode,
   totalPhotosCount,
+  onSuccessToast,
 }) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -47,7 +49,6 @@ export const PlantPhotoLightboxModal: React.FC<PlantPhotoLightboxModalProps> = (
   const [editDate, setEditDate] = useState<string>('');
   const [editCaption, setEditCaption] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   if (!photo) return null;
 
@@ -77,7 +78,7 @@ export const PlantPhotoLightboxModal: React.FC<PlantPhotoLightboxModalProps> = (
 
       if (result.success) {
         setIsEditing(false);
-        setToastMessage('Detalles actualizados correctamente.');
+        onSuccessToast?.('Detalles actualizados correctamente.');
         router.refresh();
       } else {
         setErrorMessage(result.message || 'Error al guardar cambios.');
@@ -90,7 +91,7 @@ export const PlantPhotoLightboxModal: React.FC<PlantPhotoLightboxModalProps> = (
     startTransition(async () => {
       const result = await setPrimaryPlantPhotoAction(plantId, photo.id);
       if (result.success) {
-        setToastMessage('Foto marcada como principal.');
+        onSuccessToast?.('Foto marcada como principal.');
         router.refresh();
       } else {
         setErrorMessage(result.message || 'Error al marcar como principal.');
@@ -105,7 +106,7 @@ export const PlantPhotoLightboxModal: React.FC<PlantPhotoLightboxModalProps> = (
       if (result.success) {
         setIsDeleteModalOpen(false);
         onClose();
-        setToastMessage('Fotografía eliminada.');
+        onSuccessToast?.('Fotografía eliminada.');
         router.refresh();
       } else {
         setErrorMessage(result.message || 'Error al eliminar la fotografía.');
@@ -115,14 +116,6 @@ export const PlantPhotoLightboxModal: React.FC<PlantPhotoLightboxModalProps> = (
 
   return (
     <>
-      {toastMessage && (
-        <Toast
-          type="success"
-          message={toastMessage}
-          onClose={() => setToastMessage(null)}
-        />
-      )}
-
       {/* Modal Principal Lightbox */}
       <Modal
         isOpen={isOpen && !isDeleteModalOpen}

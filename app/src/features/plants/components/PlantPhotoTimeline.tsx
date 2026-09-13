@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { PhotoEntity } from '@/core/domain/entities';
 import { formatPhotoDate, sortPhotosChronologically } from '@/core/domain/services';
-import { Button } from '@/components/ui';
+import { Button, Toast } from '@/components/ui';
 import { PlantPhotoUploadModal } from './PlantPhotoUploadModal';
 import { PlantPhotoLightboxModal } from './PlantPhotoLightboxModal';
 import { PlantPhotoComparisonModal } from './PlantPhotoComparisonModal';
@@ -29,6 +29,7 @@ export const PlantPhotoTimeline: React.FC<PlantPhotoTimelineProps> = ({
   permanentCode,
   photos = [],
 }) => {
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [selectedPhotoForLightbox, setSelectedPhotoForLightbox] = useState<PhotoEntity | null>(null);
 
@@ -247,6 +248,7 @@ export const PlantPhotoTimeline: React.FC<PlantPhotoTimelineProps> = ({
         plantId={plantId}
         permanentCode={permanentCode}
         hasExistingPhotos={hasPhotos}
+        onSuccessToast={(msg) => setToastMessage(msg)}
       />
 
       <PlantPhotoLightboxModal
@@ -256,6 +258,7 @@ export const PlantPhotoTimeline: React.FC<PlantPhotoTimelineProps> = ({
         plantId={plantId}
         permanentCode={permanentCode}
         totalPhotosCount={sortedPhotos.length}
+        onSuccessToast={(msg) => setToastMessage(msg)}
       />
 
       <PlantPhotoComparisonModal
@@ -264,6 +267,14 @@ export const PlantPhotoTimeline: React.FC<PlantPhotoTimelineProps> = ({
         onClose={() => setIsComparisonModalOpen(false)}
         permanentCode={permanentCode}
       />
+
+      {toastMessage && (
+        <Toast
+          type="success"
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
     </section>
   );
 };

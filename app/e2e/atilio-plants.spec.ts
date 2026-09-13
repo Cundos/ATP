@@ -65,7 +65,7 @@ test.describe.serial('Atilio Plants Real Playwright E2E Test Suite (ATP-IMP-027)
     await expect(page.getByRole('link', { name: /Atención:/i })).toBeVisible();
 
     // Check quick action CTA link
-    const newPlantLink = page.getByRole('link', { name: 'Nueva Planta', exact: true });
+    const newPlantLink = page.getByRole('region', { name: 'Acción principal' }).getByRole('link', { name: 'Nueva Planta' });
     await expect(newPlantLink).toBeVisible();
 
     const inventoryLink = page.getByRole('link', { name: /inventario completo/i });
@@ -207,7 +207,7 @@ test.describe.serial('Atilio Plants Real Playwright E2E Test Suite (ATP-IMP-027)
 
     // Upload real image fixture
     const fixturePath = path.join(__dirname, 'fixtures', 'test-plant.jpg');
-    const fileInput = page.locator('input[type="file"]');
+    const fileInput = page.locator('input[data-testid="photo-gallery-input"]');
     await fileInput.setInputFiles(fixturePath);
 
     // Verify preview is rendered

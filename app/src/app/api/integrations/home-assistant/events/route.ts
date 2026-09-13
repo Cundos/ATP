@@ -55,10 +55,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const useCase = getIngestHomeAssistantEventUseCase();
     const result = await useCase.execute({
       event_id: String(payload.event_id || ''),
-      permanent_code: String(payload.permanent_code || ''),
+      permanent_code: String(payload.permanent_code || payload.plant_code || ''),
       event_type: String(payload.event_type || ''),
       occurred_at: payload.occurred_at as string | Date,
-      value: payload.value as number | string | null | undefined,
+      value: (payload.value ?? payload.value_number ?? payload.value_text) as number | string | null | undefined,
       unit: payload.unit as string | null | undefined,
       metadata: payload.metadata as Record<string, unknown> | null | undefined,
     });

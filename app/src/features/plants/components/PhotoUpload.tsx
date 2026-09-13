@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, X, RefreshCw } from 'lucide-react';
+import { Camera, Image as ImageIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui';
 import styles from './PhotoUpload.module.css';
 
@@ -21,7 +21,8 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
   disabled = false,
   name = 'photo',
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
@@ -47,14 +48,16 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
     // Client-side MIME validation
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       setClientError('Formato no compatible. Usá archivos JPEG, PNG o WebP.');
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (galleryInputRef.current) galleryInputRef.current.value = '';
+      if (cameraInputRef.current) cameraInputRef.current.value = '';
       return;
     }
 
     // Client-side size validation
     if (file.size > MAX_FILE_SIZE_BYTES) {
       setClientError('La imagen supera el límite máximo de 20 MB.');
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (galleryInputRef.current) galleryInputRef.current.value = '';
+      if (cameraInputRef.current) cameraInputRef.current.value = '';
       return;
     }
 
@@ -76,17 +79,26 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
     setPreviewUrl(null);
     setSelectedFile(null);
     setClientError(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    if (galleryInputRef.current) {
+      galleryInputRef.current.value = '';
+    }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
     }
     if (onFileSelect) {
       onFileSelect(null);
     }
   };
 
-  const handleTriggerInput = () => {
-    if (!disabled && fileInputRef.current) {
-      fileInputRef.current.click();
+  const handleTriggerGallery = () => {
+    if (!disabled && galleryInputRef.current) {
+      galleryInputRef.current.click();
+    }
+  };
+
+  const handleTriggerCamera = () => {
+    if (!disabled && cameraInputRef.current) {
+      cameraInputRef.current.click();
     }
   };
 
@@ -94,23 +106,37 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
 
   return (
     <div className={styles.container}>
-      <label htmlFor="plant-photo-input" className={styles.label}>
+      <label className={styles.label}>
         <Camera size={16} aria-hidden="true" />
         <span>Fotografía del ejemplar {currentPhotoUrl ? '(opcional para reemplazar)' : '(opcional)'}</span>
       </label>
 
-      {/* Hidden native input */}
+      {/* Hidden gallery file input (without capture attribute) */}
       <input
-        ref={fileInputRef}
-        id="plant-photo-input"
+        ref={galleryInputRef}
+        id="plant-photo-gallery-input"
+        data-testid="photo-gallery-input"
         name={name}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        disabled={disabled}
+        onChange={handleFileChange}
+        className={styles.hiddenInput}
+        aria-label="Elegir fotografía de galería o archivos"
+      />
+
+      {/* Hidden camera file input (with capture environment attribute) */}
+      <input
+        ref={cameraInputRef}
+        id="plant-photo-camera-input"
+        data-testid="photo-camera-input"
         type="file"
         accept="image/jpeg,image/png,image/webp"
         capture="environment"
         disabled={disabled}
         onChange={handleFileChange}
         className={styles.hiddenInput}
-        aria-label="Seleccionar o tomar fotografía del ejemplar"
+        aria-label="Tomar fotografía con la cámara"
       />
 
       {activeDisplayUrl ? (
@@ -126,17 +152,23 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
           )}
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={handleTriggerInput}
-          disabled={disabled}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={handleTriggerGallery}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleTriggerGallery();
+            }
+          }}
           className={styles.placeholderBox}
-          aria-label="Tocar para tomar o seleccionar fotografía"
+          aria-label="Elegir fotografía de la galería o archivos"
         >
           <Camera size={32} className={styles.placeholderIcon} aria-hidden="true" />
-          <span className={styles.placeholderText}>Tocar para tomar o seleccionar foto</span>
+          <span className={styles.placeholderText}>Elegí una foto de galería o tomá una nueva</span>
           <span className={styles.placeholderSubtext}>JPEG, PNG o WebP (hasta 20 MB)</span>
-        </button>
+        </div>
       )}
 
       {/* Action buttons */}
@@ -146,10 +178,21 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
           variant="secondary"
           size="sm"
           disabled={disabled}
-          onClick={handleTriggerInput}
-          leftIcon={activeDisplayUrl ? <RefreshCw size={15} /> : <Camera size={15} />}
+          onClick={handleTriggerGallery}
+          leftIcon={<ImageIcon size={15} />}
         >
-          {activeDisplayUrl ? 'Cambiar foto' : 'Tomar / Seleccionar foto'}
+          Elegir de galería
+        </Button>
+
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          disabled={disabled}
+          onClick={handleTriggerCamera}
+          leftIcon={<Camera size={15} />}
+        >
+          Tomar foto
         </Button>
 
         {selectedFile && (

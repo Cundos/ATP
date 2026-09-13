@@ -34,7 +34,7 @@ describe('PrismaPlantOperationalEventRepository Integration (ATP-HA-003)', () =>
       source: 'HOME_ASSISTANT',
       event_type: 'SOIL_MOISTURE_LOW',
       event_key: testEventKey1,
-      occurred_at: new Date('2026-09-12T19:00:00.000Z'),
+      occurred_at: new Date(Date.now() - 60000),
       value_number: 12.8,
       value_text: '12.8',
       unit: '%',
@@ -59,7 +59,7 @@ describe('PrismaPlantOperationalEventRepository Integration (ATP-HA-003)', () =>
         source: 'HOME_ASSISTANT',
         event_type: 'SOIL_MOISTURE_LOW',
         event_key: testEventKey1,
-        occurred_at: new Date('2026-09-12T19:05:00.000Z'),
+        occurred_at: new Date(Date.now() - 30000),
       })
     ).rejects.toThrow();
   });
@@ -70,10 +70,10 @@ describe('PrismaPlantOperationalEventRepository Integration (ATP-HA-003)', () =>
       source: 'HOME_ASSISTANT',
       event_type: 'SENSOR_ONLINE',
       event_key: testEventKey2,
-      occurred_at: new Date('2026-09-12T20:00:00.000Z'),
+      occurred_at: new Date(),
     });
 
-    const recent = await eventRepo.findRecentByPlantId(testPlantId, 10);
+    const recent = await eventRepo.findRecentByPlantId(testPlantId, 50);
     expect(recent.length).toBeGreaterThanOrEqual(2);
 
     const key2Index = recent.findIndex((e) => e.event_key === testEventKey2);

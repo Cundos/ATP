@@ -55,11 +55,12 @@ describe('Home Assistant Real Smoke Test (Server-Side)', () => {
     const eventRepo = getPlantOperationalEventRepository();
     const plantRepo = getPlantRepository();
 
+    const smokeId = `atp-ha-003-smoke-${Date.now()}`;
     const smokePayload = {
-      event_id: 'atp-ha-003-smoke-001',
+      event_id: smokeId,
       permanent_code: 'AT-PL-007',
       event_type: 'SENSOR_ONLINE',
-      occurred_at: '2026-09-12T22:15:00Z',
+      occurred_at: new Date(),
       metadata: {
         entity_id: 'binary_sensor.sensor_humedad_beta_online',
         state: 'on',
@@ -69,6 +70,7 @@ describe('Home Assistant Real Smoke Test (Server-Side)', () => {
     // First delivery
     const firstResult = await useCase.execute(smokePayload);
     console.log('[HA Smoke Event Ingestion] First Result:', firstResult.status, firstResult.event.id);
+    expect(firstResult.status).toBe('CREATED');
 
     // Second delivery -> must return DUPLICATE
     const secondResult = await useCase.execute(smokePayload);
@@ -80,7 +82,7 @@ describe('Home Assistant Real Smoke Test (Server-Side)', () => {
     const plant = await plantRepo.findByPermanentCode('AT-PL-007');
     if (plant) {
       const recent = await eventRepo.findRecentByPlantId(plant.id, 5);
-      const found = recent.some((e) => e.event_key === 'home-assistant:atp-ha-003-smoke-001');
+      const found = recent.some((e) => e.event_key === `home-assistant:${smokeId}`);
       expect(found).toBe(true);
       console.log('[HA Smoke Event Ingestion] Successfully verified in recent activity for AT-PL-007');
     }

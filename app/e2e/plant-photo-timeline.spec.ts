@@ -1,27 +1,48 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';
+import { createStorageService } from '../src/infrastructure/storage';
 
 const prisma = new PrismaClient();
+const storageService = createStorageService();
 
 test.describe.serial('Plant Photo Timeline & Visual Evolution Isolated E2E (ATP-FEAT-002)', () => {
   let plantCode: string | null = null;
   const fixturePhotoPath = path.join(__dirname, 'fixtures', 'test-plant.jpg');
 
-  // Clean up isolated test plant and its storage records after tests complete
+  // Clean up isolated test plant and its physical storage records after tests complete
   test.afterAll(async () => {
     try {
+      // 1. Find all [E2E] test plants and their associated photo storage keys
       const testPlants = await prisma.plant.findMany({
         where: {
           common_name: {
             startsWith: '[E2E]',
           },
         },
-        select: { id: true },
+        select: {
+          id: true,
+          photos: {
+            select: { id: true, file_path: true },
+          },
+        },
       });
 
       const plantIds = testPlants.map((p) => p.id);
+      const photosToDelete = testPlants.flatMap((p) => p.photos);
 
+      // 2. Best-effort idempotent cleanup of physical storage files via application storage abstraction
+      for (const photo of photosToDelete) {
+        if (photo.file_path) {
+          try {
+            await storageService.deleteFile(photo.file_path);
+          } catch (storageErr) {
+            console.warn(`[E2E Cleanup] Warning: Could not delete physical file ${photo.file_path}:`, storageErr);
+          }
+        }
+      }
+
+      // 3. Delete database records in relational order
       if (plantIds.length > 0) {
         await prisma.photo.deleteMany({
           where: { plant_id: { in: plantIds } },
@@ -191,6 +212,18 @@ test.describe.serial('Plant Photo Timeline & Visual Evolution Isolated E2E (ATP-
     page,
   }) => {
     expect(plantCode).toBeTruthy();
+
+    // Query database to retrieve target photo's storage key before deletion
+    const primaryPhotoRecord = await prisma.photo.findFirst({
+      where: {
+        plant: { permanent_code: plantCode! },
+        is_primary: true,
+      },
+      select: { id: true, file_path: true },
+    });
+    expect(primaryPhotoRecord).toBeTruthy();
+    expect(await storageService.fileExists(primaryPhotoRecord!.file_path)).toBe(true);
+
     await page.goto(`/plants/${plantCode}`);
 
     // Wait for timeline to be stable
@@ -223,6 +256,9 @@ test.describe.serial('Plant Photo Timeline & Visual Evolution Isolated E2E (ATP-
 
     // Verify photo was deleted and remaining photo is now primary
     await expect(page.getByText('Fotografía eliminada.')).toBeVisible({ timeout: 10000 });
+
+    // Verify physical file was removed from storage abstraction
+    expect(await storageService.fileExists(primaryPhotoRecord!.file_path)).toBe(false);
 
     const remainingCards = page.locator('button[data-testid^="photo-timeline-card-"]');
     await expect(remainingCards).toHaveCount(1, { timeout: 10000 });

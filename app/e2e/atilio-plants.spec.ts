@@ -1,33 +1,52 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';
+import { createStorageService } from '../src/infrastructure/storage';
 
 const prisma = new PrismaClient();
+const storageService = createStorageService();
 
 test.describe.serial('Atilio Plants Real Playwright E2E Test Suite (ATP-IMP-027)', () => {
   let createdPlantCode: string | null = null;
 
-  // Cleanup all E2E test data after tests complete
+  // Cleanup all E2E test data and physical files after tests complete
   test.afterAll(async () => {
     try {
-      // Find all E2E test plants
+      // 1. Find all E2E test plants and their associated photo storage keys
       const testPlants = await prisma.plant.findMany({
         where: {
           common_name: {
             startsWith: '[E2E]',
           },
         },
-        select: { id: true },
+        select: {
+          id: true,
+          photos: {
+            select: { id: true, file_path: true },
+          },
+        },
       });
 
       const plantIds = testPlants.map((p) => p.id);
+      const photosToDelete = testPlants.flatMap((p) => p.photos);
 
+      // 2. Best-effort idempotent cleanup of physical storage files via application storage abstraction
+      for (const photo of photosToDelete) {
+        if (photo.file_path) {
+          try {
+            await storageService.deleteFile(photo.file_path);
+          } catch (storageErr) {
+            console.warn(`[E2E Cleanup] Warning: Could not delete physical file ${photo.file_path}:`, storageErr);
+          }
+        }
+      }
+
+      // 3. Delete database records in relational order
       if (plantIds.length > 0) {
-        // Delete profiles and photos
-        await prisma.plantCultivationProfile.deleteMany({
+        await prisma.photo.deleteMany({
           where: { plant_id: { in: plantIds } },
         });
-        await prisma.photo.deleteMany({
+        await prisma.plantCultivationProfile.deleteMany({
           where: { plant_id: { in: plantIds } },
         });
         await prisma.plant.deleteMany({
@@ -35,7 +54,7 @@ test.describe.serial('Atilio Plants Real Playwright E2E Test Suite (ATP-IMP-027)
         });
       }
 
-      // Delete test locations
+      // 4. Delete test locations
       await prisma.location.deleteMany({
         where: {
           name: {

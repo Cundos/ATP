@@ -17,9 +17,7 @@ import {
   GetPlantLiveTelemetryUseCase,
   IngestHomeAssistantEventUseCase,
 } from '../../core/application';
-import { StorageUnavailableError } from '../../core/domain/errors';
-import { LocalFileStorageService } from '../storage/LocalFileStorageService';
-import { VercelBlobStorageService } from '../storage/VercelBlobStorageService';
+import { createStorageService } from '../storage';
 import { SharpImageProcessingService } from '../image/SharpImageProcessingService';
 import { PrismaPlantReferenceRepository } from '../db/repositories/PrismaPlantReferenceRepository';
 import { PrismaPlantRepository } from '../db/repositories/PrismaPlantRepository';
@@ -85,25 +83,7 @@ export function getFileStorageService(): IFileStorageService {
   if (customFileStorageService) {
     return customFileStorageService;
   }
-
-  const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_ENV);
-  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
-  const isBlobDriver = process.env.STORAGE_DRIVER === 'blob';
-
-  // If Vercel Blob credentials/driver are present, use VercelBlobStorageService
-  if (blobToken || isBlobDriver) {
-    return new VercelBlobStorageService(blobToken);
-  }
-
-  // If running on Vercel without persistent storage configuration, reject ephemeral storage
-  if (isVercel) {
-    throw new StorageUnavailableError(
-      'Persistent photo storage is not configured for Vercel deployment. Local filesystem storage is ephemeral.'
-    );
-  }
-
-  // Local / Docker / Homelab environment
-  return new LocalFileStorageService();
+  return createStorageService();
 }
 
 export function getImageProcessingService(): IImageProcessingService {

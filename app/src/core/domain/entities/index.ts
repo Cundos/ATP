@@ -121,3 +121,108 @@ export interface PlantEntity {
   ha_binding?: PlantHomeAssistantBindingEntity | null;
   events?: PlantOperationalEventEntity[];
 }
+
+// ---------------------------------------------------------------------------
+// Dynamic Care Context (ATP-CARE-001)
+// ---------------------------------------------------------------------------
+export type CareAssessmentStatus = 'OK' | 'WATCH' | 'ACTION_RECOMMENDED' | 'DATA_INSUFFICIENT';
+
+export type RecommendationPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export type ConditionClassification = 'LOW' | 'NORMAL' | 'HIGH' | 'UNKNOWN';
+
+export type BatteryClassification = 'NORMAL' | 'LOW' | 'CRITICAL' | 'UNKNOWN';
+
+export type SensorConnectionStatus = 'ONLINE' | 'OFFLINE' | 'STALE' | 'UNKNOWN';
+
+export interface CareTelemetrySnapshot {
+  plant_id?: string;
+  permanent_code?: string;
+  binding_configured?: boolean;
+  available?: boolean;
+  moisture?: {
+    value?: number | null;
+    unit?: string | null;
+    visual_state?: string | null;
+    last_updated?: string | null;
+    available?: boolean;
+  } | null;
+  hardware?: {
+    battery?: number | null;
+    online?: boolean | null;
+    stale?: boolean | null;
+    last_seen?: string | null;
+    available?: boolean;
+  } | null;
+  error_reason?: string | null;
+}
+
+export interface CareRecommendation {
+  code: string;
+  priority: RecommendationPriority;
+  title: string;
+  explanation: string;
+  evidence: string[];
+}
+
+export interface SoilMoistureCondition {
+  value: number | null;
+  unit: string | null;
+  observed_at: string | null;
+  min_reference: number | null;
+  max_reference: number | null;
+  classification: ConditionClassification;
+}
+
+export interface BatteryCondition {
+  value: number | null;
+  unit: string | null;
+  classification: BatteryClassification;
+}
+
+export interface CareDataQuality {
+  has_telemetry?: boolean;
+  has_botanical_reference?: boolean;
+  has_recent_events?: boolean;
+  has_photos?: boolean;
+  telemetry_available?: boolean;
+  telemetry_stale?: boolean;
+  reference_available?: boolean;
+  recent_history_available?: boolean;
+  warnings: string[];
+}
+
+export interface CurrentConditions {
+  soil_moisture: SoilMoistureCondition;
+  battery: BatteryCondition;
+  sensor_status: SensorConnectionStatus;
+}
+
+export interface RecentCareContext {
+  last_operational_events: PlantOperationalEventEntity[];
+  last_photo_at?: string | null;
+  recent_photo_caption?: string | null;
+}
+
+export interface CareAssessment {
+  status: CareAssessmentStatus;
+  headline: string;
+  summary: string;
+  recommendations: CareRecommendation[];
+}
+
+export interface PlantCareContextDTO {
+  plant_id?: string;
+  permanent_code?: string;
+  evaluated_at?: string;
+  plant?: {
+    permanent_code: string;
+    common_name: string;
+    scientific_name: string | null;
+    health_status: HealthStatus;
+  };
+  data_quality: CareDataQuality;
+  current_conditions: CurrentConditions;
+  recent_context: RecentCareContext;
+  assessment: CareAssessment;
+}

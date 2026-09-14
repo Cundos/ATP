@@ -679,6 +679,18 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Componentes UI (Herbario Contemporáneo): `PlantPhotoTimeline`, `PlantPhotoLightboxModal`, `PlantPhotoComparisonModal`, `PlantPhotoUploadModal` integrados en `PlantDetailView` (`SCR-003`).
   - Pruebas Automatizadas: Unit tests (`photo-timeline.test.ts`, `photo-use-cases.test.ts`, `plant-photo-timeline.test.tsx`), Integration tests (`photo-integration.test.ts`), y E2E (`plant-photo-timeline.spec.ts`).
 
+#### `ATP-CARE-001` — Dynamic Care Context Engine (Motor de Contexto de Cuidado)
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Unificar en tiempo de ejecución información botánica (Open Plantbook), estado del ejemplar, telemetría de Home Assistant e historial operacional en un contexto estructurado y determinista para emitir evaluaciones y recomendaciones explicables.
+- **Tipo:** `FEATURE` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Tipos y Entidades de Dominio: `PlantCareContextDTO`, `CareAssessment`, `CareRecommendation`, `CurrentConditions`, `RecentCareContext`, `CareDataQuality` en `src/core/domain/entities/index.ts`.
+  - Motor Determinista: `evaluatePlantCareContext` en `src/core/domain/services/plantCareContextEngine.ts` con precedencia estricta de umbrales y degradación ante telemetría stale/offline.
+  - Caso de Uso: `GetPlantCareContextUseCase` en `src/core/application/use-cases/GetPlantCareContextUseCase.ts`.
+  - Contenedor de Servicios: Inyección en `serviceContainer.ts` (`getPlantCareContextUseCase`).
+  - Componente UI: `PlantCareContextSection` en `src/features/plants/components/` integrado en `PlantDetailView` (`SCR-003`) y SSR en `/plants/[id]`.
+  - Pruebas Automatizadas: Unit tests (`plantCareContextEngine.test.ts`, `GetPlantCareContextUseCase.test.ts`, `plant-care-context-section.test.tsx`), Integration tests (`plant-care-context-integration.test.ts`) y E2E (`plant-care-context.spec.ts`).
+  - Arquitectura: `04_ARCHITECTURE/ADR-018-DETERMINISTIC-CARE-CONTEXT.md`.
 
 ---
 

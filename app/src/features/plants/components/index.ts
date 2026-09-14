@@ -16,3 +16,4 @@ export * from './PlantPhotoTimeline';
 export * from './PlantPhotoLightboxModal';
 export * from './PlantPhotoComparisonModal';
 export * from './PlantPhotoUploadModal';
+export * from './PlantCareContextSection';

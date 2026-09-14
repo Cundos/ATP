@@ -19,4 +19,4 @@ export * from './use-cases/DeletePlantPhotoUseCase';
 export * from './use-cases/GetOrCreatePlantReferenceUseCase';
 export * from './use-cases/GetPlantLiveTelemetryUseCase';
 export * from './use-cases/IngestHomeAssistantEventUseCase';
-
+export * from './use-cases/GetPlantCareContextUseCase';

@@ -11,11 +11,13 @@ import {
   IPlantRepository,
   IPlantHomeAssistantBindingRepository,
   IPlantOperationalEventRepository,
+  IPhotoRepository,
 } from '../../core/domain/repositories';
 import {
   GetOrCreatePlantReferenceUseCase,
   GetPlantLiveTelemetryUseCase,
   IngestHomeAssistantEventUseCase,
+  GetPlantCareContextUseCase,
 } from '../../core/application';
 import { createStorageService } from '../storage';
 import { SharpImageProcessingService } from '../image/SharpImageProcessingService';
@@ -23,6 +25,7 @@ import { PrismaPlantReferenceRepository } from '../db/repositories/PrismaPlantRe
 import { PrismaPlantRepository } from '../db/repositories/PrismaPlantRepository';
 import { PrismaPlantHomeAssistantBindingRepository } from '../db/repositories/PrismaPlantHomeAssistantBindingRepository';
 import { PrismaPlantOperationalEventRepository } from '../db/repositories/PrismaPlantOperationalEventRepository';
+import { PrismaPhotoRepository } from '../db/repositories/PrismaPhotoRepository';
 import { OpenPlantbookMapper } from '../open-plantbook/OpenPlantbookMapper';
 import { OpenPlantbookClient } from '../open-plantbook/OpenPlantbookClient';
 import { OAuth2TokenManager } from '../open-plantbook/OAuth2TokenManager';
@@ -34,6 +37,7 @@ let customPlantReferenceRepository: IPlantReferenceRepository | null = null;
 let customPlantRepository: IPlantRepository | null = null;
 let customPlantHomeAssistantBindingRepository: IPlantHomeAssistantBindingRepository | null = null;
 let customPlantOperationalEventRepository: IPlantOperationalEventRepository | null = null;
+let customPhotoRepository: IPhotoRepository | null = null;
 let customPlantReferenceMapper: IPlantReferenceMapper | null = null;
 let customOpenPlantbookClient: IOpenPlantbookClient | null = null;
 let customOAuth2TokenManager: IOAuth2TokenManager | null = null;
@@ -61,6 +65,10 @@ export function setPlantHomeAssistantBindingRepository(repo: IPlantHomeAssistant
 
 export function setPlantOperationalEventRepository(repo: IPlantOperationalEventRepository | null): void {
   customPlantOperationalEventRepository = repo;
+}
+
+export function setPhotoRepository(repo: IPhotoRepository | null): void {
+  customPhotoRepository = repo;
 }
 
 export function setPlantReferenceMapper(mapper: IPlantReferenceMapper | null): void {
@@ -121,6 +129,13 @@ export function getPlantOperationalEventRepository(): IPlantOperationalEventRepo
   return new PrismaPlantOperationalEventRepository();
 }
 
+export function getPhotoRepository(): IPhotoRepository {
+  if (customPhotoRepository) {
+    return customPhotoRepository;
+  }
+  return new PrismaPhotoRepository();
+}
+
 export function getPlantReferenceMapper(): IPlantReferenceMapper {
   if (customPlantReferenceMapper) {
     return customPlantReferenceMapper;
@@ -169,6 +184,15 @@ export function getIngestHomeAssistantEventUseCase(): IngestHomeAssistantEventUs
   return new IngestHomeAssistantEventUseCase(
     getPlantRepository(),
     getPlantOperationalEventRepository()
+  );
+}
+
+export function getPlantCareContextUseCase(): GetPlantCareContextUseCase {
+  return new GetPlantCareContextUseCase(
+    getPlantRepository(),
+    getPlantLiveTelemetryUseCase(),
+    getPlantOperationalEventRepository(),
+    getPhotoRepository()
   );
 }
 

@@ -7,4 +7,4 @@ export * from './IPlantReferenceMapper';
 export * from './storage-keys';
 export * from './canonicalUrl';
 export * from './photoTimeline';
-
+export * from './plantCareContextEngine';

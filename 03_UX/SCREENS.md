@@ -152,6 +152,16 @@ graph TD
       - **"Comparar fotos":** Modo de selección de 2 fotos para visualización lado a lado (desktop) o apiladas (mobile).
       - **Modal / Lightbox:** Inspección ampliada con opciones de marcar como principal, editar nota/fecha, y eliminación segura (con reasignación automática de foto principal a la más reciente restante).
     - Estado vacío: *"Todavía no hay fotografías históricas."* con botón para agregar la primera foto.
+  - **Sección 5.2: Estado en Tiempo Real (ATP-HA-002):**
+    - Métricas en vivo obtenidas de Home Assistant: Humedad de suelo (%), Batería (%), Conexión del sensor (Online/Offline/Stale).
+  - **Sección 5.3: Estado de Cuidado / Motor Determinista (ATP-CARE-001):**
+    - Evaluación contextual explicable y determinista calculada on-demand (cero LLMs / cero auto-riego).
+    - Badge de estado general: `Óptimo` (OK), `En Observación` (WATCH), `Acción Sugerida` (ACTION_RECOMMENDED), `Datos Insuficientes` (DATA_INSUFFICIENT).
+    - Headline y Summary explicativos.
+    - Píldoras de condiciones evaluadas (Humedad actual vs Rango de referencia botánica, Estado del sensor, Último registro fotográfico).
+    - Lista de Recomendaciones de cuidado con prioridad visual (`Crítica`, `Alta`, `Media`, `Baja`) y justificación/evidencia desplegable.
+  - **Sección 5.4: Actividad Reciente / Historial Operativo (ATP-HA-003):**
+    - Línea de tiempo de eventos operativos (transiciones de humedad baja/recuperada, sensor offline/online) ingestados vía webhook seguro.
   - **Sección 6: Identificación QR (ATP-FEAT-001):**
     - Código QR vectorial de alto contraste generado a partir de la URL canónica `{APP_PUBLIC_BASE_URL}/plants/{permanent_code}`.
     - Identificador permanente visible `AT-PL-XXX`.
@@ -168,7 +178,7 @@ graph TD
 - **Acciones secundarias y de Ciclo de Vida:**
   - Botón secundario en pie de ficha: **"Archivar planta"** (en ejemplar activo) o **"Restaurar planta"** (en ejemplar archivado).
   - La acción de archivar se ubica deliberadamente al final de la pantalla, con tratamiento visual neutral/discreto (no botón rojo de borrado destructivo) para evitar confusiones con eliminación de datos.
-- **Trazabilidad:** FR-015, FR-016, FR-017, FR-026, FR-028, FR-032, FR-034, FR-049, FR-055, ATP-FEAT-001, ATP-FEAT-002 | US-004, US-008, US-009, US-010, US-015.
+- **Trazabilidad:** FR-015, FR-016, FR-017, FR-026, FR-028, FR-032, FR-034, FR-049, FR-055, ATP-FEAT-001, ATP-FEAT-002, ATP-HA-002, ATP-HA-003, ATP-CARE-001 | US-004, US-008, US-009, US-010, US-015.
 
 ---
 

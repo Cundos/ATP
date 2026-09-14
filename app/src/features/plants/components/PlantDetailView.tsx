@@ -19,13 +19,14 @@ import {
   Tag,
   QrCode,
 } from 'lucide-react';
-import { PlantEntity, PlantOperationalEventEntity } from '@/core/domain/entities';
+import { PlantEntity, PlantOperationalEventEntity, PlantCareContextDTO } from '@/core/domain/entities';
 import { HealthBadge, Button, Modal, Toast } from '@/components/ui';
 import { archivePlantAction } from '../actions';
 import { PlantThumbnail } from './PlantThumbnail';
 import { PlantPhotoTimeline } from './PlantPhotoTimeline';
 import { BotanicalReferenceSection } from './BotanicalReferenceSection';
 import { PlantLiveTelemetrySection } from './PlantLiveTelemetrySection';
+import { PlantCareContextSection } from './PlantCareContextSection';
 import { PlantRecentActivitySection } from './PlantRecentActivitySection';
 import { PlantQrCode } from './PlantQrCode';
 import { PlantLiveTelemetryDTO } from '@/core/application/use-cases/GetPlantLiveTelemetryUseCase';
@@ -39,6 +40,7 @@ export interface PlantDetailViewProps {
   plant: PlantEntity;
   botanicalReference?: BotanicalReferenceViewModel | null;
   liveTelemetry?: PlantLiveTelemetryDTO | null;
+  careContext?: PlantCareContextDTO | null;
   recentEvents?: PlantOperationalEventEntity[];
 }
 
@@ -46,6 +48,7 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
   plant,
   botanicalReference,
   liveTelemetry,
+  careContext,
   recentEvents,
 }) => {
   const router = useRouter();
@@ -296,6 +299,11 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
        {/* Sección: Estado en tiempo real / Telemetría Home Assistant (ATP-HA-002) */}
       {liveTelemetry && (
         <PlantLiveTelemetrySection telemetry={liveTelemetry} />
+      )}
+
+      {/* Sección: Estado de Cuidado / Motor Determinista (ATP-CARE-001) */}
+      {careContext && (
+        <PlantCareContextSection careContext={careContext} />
       )}
 
       {/* Sección: Actividad Reciente / Historial Operativo (ATP-HA-003) */}

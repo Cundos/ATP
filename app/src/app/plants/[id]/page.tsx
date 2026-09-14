@@ -5,11 +5,12 @@ import { GetPlantUseCase } from '@/core/application/use-cases/GetPlantUseCase';
 import {
   getPlantLiveTelemetryUseCase,
   getPlantOperationalEventRepository,
+  getPlantCareContextUseCase,
 } from '@/infrastructure/services/serviceContainer';
 import { PlantDetailView } from '@/features/plants/components';
 import { parseBotanicalReferenceViewModel } from '@/features/plants/view-models/botanical-reference.vm';
 import { PlantLiveTelemetryDTO } from '@/core/application/use-cases/GetPlantLiveTelemetryUseCase';
-import { PlantOperationalEventEntity } from '@/core/domain/entities';
+import { PlantOperationalEventEntity, PlantCareContextDTO } from '@/core/domain/entities';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,12 +77,22 @@ export default async function PlantDetailPage({ params }: PlantDetailPageProps) 
     recentEvents = [];
   }
 
+  // Compute deterministic dynamic care context (ATP-CARE-001)
+  let careContext: PlantCareContextDTO | null = null;
+  try {
+    const careContextUseCase = getPlantCareContextUseCase();
+    careContext = await careContextUseCase.execute(plant);
+  } catch {
+    careContext = null;
+  }
+
   return (
     <section>
       <PlantDetailView
         plant={plant}
         botanicalReference={botanicalReference}
         liveTelemetry={liveTelemetry}
+        careContext={careContext}
         recentEvents={recentEvents}
       />
     </section>

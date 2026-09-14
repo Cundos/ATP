@@ -186,3 +186,56 @@ En una arquitectura Next.js full-stack monolítica moderna, no es necesario expo
   - `401 Unauthorized`: Token de webhook ausente o inválido.
   - `404 Not Found`: Planta no encontrada por `plant_id` o `plant_code`.
 
+### 3.4 Consulta de Contexto de Cuidado Read-Only (ATP-VOICE-001A — Cecilio Bridge)
+- **Método / Ruta:** `GET /api/integrations/home-assistant/plants/{permanentCode}/care-context`
+- **Identificador:** Exclusivamente `permanent_code` en formato `AT-PL-XXX` (no admite UUIDs).
+- **Autenticación:** Cabecera `Authorization: Bearer <HOME_ASSISTANT_READ_API_SECRET>` validada en tiempo constante (`crypto.timingSafeEqual` con SHA-256).
+- **Propósito:** Exponer el estado de cuidado actual evaluado determinísticamente por `GetPlantCareContextUseCase` para consumo por Cecilio / Home Assistant (sin mutaciones ni control de dispositivos).
+- **Esquema de Respuesta (200 OK):**
+  ```json
+  {
+    "schema_version": "1",
+    "plant": {
+      "permanent_code": "AT-PL-007",
+      "common_name": "Zamioculca",
+      "scientific_name": "Zamioculcas zamiifolia"
+    },
+    "care": {
+      "status": "OK",
+      "headline": "Condiciones de humedad en rango óptimo",
+      "summary": "La humedad del sustrato (45%) se encuentra dentro del rango adecuado de referencia (30%–60%).",
+      "recommendations": [
+        {
+          "priority": "LOW",
+          "title": "Pauta de riego general",
+          "explanation": "Regar cuando el sustrato se seque en los primeros centímetros."
+        }
+      ]
+    },
+    "conditions": {
+      "soil_moisture": {
+        "value": 45,
+        "unit": "%",
+        "classification": "NORMAL",
+        "observed_at": "2026-09-13T22:50:00.000Z"
+      },
+      "sensor_status": "ONLINE",
+      "battery": {
+        "value": 90,
+        "unit": "%"
+      }
+    },
+    "data_quality": {
+      "telemetry_available": true,
+      "telemetry_stale": false,
+      "reference_available": true
+    },
+    "generated_at": "2026-09-13T23:00:00.000Z"
+  }
+  ```
+- **Códigos de Error:**
+  - `400 Bad Request`: Formato de código permanente inválido (ej. UUID o patrón incorrecto).
+  - `401 Unauthorized`: Token ausente, incorrecto o secreto no configurado.
+  - `404 Not Found`: Ejemplar no encontrado en el sistema.
+  - `500 Internal Server Error`: Fallo no recuperable al construir el contexto.
+

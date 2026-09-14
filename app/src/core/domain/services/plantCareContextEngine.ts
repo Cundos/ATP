@@ -235,6 +235,12 @@ export function evaluatePlantCareContext(input: EvaluateCareContextInput): Plant
     plant_id: plant.id,
     permanent_code: plant.permanent_code,
     evaluated_at: new Date().toISOString(),
+    plant: {
+      permanent_code: plant.permanent_code,
+      common_name: plant.common_name,
+      scientific_name: plant.scientific_name,
+      health_status: plant.health_status,
+    },
     data_quality: {
       has_telemetry: telemetryConfigured && telemetryAvailable,
       has_botanical_reference: Boolean(reference),

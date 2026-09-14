@@ -172,4 +172,54 @@ rest_command:
         event_id: "zz-moist-low-{{ now().strftime('%Y%m%d%H%M') }}"
         value_number: "{{ states('sensor.beta_zz_plant_soil_moisture') | float }}"
         unit: "%"
+
+---
+
+## 4. Puente Cecilio / Home Assistant Read-Only Care API (ATP-VOICE-001A)
+
+### 4.1 Principio de Autoridad y Fuente de la Verdad:
+- **Atilio Plants = Fuente de la verdad contextual (*Source of Truth*):**
+  - Posee la identidad permanente del ejemplar (`permanent_code`).
+  - Almacena el conocimiento botánico de referencia (`PlantReference`).
+  - Ejecuta el motor determinista de contexto de cuidado ([`evaluatePlantCareContext`](file:///C:/Dev/AtilioPlant/app/src/core/domain/services/plantCareContextEngine.ts)).
+  - Emite evaluaciones de estado (`OK`, `WATCH`, `ACTION_RECOMMENDED`, `DATA_INSUFFICIENT`) y recomendaciones explicables con evidencia.
+- **Home Assistant / Cecilio = Capa de presentación y voz (*Presentation Consumer*):**
+  - Consulta el contexto de cuidado evaluado mediante la API read-only.
+  - Genera respuestas conversacionales y respuestas de voz para el usuario.
+  - **NO reimplementa reglas botánicas ni cálculos de umbrales.**
+  - **NO ejecuta mutaciones directas sobre el modelo de datos.**
+
+### 4.2 Arquitectura del Endpoint Read-Only:
+
+```text
+┌──────────────────────────────────────┐
+│        Home Assistant / Cecilio      │
+│        (Voice / Dashboard Client)    │
+└──────────────────┬───────────────────┘
+                   │ GET /api/integrations/home-assistant/plants/{permanentCode}/care-context
+                   │ Authorization: Bearer <HOME_ASSISTANT_READ_API_SECRET>
+                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                        Atilio Plants Backend                           │
+│                                                                        │
+│   [Timing-Safe Auth Verification (HOME_ASSISTANT_READ_API_SECRET)]     │
+│                        │                                               │
+│                        ▼                                               │
+│   [GetPlantCareContextUseCase]                                         │
+│        ├── Valida permanent_code (AT-PL-XXX)                          │
+│        ├── Obtiene ejemplar + referencia botánica                      │
+│        ├── Consulta telemetría en vivo (HomeAssistantClient)           │
+│        ├── Consulta historial de eventos operacionales                 │
+│        └── Ejecuta evaluatePlantCareContext (ADR-019)                  │
+│                        │                                               │
+│                        ▼                                               │
+│   [Sanitizer / Minimal Voice DTO (schema_version: "1")]                │
+│        └── Sin UUIDs, sin DB IDs, sin storage paths, sin raw payloads  │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.3 Principios de Privacidad y Minimización de Datos:
+1. **Identificación Exclusiva por Código Permanente:** Solo resuelve por `AT-PL-XXX`. No acepta UUIDs ni IDs internos.
+2. **Minimización de Respuesta:** Se omiten datos técnicos internos (UUIDs, IDs de tabla, paths de archivos en blob/storage, datos crudos JSON, identificadores de entidades de Home Assistant).
+3. **Manejo Resiliente y Degradado:** Si Home Assistant se encuentra temporalmente inaccesible, el motor degrada transparentemente retornando `200 OK` con `telemetry_available: false` y evaluación basada en la referencia botánica disponible.
 ```

@@ -692,6 +692,16 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Pruebas Automatizadas: Unit tests (`plantCareContextEngine.test.ts`, `GetPlantCareContextUseCase.test.ts`, `plant-care-context-section.test.tsx`), Integration tests (`plant-care-context-integration.test.ts`) y E2E (`plant-care-context.spec.ts`).
   - Arquitectura: `04_ARCHITECTURE/ADR-019-DETERMINISTIC-CARE-CONTEXT.md`.
 
+#### `ATP-VOICE-001A` — Cecilio Bridge / Read-Only Care API (Home Assistant)
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Exponer un endpoint REST read-only, seguro y tipado (`GET /api/integrations/home-assistant/plants/{permanentCode}/care-context`) para que Home Assistant y Cecilio consulten el estado de cuidado actual evaluado determinísticamente sin duplicar reglas ni acoplarse a esquemas internos.
+- **Tipo:** `INTEGRATION` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Route Handler: `src/app/api/integrations/home-assistant/plants/[permanentCode]/care-context/route.ts` con autenticación Bearer en tiempo constante (`HOME_ASSISTANT_READ_API_SECRET`).
+  - DTO Sanitizado: `HomeAssistantPlantCareContextResponseDTO` (`schema_version: "1"`) con estricta minimización de datos (sin UUIDs, sin IDs de tabla, sin storage paths).
+  - Pruebas Automatizadas: Unit tests (`care-context-api.test.ts`).
+  - Documentación: `04_ARCHITECTURE/API.md` (Sección 3.4) y `04_ARCHITECTURE/INTEGRATIONS.md` (Sección 4).
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)

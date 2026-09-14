@@ -690,7 +690,7 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Contenedor de Servicios: Inyección en `serviceContainer.ts` (`getPlantCareContextUseCase`).
   - Componente UI: `PlantCareContextSection` en `src/features/plants/components/` integrado en `PlantDetailView` (`SCR-003`) y SSR en `/plants/[id]`.
   - Pruebas Automatizadas: Unit tests (`plantCareContextEngine.test.ts`, `GetPlantCareContextUseCase.test.ts`, `plant-care-context-section.test.tsx`), Integration tests (`plant-care-context-integration.test.ts`) y E2E (`plant-care-context.spec.ts`).
-  - Arquitectura: `04_ARCHITECTURE/ADR-018-DETERMINISTIC-CARE-CONTEXT.md`.
+  - Arquitectura: `04_ARCHITECTURE/ADR-019-DETERMINISTIC-CARE-CONTEXT.md`.
 
 ---
 

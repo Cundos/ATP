@@ -24,6 +24,7 @@ Este documento centraliza las decisiones arquitectónicas y de diseño del produ
 - [ADR-016: Identificadores Técnicos UUIDv7 y Desacoplamiento de Códigos de Dominio](#adr-016-identificadores-técnicos-uuidv7-y-desacoplamiento-de-códigos-de-dominio)
 - [ADR-017: Generación de permanent_code Mediante Secuencia Dedicada de PostgreSQL](#adr-017-generación-de-permanent_code-mediante-secuencia-dedicada-de-postgresql)
 - [ADR-018: Despliegue en Vercel con PostgreSQL Gestionado en la Nube](#adr-018-despliegue-en-vercel-con-postgresql-gestionado-en-la-nube)
+- [ADR-019: Dynamic & Deterministic Care Context Engine](#adr-019-dynamic--deterministic-care-context-engine)
 
 
 ---
@@ -263,4 +264,20 @@ Este documento centraliza las decisiones arquitectónicas y de diseño del produ
 - **Consecuencias:**
   - *Positivas:* Despliegue continuo automático e instantáneo en Vercel ante cada push a `main`; alta disponibilidad sin depender de la máquina local encendida; compatibilidad total con Prisma ORM y la secuencia nativa `plant_code_seq` (`ADR-017`); y eliminación del bloqueo por ausencia de Docker en local.
   - *Negativas:* Requiere conectividad a Internet para interactuar con la base de datos durante el desarrollo y administrar de forma segura los secretos `DATABASE_URL` tanto en Vercel como en el archivo `.env` local.
+
+---
+
+## ADR-019: Dynamic & Deterministic Care Context Engine
+
+- **Estado:** Accepted
+- **Contexto:**
+  Atilio Plants dispone de fichas botánicas enriquecidas (Open Plantbook), telemetría en tiempo real desde Home Assistant (sensores de humedad, batería, estado online/stale) e historial de eventos operacionales. Se requería unificar estas fuentes en un contexto de cuidado (*Care Context*) coherente y explicable para cada ejemplar, sin depender de modelos generativos (LLMs), sin persistencia redundante y sin automatizar el riego.
+- **Decisión:**
+  Se adopta un motor determinista en memoria (`evaluatePlantCareContext`) con reglas explícitas:
+  1. *Precedencia de Umbrales:* Umbrales del ejemplar/sensor $\rightarrow$ Umbrales botánicos de Open Plantbook (`min_soil_moist`, `max_soil_moist`) $\rightarrow$ Clasificación `UNKNOWN` (nunca se inventan umbrales por defecto).
+  2. *Precedencia de Calidad de Datos:* Si el sensor está `OFFLINE` o la telemetría está `STALE`, la clasificación de humedad se fuerza a `UNKNOWN` y el estado general pasa a `WATCH`.
+  3. *Explicabilidad:* Cada recomendación de cuidado incluye un array de justificación y lecturas observadas (`evidence: string[]`).
+- **Consecuencias:**
+  - *Positivas:* Cero costos de inferencia de IA, latencia sub-milisegundo en ejecución de dominio, total explicabilidad y robustez frente a lecturas desactualizadas o sensores desconectados.
+  - *Negativas:* Las recomendaciones complejas están delimitadas por las reglas y umbrales deterministas configurados.
 

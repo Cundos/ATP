@@ -27,6 +27,16 @@ const monoFont = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'Atilio Plants — Herbario Contemporáneo',
   description: 'Catálogo botánico contemporáneo y seguimiento de colección botánica doméstica.',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
 };
 
 export default function RootLayout({

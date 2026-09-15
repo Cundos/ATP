@@ -716,6 +716,15 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Pruebas Automatizadas: Vitest (`session.test.ts`, `plant-actions.test.ts`, `location-actions.test.ts`), Playwright E2E (`e2e/auth-security.spec.ts`).
   - Arquitectura: `04_ARCHITECTURE/ADR-020-PRIVATE-APP-AUTHORIZATION-BASELINE.md`.
 
+#### `ATP-LOC-001` — Normalizar Ubicaciones y Asociar Inventario Actual
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Dejar normalizado el catálogo de ubicaciones canónicas reales de Atilio Plants (`Cocina`, `Baño`, `Patio de Luz`, `Living`) y asociar de forma determinista e idempotente las 13 plantas del inventario inicial a su ubicación física actual.
+- **Tipo:** `DATA / INTEGRITY` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Seed & Normalización Idempotente: `prisma/seed.ts` con `CANONICAL_LOCATIONS`, `INITIAL_PLANT_LOCATIONS` y función de consolidación/upsert `seedLocations()`.
+  - Integridad Referencial: 13 plantas asociadas a `location_id` activo no nulo (Cocina: 3, Baño: 1, Patio de Luz: 1, Living: 8).
+  - Pruebas Automatizadas: Extensión de `src/infrastructure/db/__tests__/bootstrap-seed.test.ts` con validación de catálogo canónico, asignación 1-a-1 de ejemplares y conteos por ubicación.
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)

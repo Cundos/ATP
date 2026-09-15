@@ -14,8 +14,9 @@ describe.skipIf(isLocalhostPlaceholder)('Bootstrap Seed Validation (ATP-IMP-007)
   beforeAll(async () => {
     // Limpiar tablas accesorias de pruebas sin afectar referencias botánicas
     await prisma.photo.deleteMany({});
-    await prisma.location.deleteMany({});
     await prisma.plantCultivationProfile.deleteMany({});
+    await prisma.plant.updateMany({ data: { location_id: null } });
+    await prisma.location.deleteMany({});
     // Ejecutar seed para asegurar estado
     await seed(prisma);
   });
@@ -136,4 +137,84 @@ describe.skipIf(isLocalhostPlaceholder)('Bootstrap Seed Validation (ATP-IMP-007)
     // IMPORTANTE: Restaurar la secuencia al máximo del dataset (13) para no dejar huecos
     await alignPlantCodeSequence(prisma);
   });
-});
+
+  describe('Normalización de Ubicaciones Canónicas (ATP-LOC-001)', () => {
+    it('debe contener exactamente las 4 ubicaciones canónicas activas sin duplicados', async () => {
+      const locations = await prisma.location.findMany({
+        where: { lifecycle_status: 'ACTIVE' },
+        orderBy: { name: 'asc' },
+      });
+
+      expect(locations).toHaveLength(4);
+      const names = locations.map((l) => l.name);
+      expect(names).toEqual(['Baño', 'Cocina', 'Living', 'Patio de Luz']);
+    });
+
+    it('todas las 13 plantas deben tener una ubicación asociada no nula', async () => {
+      const plantsWithoutLoc = await prisma.plant.findMany({
+        where: { location_id: null },
+      });
+
+      expect(plantsWithoutLoc).toHaveLength(0);
+    });
+
+    it('debe asociar exactamente cada planta a su ubicación canónica según ATP-LOC-001', async () => {
+      const plants = await prisma.plant.findMany({
+        select: {
+          permanent_code: true,
+          location: { select: { name: true } },
+        },
+        orderBy: { permanent_code: 'asc' },
+      });
+
+      const expectedAssignments: Record<string, string> = {
+        'AT-PL-001': 'Cocina',
+        'AT-PL-002': 'Baño',
+        'AT-PL-003': 'Patio de Luz',
+        'AT-PL-004': 'Living',
+        'AT-PL-005': 'Cocina',
+        'AT-PL-006': 'Cocina',
+        'AT-PL-007': 'Living',
+        'AT-PL-008': 'Living',
+        'AT-PL-009': 'Living',
+        'AT-PL-010': 'Living',
+        'AT-PL-011': 'Living',
+        'AT-PL-012': 'Living',
+        'AT-PL-013': 'Living',
+      };
+
+      for (const plant of plants) {
+        const expectedLoc = expectedAssignments[plant.permanent_code];
+        expect(plant.location?.name).toBe(expectedLoc);
+      }
+    });
+
+    it('debe cumplir la distribución exacta de conteos por ubicación (3, 1, 1, 8 = 13)', async () => {
+      const counts = await prisma.plant.groupBy({
+        by: ['location_id'],
+        _count: { permanent_code: true },
+      });
+
+      const locDetails = await prisma.location.findMany({
+        select: { id: true, name: true },
+      });
+      const locIdToName = new Map(locDetails.map((l) => [l.id, l.name]));
+
+      const countsByName: Record<string, number> = {};
+      for (const c of counts) {
+        if (c.location_id) {
+          const name = locIdToName.get(c.location_id) || 'Unknown';
+          countsByName[name] = c._count.permanent_code;
+        }
+      }
+
+      expect(countsByName['Cocina']).toBe(3);
+      expect(countsByName['Baño']).toBe(1);
+      expect(countsByName['Patio de Luz']).toBe(1);
+      expect(countsByName['Living']).toBe(8);
+
+      const totalAssigned = Object.values(countsByName).reduce((a, b) => a + b, 0);
+      expect(totalAssigned).toBe(13);
+    });
+  });
+});

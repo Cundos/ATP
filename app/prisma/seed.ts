@@ -149,6 +149,89 @@ export const INITIAL_PLANTS_DATA: SeedPlantData[] = [
   },
 ];
 
+export const CANONICAL_LOCATIONS = [
+  'Cocina',
+  'Baño',
+  'Patio de Luz',
+  'Living',
+] as const;
+
+export const INITIAL_PLANT_LOCATIONS: Record<string, string> = {
+  'AT-PL-001': 'Cocina',
+  'AT-PL-002': 'Baño',
+  'AT-PL-003': 'Patio de Luz',
+  'AT-PL-004': 'Living',
+  'AT-PL-005': 'Cocina',
+  'AT-PL-006': 'Cocina',
+  'AT-PL-007': 'Living',
+  'AT-PL-008': 'Living',
+  'AT-PL-009': 'Living',
+  'AT-PL-010': 'Living',
+  'AT-PL-011': 'Living',
+  'AT-PL-012': 'Living',
+  'AT-PL-013': 'Living',
+};
+
+/**
+ * Normaliza y garantiza la existencia idempotente de las 4 ubicaciones canónicas
+ */
+export async function seedLocations(prisma: PrismaClient): Promise<Map<string, string>> {
+  const locationMap = new Map<string, string>();
+
+  for (const canonicalName of CANONICAL_LOCATIONS) {
+    const existing = await prisma.location.findMany({
+      where: {
+        name: { equals: canonicalName, mode: 'insensitive' },
+      },
+      orderBy: { created_at: 'asc' },
+    });
+
+    if (existing.length > 0) {
+      const primaryLoc = existing[0];
+      if (primaryLoc.name !== canonicalName || primaryLoc.lifecycle_status !== 'ACTIVE') {
+        await prisma.location.update({
+          where: { id: primaryLoc.id },
+          data: {
+            name: canonicalName,
+            lifecycle_status: 'ACTIVE',
+          },
+        });
+      }
+      locationMap.set(canonicalName, primaryLoc.id);
+
+      // Si existieran duplicados históricos por mayúsculas/minúsculas, consolidar
+      if (existing.length > 1) {
+        for (let i = 1; i < existing.length; i++) {
+          const duplicate = existing[i];
+          await prisma.plant.updateMany({
+            where: { location_id: duplicate.id },
+            data: { location_id: primaryLoc.id },
+          });
+          try {
+            await prisma.location.delete({ where: { id: duplicate.id } });
+          } catch {
+            await prisma.location.update({
+              where: { id: duplicate.id },
+              data: { lifecycle_status: 'ARCHIVED' },
+            });
+          }
+        }
+      }
+    } else {
+      const newLoc = await prisma.location.create({
+        data: {
+          id: uuidv7(),
+          name: canonicalName,
+          lifecycle_status: 'ACTIVE',
+        },
+      });
+      locationMap.set(canonicalName, newLoc.id);
+    }
+  }
+
+  return locationMap;
+}
+
 /**
  * Función que alinea la secuencia plant_code_seq con el máximo componente numérico
  * de permanent_code existente (e.g. AT-PL-013 -> 13).
@@ -187,9 +270,16 @@ export async function alignPlantCodeSequence(prisma: PrismaClient): Promise<numb
  * Ejecución del seed de bootstrap
  */
 export async function seed(prisma: PrismaClient) {
+  console.log('Normalizando catálogo de ubicaciones canónicas...');
+  const locationMap = await seedLocations(prisma);
+  console.log(`Catálogo de ubicaciones listo: ${locationMap.size} ubicaciones activas.`);
+
   console.log(`Iniciando carga bootstrap de ${INITIAL_PLANTS_DATA.length} plantas...`);
 
   for (const plantData of INITIAL_PLANTS_DATA) {
+    const targetLocationName = INITIAL_PLANT_LOCATIONS[plantData.permanent_code];
+    const targetLocationId = targetLocationName ? locationMap.get(targetLocationName) || null : null;
+
     await prisma.plant.upsert({
       where: { permanent_code: plantData.permanent_code },
       update: {
@@ -200,6 +290,7 @@ export async function seed(prisma: PrismaClient) {
         lifecycle_status: plantData.lifecycle_status,
         acquisition_date: plantData.acquisition_date,
         notes: plantData.notes,
+        location_id: targetLocationId,
       },
       create: {
         id: uuidv7(),
@@ -211,18 +302,19 @@ export async function seed(prisma: PrismaClient) {
         lifecycle_status: plantData.lifecycle_status,
         acquisition_date: plantData.acquisition_date,
         notes: plantData.notes,
-        location_id: null,
+        location_id: targetLocationId,
         reference_id: null,
       },
     });
   }
 
-  console.log('13 plantas cargadas/actualizadas mediante upsert idempotente.');
+  console.log('13 plantas cargadas/actualizadas con ubicaciones canónicas mediante upsert idempotente.');
 
   const alignedMax = await alignPlantCodeSequence(prisma);
   console.log(`Secuencia plant_code_seq alineada dinámicamente al valor máximo histórico: ${alignedMax}`);
   console.log(`El próximo llamado a nextval('plant_code_seq') generará: ${alignedMax + 1}`);
 }
+
 
 // Ejecución como script autónomo
 if (require.main === module || !process.env.VITEST) {

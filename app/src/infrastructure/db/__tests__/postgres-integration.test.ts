@@ -257,9 +257,15 @@ describe.skipIf(isLocalhostPlaceholder)('PostgreSQL Real Integration Tests (GATE
   });
 
   it('debe mantener integridad y ausencia de fotos/locations residuales de prueba', async () => {
-    // Las tablas accesorias de pruebas deben estar limpias
-    const locationCount = await prisma.location.count();
-    expect(locationCount).toBe(0);
+    // Las tablas accesorias de pruebas deben estar limpias de registros residuales de tests
+    const testLocations = await prisma.location.findMany({
+      where: {
+        name: {
+          notIn: ['Cocina', 'Baño', 'Patio de Luz', 'Living'],
+        },
+      },
+    });
+    expect(testLocations).toHaveLength(0);
 
     const photoCount = await prisma.photo.count();
     expect(photoCount).toBe(0);

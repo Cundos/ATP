@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifySessionToken, SESSION_COOKIE_NAME, getAuthSecret } from './core/application/auth/session';
+import { verifySessionToken, SESSION_COOKIE_NAME } from './core/application/auth/session';
 
 export const config = {
   matcher: [
@@ -52,9 +52,9 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     return applySecurityHeaders(NextResponse.next());
   }
 
-  // 2. Check session validity
+  // 2. Check session validity (fail-closed if AUTH_SECRET is not configured)
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
-  const isAuthenticated = await verifySessionToken(sessionCookie, getAuthSecret());
+  const isAuthenticated = await verifySessionToken(sessionCookie);
 
   // 3. Login page handling
   if (pathname === '/login') {

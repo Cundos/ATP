@@ -151,7 +151,18 @@ test.describe.serial('Private App Hardening & Security Baseline E2E (ATP-SEC-001
   });
 
   // ---------------------------------------------------------------------------
-  // 8. Sanitization of Home Assistant Internal Bindings
+  // 8. Robots.txt Disallow All
+  // ---------------------------------------------------------------------------
+  test('Robots.txt: returns 200 with Disallow / and security headers', async ({ request }) => {
+    const res = await request.get('/robots.txt');
+    expect(res.status()).toBe(200);
+    const content = await res.text();
+    expect(content).toContain('User-Agent: *');
+    expect(content).toContain('Disallow: /');
+  });
+
+  // ---------------------------------------------------------------------------
+  // 9. Sanitization of Home Assistant Internal Bindings
   // ---------------------------------------------------------------------------
   test('Data Leakage Prevention: authenticated plant detail does not expose internal entity IDs', async ({ page, context }) => {
     await authenticateContext(context);
@@ -168,3 +179,4 @@ test.describe.serial('Private App Hardening & Security Baseline E2E (ATP-SEC-001
     expect(pageContent).not.toContain('sensor.humedad_suelo_estado_visual');
   });
 });
+

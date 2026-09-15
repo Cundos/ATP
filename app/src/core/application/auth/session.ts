@@ -40,21 +40,59 @@ function base64UrlToBytes(base64url: string): Uint8Array {
   return bytes;
 }
 
+export const MIN_AUTH_SECRET_LENGTH = 32;
+
+const KNOWN_INSECURE_PLACEHOLDERS = new Set([
+  'placeholder',
+  'changeme',
+  'your_auth_secret',
+  'your_auth_secret_here',
+  'secret',
+  'development_secret',
+  'atp_dev_auth_secret_fallback_do_not_use_in_prod',
+  'default_secret',
+]);
+
 /**
- * Get secret for session HMAC signing from environment
+ * Validates if an auth secret meets the minimum security and entropy requirements.
+ */
+export function isValidAuthSecret(secret: string | null | undefined): boolean {
+  if (!secret || typeof secret !== 'string') return false;
+  const trimmed = secret.trim();
+  if (trimmed.length < MIN_AUTH_SECRET_LENGTH) return false;
+  if (KNOWN_INSECURE_PLACEHOLDERS.has(trimmed.toLowerCase())) return false;
+  return true;
+}
+
+/**
+ * Get secret for session HMAC signing exclusively from process.env.AUTH_SECRET.
+ * Fails closed (throws an explicit error) if AUTH_SECRET is absent, empty,
+ * has insufficient length (< 32 chars), or matches a known insecure placeholder.
+ *
+ * NEVER falls back to M2M secrets (HOME_ASSISTANT_READ_API_SECRET, HOME_ASSISTANT_WEBHOOK_SECRET, etc.).
  */
 export function getAuthSecret(): string {
-  const secret = process.env.AUTH_SECRET || process.env.HOME_ASSISTANT_READ_API_SECRET || 'atp_dev_auth_secret_fallback_do_not_use_in_prod';
-  return secret;
+  const secret = process.env.AUTH_SECRET;
+  if (!isValidAuthSecret(secret)) {
+    throw new Error(
+      'AUTH_SECRET is not configured or has insufficient entropy (expected at least 32 characters, non-placeholder). Human session authentication is unavailable.'
+    );
+  }
+  return secret!.trim();
 }
 
 /**
  * Create a signed session token using Web Crypto HMAC-SHA256
  */
 export async function createSessionToken(
-  secret: string = getAuthSecret(),
+  secret?: string,
   maxAgeSeconds: number = SESSION_MAX_AGE
 ): Promise<string> {
+  const resolvedSecret = secret !== undefined ? secret : getAuthSecret();
+  if (!isValidAuthSecret(resolvedSecret)) {
+    throw new Error('Cannot create session token: invalid or missing AUTH_SECRET.');
+  }
+
   const now = Math.floor(Date.now() / 1000);
   const payload: SessionPayload = {
     authenticated: true,
@@ -68,7 +106,7 @@ export async function createSessionToken(
 
   const key = await crypto.subtle.importKey(
     'raw',
-    enc.encode(secret),
+    enc.encode(resolvedSecret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign']
@@ -89,7 +127,7 @@ export async function createSessionToken(
  */
 export async function verifySessionToken(
   token: string | null | undefined,
-  secret: string = getAuthSecret()
+  secret?: string
 ): Promise<boolean> {
   if (!token || typeof token !== 'string') return false;
 
@@ -100,12 +138,17 @@ export async function verifySessionToken(
   if (!payloadB64 || !signature) return false;
 
   try {
+    const resolvedSecret = secret !== undefined ? secret : getAuthSecret();
+    if (!isValidAuthSecret(resolvedSecret)) {
+      return false;
+    }
+
     const enc = new TextEncoder();
     const dec = new TextDecoder();
 
     const key = await crypto.subtle.importKey(
       'raw',
-      enc.encode(secret),
+      enc.encode(resolvedSecret),
       { name: 'HMAC', hash: 'SHA-256' },
       false,
       ['verify']
@@ -137,6 +180,7 @@ export async function verifySessionToken(
     return false;
   }
 }
+
 
 /**
  * Compare entered passcode with server-side configured passcode in constant time

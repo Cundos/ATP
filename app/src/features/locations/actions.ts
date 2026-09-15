@@ -8,6 +8,7 @@ import { ArchiveLocationUseCase } from '@/core/application/use-cases/ArchiveLoca
 import { RestoreLocationUseCase } from '@/core/application/use-cases/RestoreLocationUseCase';
 import { LocationFormSchema } from './schemas/location-form.schema';
 import { mapActionError } from '@/core/application/error-handler';
+import { requireAuthenticatedUser } from '@/core/application/auth/session';
 
 export interface LocationActionResult {
   success: boolean;
@@ -23,6 +24,7 @@ export async function createLocationAction(
   formData: FormData
 ): Promise<LocationActionResult> {
   try {
+    await requireAuthenticatedUser();
     const rawName = (formData.get('name') as string) || '';
 
     // 1. Validación Zod
@@ -63,6 +65,7 @@ export async function renameLocationAction(
   formData: FormData
 ): Promise<LocationActionResult> {
   try {
+    await requireAuthenticatedUser();
     if (!locationId || locationId.trim() === '') {
       return {
         success: false,
@@ -108,6 +111,7 @@ export async function renameLocationAction(
  */
 export async function archiveLocationAction(locationId: string): Promise<LocationActionResult> {
   try {
+    await requireAuthenticatedUser();
     if (!locationId || locationId.trim() === '') {
       return {
         success: false,
@@ -138,6 +142,7 @@ export async function archiveLocationAction(locationId: string): Promise<Locatio
  */
 export async function restoreLocationAction(locationId: string): Promise<LocationActionResult> {
   try {
+    await requireAuthenticatedUser();
     if (!locationId || locationId.trim() === '') {
       return {
         success: false,

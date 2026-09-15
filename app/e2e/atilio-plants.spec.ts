@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { authenticateContext } from './helpers/auth';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import { createStorageService } from '../src/infrastructure/storage';
@@ -335,4 +336,7 @@ test.describe.serial('Atilio Plants Real Playwright E2E Test Suite (ATP-IMP-027)
     await page.waitForURL('/plants/new');
     await expect(page.getByRole('heading', { name: 'Nueva Planta' })).toBeVisible();
   });
+});
+test.beforeEach(async ({ context }) => {
+  await authenticateContext(context);
 });

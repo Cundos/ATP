@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { authenticateContext } from './helpers/auth';
 import { PrismaClient } from '@prisma/client';
 import { createStorageService } from '../src/infrastructure/storage';
 
@@ -102,4 +103,8 @@ test.describe.serial('Plant Dynamic Care Context E2E (ATP-CARE-001)', () => {
     await expect(page.getByText(/Datos insuficientes para evaluación automática/i)).toBeVisible();
     await expect(page.getByText(/Vincular ficha de referencia o sensor/i)).toBeVisible();
   });
+});
+
+test.beforeEach(async ({ context }) => {
+  await authenticateContext(context);
 });

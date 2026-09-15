@@ -16,9 +16,15 @@ vi.mock('../server/photo-service', () => ({
   uploadAndRegisterPlantPhoto: vi.fn(),
 }));
 
+const mockRequireAuthenticatedUser = vi.fn().mockResolvedValue(undefined);
+vi.mock('@/core/application/auth/session', () => ({
+  requireAuthenticatedUser: () => mockRequireAuthenticatedUser(),
+}));
+
 describe('Plant Server Actions (ATP-IMP-014 / ATP-IMP-020)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRequireAuthenticatedUser.mockResolvedValue(undefined);
   });
 
   describe('createPlantAction', () => {
@@ -526,6 +532,32 @@ describe('Plant Server Actions (ATP-IMP-014 / ATP-IMP-020)', () => {
           reference_id: null,
         })
       );
+    });
+  });
+
+  describe('Authorization Gate (ATP-SEC-001)', () => {
+    it('debe rechazar createPlantAction si requireAuthenticatedUser falla', async () => {
+      mockRequireAuthenticatedUser.mockRejectedValueOnce(new Error('No autorizado. Se requiere iniciar sesión.'));
+
+      const formData = new FormData();
+      formData.append('common_name', 'Ficus');
+      const result = await createPlantAction(null, formData);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('No autorizado');
+      expect(PrismaPlantRepository.prototype.create).not.toHaveBeenCalled();
+    });
+
+    it('debe rechazar updatePlantAction si requireAuthenticatedUser falla', async () => {
+      mockRequireAuthenticatedUser.mockRejectedValueOnce(new Error('No autorizado. Se requiere iniciar sesión.'));
+
+      const formData = new FormData();
+      formData.append('common_name', 'Ficus Modificado');
+      const result = await updatePlantAction('plant-123', null, formData);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('No autorizado');
+      expect(PrismaPlantRepository.prototype.update).not.toHaveBeenCalled();
     });
   });
 });

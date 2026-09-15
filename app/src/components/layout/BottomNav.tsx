@@ -9,6 +9,10 @@ import styles from './BottomNav.module.css';
 export const BottomNav: React.FC = () => {
   const pathname = usePathname();
 
+  if (pathname === '/login') {
+    return null;
+  }
+
   const isHomeActive = pathname === '/';
   const isInventoryActive = pathname.startsWith('/inventory') || (pathname.startsWith('/plants') && pathname !== '/plants/new' && pathname !== '/plants/archived');
   const isNewPlantActive = pathname === '/plants/new';

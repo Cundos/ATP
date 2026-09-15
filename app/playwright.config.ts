@@ -1,5 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 
+try {
+  process.loadEnvFile?.('.env');
+} catch {
+  // Ignore if .env is missing or already loaded
+}
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,

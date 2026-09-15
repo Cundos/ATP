@@ -702,6 +702,20 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Pruebas Automatizadas: Unit tests (`care-context-api.test.ts`).
   - Documentación: `04_ARCHITECTURE/API.md` (Sección 3.4) y `04_ARCHITECTURE/INTEGRATIONS.md` (Sección 4).
 
+#### `ATP-SEC-001` — Private App Hardening / Authorization Baseline
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Cerrar la exposición anónima de Atilio Plants implementando un modelo privado por defecto (Default Deny), autenticación humana basada en sesión HMAC Web Crypto, protección de Server Actions, cabeceras de endurecimiento y aislamiento de endpoints M2M de Home Assistant.
+- **Tipo:** `SECURITY` | **Prioridad:** `CRITICAL`
+- **Artefactos Técnicos Creados:**
+  - Motor de Sesión Web Crypto: `src/core/application/auth/session.ts` (HMAC-SHA256, 100% Edge Runtime y Node.js compatible, cookie `atp_session`).
+  - Login UI & Server Actions: `src/app/login/page.tsx`, `src/features/auth/actions.ts` (`loginAction`, `logoutAction`).
+  - Middleware de Redirección & Seguridad: `src/middleware.ts` con Default Deny, exclusión de M2M (`/api/integrations/home-assistant/*`), protección de APIs internas y cabeceras HTTP (`X-Robots-Tag`, `X-Content-Type-Options`, `X-Frame-Options`, `CSP`, `Referrer-Policy`).
+  - Defensa en Profundidad: Guard de autorización (`requireAuthenticatedUser()`) en todas las Server Actions mutantes (`src/features/plants/actions.ts`, `src/features/locations/actions.ts`).
+  - Sanitización de Entidades: Eliminación de IDs de entidades de Home Assistant (`ha_binding`, `event_key`, `metadata`) en SSR/RSC de fichas de planta.
+  - Configuración & SEO: `src/app/robots.ts` (Disallow all), `poweredByHeader: false` en `next.config.js`.
+  - Pruebas Automatizadas: Vitest (`session.test.ts`, `plant-actions.test.ts`, `location-actions.test.ts`), Playwright E2E (`e2e/auth-security.spec.ts`).
+  - Arquitectura: `04_ARCHITECTURE/ADR-020-PRIVATE-APP-AUTHORIZATION-BASELINE.md`.
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)

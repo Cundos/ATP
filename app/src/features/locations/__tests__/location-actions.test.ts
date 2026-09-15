@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   createLocationAction,
   renameLocationAction,
@@ -15,9 +15,15 @@ vi.mock('next/cache', () => ({
 // Mock repository
 vi.mock('@/infrastructure/db/repositories/PrismaLocationRepository');
 
+const mockRequireAuthenticatedUser = vi.fn().mockResolvedValue(undefined);
+vi.mock('@/core/application/auth/session', () => ({
+  requireAuthenticatedUser: () => mockRequireAuthenticatedUser(),
+}));
+
 describe('Location Server Actions (SCR-007)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRequireAuthenticatedUser.mockResolvedValue(undefined);
   });
 
   describe('createLocationAction', () => {
@@ -182,6 +188,20 @@ describe('Location Server Actions (SCR-007)', () => {
       const result = await restoreLocationAction('loc-1');
       expect(result.success).toBe(false);
       expect(result.errors?.name).toContain('Ya existe');
+    });
+  });
+
+  describe('Authorization Gate (ATP-SEC-001)', () => {
+    it('debe rechazar createLocationAction si requireAuthenticatedUser falla', async () => {
+      mockRequireAuthenticatedUser.mockRejectedValueOnce(new Error('No autorizado. Se requiere iniciar sesión.'));
+
+      const formData = new FormData();
+      formData.append('name', 'Patio');
+      const result = await createLocationAction(null, formData);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('No autorizado');
+      expect(PrismaLocationRepository.prototype.create).not.toHaveBeenCalled();
     });
   });
 });

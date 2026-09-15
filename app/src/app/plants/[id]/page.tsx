@@ -10,7 +10,7 @@ import {
 import { PlantDetailView } from '@/features/plants/components';
 import { parseBotanicalReferenceViewModel } from '@/features/plants/view-models/botanical-reference.vm';
 import { PlantLiveTelemetryDTO } from '@/core/application/use-cases/GetPlantLiveTelemetryUseCase';
-import { PlantOperationalEventEntity, PlantCareContextDTO } from '@/core/domain/entities';
+import { PlantEntity, PlantOperationalEventEntity, PlantCareContextDTO } from '@/core/domain/entities';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,14 +86,40 @@ export default async function PlantDetailPage({ params }: PlantDetailPageProps) 
     careContext = null;
   }
 
+  // Sanitize client-side plant entity and recent events to prevent leaking Home Assistant entity IDs into client RSC bundle
+  const clientPlant: PlantEntity = {
+    ...plant,
+    ha_binding: undefined,
+  };
+
+  const sanitizedRecentEvents: PlantOperationalEventEntity[] = recentEvents.map((evt) => ({
+    ...evt,
+    event_key: '',
+    metadata: null,
+  }));
+
+  const sanitizedCareContext: PlantCareContextDTO | null = careContext
+    ? {
+        ...careContext,
+        recent_context: {
+          ...careContext.recent_context,
+          last_operational_events: careContext.recent_context.last_operational_events.map((evt) => ({
+            ...evt,
+            event_key: '',
+            metadata: null,
+          })),
+        },
+      }
+    : null;
+
   return (
     <section>
       <PlantDetailView
-        plant={plant}
+        plant={clientPlant}
         botanicalReference={botanicalReference}
         liveTelemetry={liveTelemetry}
-        careContext={careContext}
-        recentEvents={recentEvents}
+        careContext={sanitizedCareContext}
+        recentEvents={sanitizedRecentEvents}
       />
     </section>
   );

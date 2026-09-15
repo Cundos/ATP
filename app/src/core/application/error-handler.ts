@@ -1,4 +1,4 @@
-﻿import {
+import {
   PlantNotFoundError,
   PlantValidationError,
   LocationNotFoundError,
@@ -9,6 +9,7 @@
   PhotoOwnershipError,
   PlantReferenceNotFoundError,
   PlantReferenceValidationError,
+  UnauthorizedError,
 } from './errors';
 import {
   StorageUnavailableError,
@@ -90,6 +91,17 @@ export function mapActionError(
     return {
       success: false,
       message: 'No se pudo procesar la imagen seleccionada.',
+    };
+  }
+
+  if (
+    error instanceof UnauthorizedError ||
+    (error as Error)?.name === 'UnauthorizedError' ||
+    (typeof (error as Error)?.message === 'string' && (error as Error).message.includes('No autorizado'))
+  ) {
+    return {
+      success: false,
+      message: (error as Error).message || 'No autorizado. Se requiere iniciar sesión.',
     };
   }
 

@@ -1,4 +1,5 @@
 ﻿import { test, expect } from '@playwright/test';
+import { authenticateContext } from './helpers/auth';
 
 const viewports = [
   { name: 'mobile-390', width: 390, height: 844 },
@@ -50,4 +51,8 @@ test.describe('ATP-POST-004 Responsive Desktop Hardening Audit', () => {
       });
     }
   }
+});
+
+test.beforeEach(async ({ context }) => {
+  await authenticateContext(context);
 });

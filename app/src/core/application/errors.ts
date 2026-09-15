@@ -97,3 +97,13 @@ export class PlantReferenceValidationError extends Error {
     this.name = 'PlantReferenceValidationError';
   }
 }
+
+/**
+ * Error de aplicación lanzado cuando una operación requiere autenticación y la sesión es inválida o inexistente.
+ */
+export class UnauthorizedError extends Error {
+  constructor(message: string = 'No autorizado. Se requiere iniciar sesión.') {
+    super(message);
+    this.name = 'UnauthorizedError';
+  }
+}

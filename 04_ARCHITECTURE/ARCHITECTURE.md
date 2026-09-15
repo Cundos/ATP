@@ -549,3 +549,4 @@ Para mantener alta confiabilidad sin burocracia excesiva:
 - **ADR-017: Generación de permanent_code Mediante Secuencia Dedicada de PostgreSQL.**
 - **ADR-018: Despliegue en Vercel con PostgreSQL Gestionado en la Nube.**
 - **ADR-019: Dynamic & Deterministic Care Context Engine.**
+- **ADR-020: Private App Hardening and Authorization Baseline.**

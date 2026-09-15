@@ -18,6 +18,7 @@ import {
   getFileStorageService,
 } from '@/infrastructure/services/serviceContainer';
 import { mapActionError } from '@/core/application/error-handler';
+import { requireAuthenticatedUser } from '@/core/application/auth/session';
 
 export interface PlantActionResult {
   success: boolean;
@@ -36,6 +37,7 @@ export async function createPlantAction(
   formData: FormData
 ): Promise<PlantActionResult> {
   try {
+    await requireAuthenticatedUser();
     const rawData: PlantFormRawInput = {
       common_name: (formData.get('common_name') as string) || '',
       scientific_name: (formData.get('scientific_name') as string) || '',
@@ -166,6 +168,7 @@ export async function updatePlantAction(
   formData: FormData
 ): Promise<PlantActionResult> {
   try {
+    await requireAuthenticatedUser();
     if (!plantId || plantId.trim() === '') {
       return {
         success: false,
@@ -304,6 +307,7 @@ export async function updatePlantAction(
  */
 export async function archivePlantAction(plantId: string): Promise<PlantActionResult> {
   try {
+    await requireAuthenticatedUser();
     if (!plantId || plantId.trim() === '') {
       return {
         success: false,
@@ -339,6 +343,7 @@ export async function archivePlantAction(plantId: string): Promise<PlantActionRe
  */
 export async function restorePlantAction(plantId: string): Promise<PlantActionResult> {
   try {
+    await requireAuthenticatedUser();
     if (!plantId || plantId.trim() === '') {
       return {
         success: false,
@@ -377,6 +382,7 @@ export async function addPlantPhotoAction(
   formData: FormData
 ): Promise<PlantActionResult> {
   try {
+    await requireAuthenticatedUser();
     if (!plantId || plantId.trim() === '') {
       return {
         success: false,
@@ -448,6 +454,7 @@ export async function setPrimaryPlantPhotoAction(
   photoId: string
 ): Promise<PlantActionResult> {
   try {
+    await requireAuthenticatedUser();
     if (!plantId || !photoId) {
       return {
         success: false,
@@ -490,6 +497,7 @@ export async function updatePlantPhotoMetadataAction(
   data: { taken_at?: string | null; caption?: string | null }
 ): Promise<PlantActionResult> {
   try {
+    await requireAuthenticatedUser();
     if (!plantId || !photoId) {
       return {
         success: false,
@@ -541,6 +549,7 @@ export async function deletePlantPhotoAction(
   photoId: string
 ): Promise<PlantActionResult> {
   try {
+    await requireAuthenticatedUser();
     if (!plantId || !photoId) {
       return {
         success: false,

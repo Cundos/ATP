@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sprout, Menu, X, MapPin, Archive } from 'lucide-react';
+import { Sprout, Menu, X, MapPin, Archive, LogOut } from 'lucide-react';
+import { logoutAction } from '@/features/auth/actions';
 import styles from './TopBar.module.css';
 
 export const TopBar: React.FC = () => {
@@ -12,16 +13,7 @@ export const TopBar: React.FC = () => {
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Cerrar menú al cambiar de ruta durante el render
-  if (pathname !== currentPath) {
-    setCurrentPath(pathname);
-    if (isMenuOpen) {
-      setIsMenuOpen(false);
-    }
-  }
-
   // Cerrar menú al presionar Escape o hacer click fuera
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setIsMenuOpen(false);
@@ -43,6 +35,19 @@ export const TopBar: React.FC = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isMenuOpen]);
+
+  // No renderizar TopBar en /login
+  if (pathname === '/login') {
+    return null;
+  }
+
+  // Cerrar menú al cambiar de ruta durante el render
+  if (pathname !== currentPath) {
+    setCurrentPath(pathname);
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+    }
+  }
 
   const isHomeActive = pathname === '/';
   const isInventoryActive =
@@ -102,6 +107,18 @@ export const TopBar: React.FC = () => {
           >
             Archivadas
           </Link>
+
+          <form action={logoutAction} className={styles.logoutForm}>
+            <button
+              type="submit"
+              className={styles.logoutBtn}
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+              data-testid="logout-btn-desktop"
+            >
+              <LogOut size={16} />
+            </button>
+          </form>
         </nav>
 
         {/* Mobile Secondary Navigation Menu Toggle (< 1024px) */}
@@ -135,6 +152,20 @@ export const TopBar: React.FC = () => {
                 <Archive size={18} />
                 <span>Plantas Archivadas</span>
               </Link>
+              
+              <div className={styles.menuDivider} />
+
+              <form action={logoutAction}>
+                <button
+                  type="submit"
+                  role="menuitem"
+                  className={styles.menuItemLogout}
+                  data-testid="logout-btn-mobile"
+                >
+                  <LogOut size={18} />
+                  <span>Cerrar sesión</span>
+                </button>
+              </form>
             </div>
           )}
         </div>

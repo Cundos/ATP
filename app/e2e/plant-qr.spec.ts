@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { authenticateContext } from './helpers/auth';
 
 test.describe('Plant QR Identification & Print View E2E (ATP-FEAT-001)', () => {
   test('opens /plants/AT-PL-007, finds QR section, and verifies canonical link and actions', async ({
@@ -41,4 +42,8 @@ test.describe('Plant QR Identification & Print View E2E (ATP-FEAT-001)', () => {
     await expect(page.getByRole('heading', { name: /Ejemplar No Encontrado/i })).toBeVisible();
     await expect(page.getByText(/Planta inexistente o desvinculada/i)).toBeVisible();
   });
+});
+
+test.beforeEach(async ({ context }) => {
+  await authenticateContext(context);
 });

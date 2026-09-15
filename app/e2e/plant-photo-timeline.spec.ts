@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { authenticateContext } from './helpers/auth';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import { createStorageService } from '../src/infrastructure/storage';
@@ -264,4 +265,8 @@ test.describe.serial('Plant Photo Timeline & Visual Evolution Isolated E2E (ATP-
     await expect(remainingCards).toHaveCount(1, { timeout: 10000 });
     await expect(remainingCards.first().getByTestId('primary-photo-badge')).toBeVisible();
   });
+});
+
+test.beforeEach(async ({ context }) => {
+  await authenticateContext(context);
 });

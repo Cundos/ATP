@@ -1,21 +1,68 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
-  <!-- Option C: Minimal Line-art in Sage Green / Transparent Background -->
-  <g transform="translate(0, -10)">
-    <!-- Central Stem -->
-    <path d="M256 345 L256 120" stroke="#7A9476" stroke-width="22" stroke-linecap="round" fill="none" />
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2B3C2A" />
+      <stop offset="100%" stop-color="#1A2619" />
+    </linearGradient>
+
+    <!-- Pot Gradient -->
+    <linearGradient id="potGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#DC8460" />
+      <stop offset="100%" stop-color="#B55B39" />
+    </linearGradient>
+
+    <!-- Left Leaf Gradient -->
+    <linearGradient id="leafLeftGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#78AD72" />
+      <stop offset="100%" stop-color="#52804D" />
+    </linearGradient>
+
+    <!-- Right Leaf Gradient -->
+    <linearGradient id="leafRightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9FD299" />
+      <stop offset="100%" stop-color="#6DA667" />
+    </linearGradient>
+
+    <!-- Top Sprout Gradient -->
+    <linearGradient id="leafTopGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#BEE4B9" />
+      <stop offset="100%" stop-color="#8CC485" />
+    </linearGradient>
+
+    <!-- Subtle Shadow -->
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Container Squircle Badge -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bgGrad)" stroke="#3D553C" stroke-width="8" />
+
+  <!-- Inner Content Group with Shadow -->
+  <g filter="url(#dropShadow)">
+    <!-- Main Stem -->
+    <path d="M256 340 C256 270 256 210 256 165" stroke="#7EAE78" stroke-width="18" stroke-linecap="round" fill="none" />
 
     <!-- Left Leaf -->
-    <path d="M256 260 C155 260 115 180 135 95 C220 95 256 165 256 260 Z" fill="#7A9476" fill-opacity="0.28" stroke="#7A9476" stroke-width="20" stroke-linejoin="round" stroke-linecap="round" />
-    <path d="M256 260 C200 240 160 185 165 125" stroke="#A3C2A0" stroke-width="12" stroke-linecap="round" fill="none" />
+    <path d="M256 275 C185 275 130 225 140 145 C215 145 256 200 256 275 Z" fill="url(#leafLeftGrad)" />
+    <path d="M256 275 C205 260 165 215 175 165" stroke="#95CA8E" stroke-width="8" stroke-linecap="round" fill="none" />
 
     <!-- Right Leaf -->
-    <path d="M256 195 C355 185 395 105 375 25 C290 35 256 115 256 195 Z" fill="#7A9476" fill-opacity="0.28" stroke="#7A9476" stroke-width="20" stroke-linejoin="round" stroke-linecap="round" />
-    <path d="M256 195 C310 165 350 120 345 60" stroke="#A3C2A0" stroke-width="12" stroke-linecap="round" fill="none" />
+    <path d="M256 220 C325 210 380 160 370 85 C295 95 256 145 256 220 Z" fill="url(#leafRightGrad)" />
+    <path d="M256 220 C305 195 345 155 338 105" stroke="#B8EAB3" stroke-width="8" stroke-linecap="round" fill="none" />
+
+    <!-- Top Center Bud -->
+    <path d="M256 170 C242 125 256 80 256 80 C256 80 270 125 256 170 Z" fill="url(#leafTopGrad)" />
+
+    <!-- Pot Soil line -->
+    <ellipse cx="256" cy="330" rx="80" ry="14" fill="#1B1410" opacity="0.4" />
 
     <!-- Pot Body -->
-    <path d="M165 345 L190 460 C196 478 210 490 228 490 L284 490 C302 490 316 478 322 460 L347 345 Z" fill="#7A9476" fill-opacity="0.22" stroke="#7A9476" stroke-width="22" stroke-linejoin="round" />
+    <path d="M176 340 L198 425 C202 438 214 448 228 448 L284 448 C298 448 310 438 314 425 L336 340 Z" fill="url(#potGrad)" />
 
     <!-- Pot Rim / Lip -->
-    <rect x="145" y="315" width="222" height="38" rx="16" fill="#7A9476" fill-opacity="0.4" stroke="#7A9476" stroke-width="22" stroke-linejoin="round" />
+    <rect x="160" y="316" width="192" height="32" rx="14" fill="#E8926F" />
+    <rect x="164" y="320" width="184" height="12" rx="6" fill="#F4B094" opacity="0.6" />
   </g>
 </svg>

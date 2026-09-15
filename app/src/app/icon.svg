@@ -1,68 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
-  <defs>
-    <!-- Background Gradient -->
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#2B3C2A" />
-      <stop offset="100%" stop-color="#1A2619" />
-    </linearGradient>
+  <!-- Flat Modern Geometric 2-Tone (Terracotta / Olive / Sage) -->
+  <g transform="translate(0, -10)">
+    <!-- Central Stem (Olive) -->
+    <path d="M256 360 L256 120" stroke="#364734" stroke-width="24" stroke-linecap="round" />
 
-    <!-- Pot Gradient -->
-    <linearGradient id="potGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#DC8460" />
-      <stop offset="100%" stop-color="#B55B39" />
-    </linearGradient>
+    <!-- Left Leaf (Sage Green #7A8E77) -->
+    <path d="M256 265 C170 265 110 200 125 105 C215 105 256 175 256 265 Z" fill="#7A8E77" />
+    
+    <!-- Right Leaf (Lighter Sage / Fresh Green #8EAE8B) -->
+    <path d="M256 205 C345 195 400 130 385 40 C295 50 256 115 256 205 Z" fill="#8EAE8B" />
 
-    <!-- Left Leaf Gradient -->
-    <linearGradient id="leafLeftGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#78AD72" />
-      <stop offset="100%" stop-color="#52804D" />
-    </linearGradient>
+    <!-- Top Sprout Bud (Olive Accent #364734) -->
+    <path d="M256 140 C242 95 256 55 256 55 C256 55 270 95 256 140 Z" fill="#4B6648" />
 
-    <!-- Right Leaf Gradient -->
-    <linearGradient id="leafRightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#9FD299" />
-      <stop offset="100%" stop-color="#6DA667" />
-    </linearGradient>
+    <!-- Pot Body (Warm Terracotta #D47451) -->
+    <!-- Left half / base -->
+    <path d="M155 355 L185 470 C190 488 206 500 225 500 L287 500 C306 500 322 488 327 470 L357 355 Z" fill="#D47451" />
+    
+    <!-- Pot Subtle 2-Tone Flat Shade on Right Half -->
+    <path d="M256 355 L256 500 L287 500 C306 500 322 488 327 470 L357 355 Z" fill="#C26340" />
 
-    <!-- Top Sprout Gradient -->
-    <linearGradient id="leafTopGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#BEE4B9" />
-      <stop offset="100%" stop-color="#8CC485" />
-    </linearGradient>
-
-    <!-- Subtle Shadow -->
-    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.35" />
-    </filter>
-  </defs>
-
-  <!-- Container Squircle Badge -->
-  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bgGrad)" stroke="#3D553C" stroke-width="8" />
-
-  <!-- Inner Content Group with Shadow -->
-  <g filter="url(#dropShadow)">
-    <!-- Main Stem -->
-    <path d="M256 340 C256 270 256 210 256 165" stroke="#7EAE78" stroke-width="18" stroke-linecap="round" fill="none" />
-
-    <!-- Left Leaf -->
-    <path d="M256 275 C185 275 130 225 140 145 C215 145 256 200 256 275 Z" fill="url(#leafLeftGrad)" />
-    <path d="M256 275 C205 260 165 215 175 165" stroke="#95CA8E" stroke-width="8" stroke-linecap="round" fill="none" />
-
-    <!-- Right Leaf -->
-    <path d="M256 220 C325 210 380 160 370 85 C295 95 256 145 256 220 Z" fill="url(#leafRightGrad)" />
-    <path d="M256 220 C305 195 345 155 338 105" stroke="#B8EAB3" stroke-width="8" stroke-linecap="round" fill="none" />
-
-    <!-- Top Center Bud -->
-    <path d="M256 170 C242 125 256 80 256 80 C256 80 270 125 256 170 Z" fill="url(#leafTopGrad)" />
-
-    <!-- Pot Soil line -->
-    <ellipse cx="256" cy="330" rx="80" ry="14" fill="#1B1410" opacity="0.4" />
-
-    <!-- Pot Body -->
-    <path d="M176 340 L198 425 C202 438 214 448 228 448 L284 448 C298 448 310 438 314 425 L336 340 Z" fill="url(#potGrad)" />
-
-    <!-- Pot Rim / Lip -->
-    <rect x="160" y="316" width="192" height="32" rx="14" fill="#E8926F" />
-    <rect x="164" y="320" width="184" height="12" rx="6" fill="#F4B094" opacity="0.6" />
+    <!-- Pot Rim / Lip (Soft Warm Terracotta #E08563) -->
+    <rect x="135" y="325" width="242" height="38" rx="14" fill="#E08563" />
+    <!-- Pot Rim Right Half Shade -->
+    <path d="M256 325 L363 325 C370.7 325 377 331.3 377 339 L377 349 C377 356.7 370.7 363 363 363 L256 363 Z" fill="#D47451" />
   </g>
 </svg>

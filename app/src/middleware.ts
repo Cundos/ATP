@@ -41,8 +41,13 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname, search } = request.nextUrl;
 
-  // 1. Machine-to-Machine Home Assistant routes: EXCLUDED from human session auth
-  // (They perform dedicated Bearer token verification in their own route handlers)
+  // 1. Public metadata & Machine-to-Machine Home Assistant routes: EXCLUDED from human session auth
+  // - robots.txt / favicon.ico: public with security & noindex headers
+  // - Home Assistant: dedicated Bearer token verification in route handlers
+  if (pathname === '/robots.txt' || pathname === '/favicon.ico') {
+    return applySecurityHeaders(NextResponse.next());
+  }
+
   if (pathname.startsWith('/api/integrations/home-assistant/')) {
     return applySecurityHeaders(NextResponse.next());
   }

@@ -249,4 +249,139 @@ describe('PostgreSQL Regional & Seasonal Flora Integration Tests (ATP-ECO-001A)'
       })
     ).rejects.toThrow();
   });
+
+  it('H. verifies curated collection of >= 20 native species in Espinal with balanced growth habits (ATP-ECO-001B)', async () => {
+    const espinal = await ecoRepo.findByCode('ESPINAL');
+    expect(espinal).not.toBeNull();
+
+    const speciesList = await floraRepo.listSpeciesByRegion({
+      ecological_region_id: espinal!.id,
+    });
+
+    expect(speciesList.length).toBeGreaterThanOrEqual(20);
+
+    // All must have NATIVE status
+    for (const sp of speciesList) {
+      expect(sp.native_status).toBe('NATIVE');
+      expect(sp.scientific_name).toBeDefined();
+      expect(sp.family).toBeDefined();
+    }
+
+    // Verify presence of emblematic species
+    const names = speciesList.map((s) => s.scientific_name);
+    expect(names).toContain('Prosopis alba');
+    expect(names).toContain('Geoffroea decorticans');
+    expect(names).toContain('Vachellia caven');
+    expect(names).toContain('Celtis tala');
+    expect(names).toContain('Schinus fasciculata');
+    expect(names).toContain('Jodina rhombifolia');
+    expect(names).toContain('Aloysia gratissima');
+    expect(names).toContain('Lantana camara');
+    expect(names).toContain('Baccharis salicifolia');
+    expect(names).toContain('Baccharis articulata');
+    expect(names).toContain('Senna aphylla');
+    expect(names).toContain('Lycium cestroides');
+    expect(names).toContain('Passiflora caerulea');
+    expect(names).toContain('Dolichandra cynanchoides');
+    expect(names).toContain('Tweedia australis');
+    expect(names).toContain('Salvia guaranitica');
+    expect(names).toContain('Glandularia peruviana');
+    expect(names).toContain('Petunia axillaris');
+    expect(names).toContain('Modiolastrum malvifolium');
+    expect(names).toContain('Jarava plumosa');
+
+    // Verify distribution across habits
+    const habits = speciesList.map((s) => s.growth_habit);
+    expect(habits.filter((h) => h === 'Árbol').length).toBeGreaterThanOrEqual(2);
+    expect(habits.filter((h) => h === 'Arbusto').length).toBeGreaterThanOrEqual(4);
+    expect(habits.filter((h) => h === 'Trepadora').length).toBeGreaterThanOrEqual(3);
+    expect(habits.filter((h) => h === 'Hierba').length).toBeGreaterThanOrEqual(4);
+    expect(habits.filter((h) => h === 'Gramínea').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('I. verifies seasonal events queries for September, October, November, and December in Arroyito', async () => {
+    // September (mes 9): Spring awakening
+    const sepEvents = await floraRepo.listSeasonalEvents({
+      growing_region_code: 'ARROYITO_CBA',
+      month: 9,
+    });
+    expect(sepEvents.length).toBeGreaterThanOrEqual(5);
+
+    // October (mes 10): Peak spring flowering
+    const octEvents = await floraRepo.listSeasonalEvents({
+      growing_region_code: 'ARROYITO_CBA',
+      month: 10,
+    });
+    expect(octEvents.length).toBeGreaterThanOrEqual(10);
+    const octFlowering = await floraRepo.listSeasonalEvents({
+      growing_region_code: 'ARROYITO_CBA',
+      month: 10,
+      event_type: 'FLOWERING',
+    });
+    expect(octFlowering.length).toBeGreaterThanOrEqual(8);
+
+    // November (mes 11): Late spring flowering / early fruiting
+    const novEvents = await floraRepo.listSeasonalEvents({
+      growing_region_code: 'ARROYITO_CBA',
+      month: 11,
+    });
+    expect(novEvents.length).toBeGreaterThanOrEqual(10);
+
+    // December (mes 12): Summer fruiting / sowing
+    const decEvents = await floraRepo.listSeasonalEvents({
+      growing_region_code: 'ARROYITO_CBA',
+      month: 12,
+    });
+    expect(decEvents.length).toBeGreaterThanOrEqual(10);
+    const decFruiting = await floraRepo.listSeasonalEvents({
+      growing_region_code: 'ARROYITO_CBA',
+      month: 12,
+      event_type: 'FRUITING',
+    });
+    expect(decFruiting.length).toBeGreaterThanOrEqual(6);
+  });
+
+  it('J. verifies habit filtering across the regional catalogue', async () => {
+    const trees = await floraRepo.listSpeciesByRegion({
+      growing_region_code: 'ARROYITO_CBA',
+      growth_habit: 'Árbol',
+    });
+    expect(trees.length).toBeGreaterThanOrEqual(2);
+
+    const climbers = await floraRepo.listSpeciesByRegion({
+      growing_region_code: 'ARROYITO_CBA',
+      growth_habit: 'Trepadora',
+    });
+    expect(climbers.length).toBeGreaterThanOrEqual(3);
+    const climberNames = climbers.map((c) => c.scientific_name);
+    expect(climberNames).toContain('Passiflora caerulea');
+    expect(climberNames).toContain('Dolichandra cynanchoides');
+    expect(climberNames).toContain('Tweedia australis');
+  });
+
+  it('K. validates botanical data sources and strict provenance on all phenology records', async () => {
+    const sources = await sourceRepo.findAll();
+    expect(sources.length).toBeGreaterThanOrEqual(5);
+
+    const sourceNames = sources.map((s) => s.name);
+    expect(sourceNames.some((n) => n.includes('Flora Argentina'))).toBe(true);
+    expect(sourceNames.some((n) => n.includes('INTA'))).toBe(true);
+    expect(sourceNames.some((n) => n.includes('SIB'))).toBe(true);
+    expect(sourceNames.some((n) => n.includes('UNC'))).toBe(true);
+
+    // Query phenology records for Prosopis alba and ensure every record has a source
+    const espinal = await ecoRepo.findByCode('ESPINAL');
+    const algarrobo = await floraRepo.findSpeciesByScientificNameAndRegion(
+      'Prosopis alba',
+      espinal!.id
+    );
+    expect(algarrobo?.phenology_records).toBeDefined();
+    expect(algarrobo?.phenology_records?.length).toBeGreaterThanOrEqual(10);
+    for (const ph of algarrobo!.phenology_records!) {
+      expect(ph.source_id).toBeDefined();
+      expect(ph.source).toBeDefined();
+      expect(ph.source?.name).toBeDefined();
+    }
+  });
 });
+

@@ -738,6 +738,22 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Pruebas Automatizadas: Tests unitarios (`src/core/application/__tests__/regional-flora-use-cases.test.ts`) y de integración PostgreSQL (`src/infrastructure/db/__tests__/regional-flora-integration.test.ts`).
   - Arquitectura: `04_ARCHITECTURE/ADR-021-REGIONAL-SEASONAL-FLORA-DATA-MODEL.md`.
 
+#### `ATP-ECO-001B` — Curated Regional Dataset for Arroyito / Espinal
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Ampliar el dataset regional con una colección curada de 20 especies nativas balanceadas en 5 hábitos de crecimiento (árboles, arbustos, trepadoras, herbáceas y gramíneas) y su calendario fenológico mensual respaldado por 5 fuentes científicas y oficiales.
+- **Tipo:** `DATA / BOTANY / SEED` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - 5 Fuentes de Datos (`DataSource`): `Flora Argentina (IBODA - CONICET)`, `INTA`, `SIB - Parques Nacionales`, `UNC (Demaio et al. / CORD)` y `Secretaría de Ambiente de la Provincia de Córdoba`.
+  - Catálogo de 20 Especies Nativas Curadas:
+    - Árboles (6): *Prosopis alba* (Algarrobo blanco), *Geoffroea decorticans* (Chañar), *Vachellia caven* (Espinillo), *Celtis tala* (Tala), *Schinus fasciculata* (Molle de curtir), *Jodina rhombifolia* (Sombra de toro).
+    - Arbustos (6): *Aloysia gratissima* (Palo amarillo), *Lantana camara* (Lantana), *Baccharis salicifolia* (Chilca), *Baccharis articulata* (Carqueja), *Senna aphylla* (Pichana), *Lycium cestroides* (Tala pampa).
+    - Trepadoras (3): *Passiflora caerulea* (Mburucuyá), *Dolichandra cynanchoides* (Sacha huasca), *Tweedia australis* (Estrella del campo).
+    - Herbáceas y Flores (4): *Salvia guaranitica* (Salvia azul), *Glandularia peruviana* (Margarita punzó), *Petunia axillaris* (Petunia silvestre), *Modiolastrum malvifolium* (Malvita de campo).
+    - Gramíneas (1): *Jarava plumosa* (Flecharilla / Paja brava).
+  - Fenología Estricta: 125+ registros fenológicos mensuales con `source_id` obligatorio y sin inferencias artificiales.
+  - Pruebas de Integración Extendidas: 11 tests en `src/infrastructure/db/__tests__/regional-flora-integration.test.ts` con cobertura de meses primavera/verano (Sep, Oct, Nov, Dic), filtros por hábito y trazabilidad de fuentes.
+
+
 
 ---
 

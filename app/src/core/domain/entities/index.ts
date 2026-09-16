@@ -226,3 +226,96 @@ export interface PlantCareContextDTO {
   recent_context: RecentCareContext;
   assessment: CareAssessment;
 }
+
+// ---------------------------------------------------------------------------
+// Regional & Seasonal Flora Domain (ATP-ECO-001A)
+// ---------------------------------------------------------------------------
+export type NativeStatus = 'NATIVE' | 'NON_NATIVE' | 'ENDEMIC' | 'INTRODUCED_NATURALIZED';
+export type PhenologyEventType = 'SPROUTING' | 'FLOWERING' | 'FRUITING' | 'SOWING' | 'PLANTING';
+export type SourceType =
+  | 'BOTANICAL_INSTITUTION'
+  | 'GOVERNMENT_DATASET'
+  | 'HERBARIUM'
+  | 'SCIENTIFIC_PUBLICATION'
+  | 'MANUAL_CURATION';
+
+export interface DataSourceEntity {
+  id: string;
+  name: string;
+  type: SourceType;
+  url: string | null;
+  description: string | null;
+  version: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface EcologicalRegionEntity {
+  id: string;
+  code: string;
+  name: string;
+  biome: string;
+  description: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface GrowingRegionEntity {
+  id: string;
+  code: string;
+  name: string;
+  country: string;
+  province: string;
+  locality: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  description: string | null;
+  created_at: Date;
+  updated_at: Date;
+  ecological_regions?: (GrowingRegionEcologicalRegionEntity & { ecological_region?: EcologicalRegionEntity })[];
+}
+
+export interface GrowingRegionEcologicalRegionEntity {
+  growing_region_id: string;
+  ecological_region_id: string;
+  is_primary: boolean;
+  notes: string | null;
+  created_at: Date;
+  ecological_region?: EcologicalRegionEntity;
+}
+
+export interface RegionalPlantSpeciesEntity {
+  id: string;
+  scientific_name: string;
+  canonical_name: string | null;
+  family: string | null;
+  common_names: string[] | null;
+  native_status: NativeStatus;
+  ecological_region_id: string;
+  reference_id: string | null;
+  growth_habit: string | null;
+  conservation_status: string | null;
+  notes: string | null;
+  created_at: Date;
+  updated_at: Date;
+
+  ecological_region?: EcologicalRegionEntity;
+  reference?: PlantReferenceEntity | null;
+  phenology_records?: PlantPhenologyEntity[];
+}
+
+export interface PlantPhenologyEntity {
+  id: string;
+  species_id: string;
+  ecological_region_id: string;
+  event_type: PhenologyEventType;
+  month: number;
+  source_id: string;
+  notes: string | null;
+  created_at: Date;
+  updated_at: Date;
+
+  species?: RegionalPlantSpeciesEntity;
+  ecological_region?: EcologicalRegionEntity;
+  source?: DataSourceEntity;
+}

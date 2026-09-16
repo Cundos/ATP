@@ -25,6 +25,29 @@ enum EventSource {
   MANUAL
 }
 
+enum NativeStatus {
+  NATIVE
+  NON_NATIVE
+  ENDEMIC
+  INTRODUCED_NATURALIZED
+}
+
+enum PhenologyEventType {
+  SPROUTING
+  FLOWERING
+  FRUITING
+  SOWING
+  PLANTING
+}
+
+enum SourceType {
+  BOTANICAL_INSTITUTION
+  GOVERNMENT_DATASET
+  HERBARIUM
+  SCIENTIFIC_PUBLICATION
+  MANUAL_CURATION
+}
+
 model Location {
   id               String          @id // UUIDv7
   name             String
@@ -50,6 +73,7 @@ model PlantReference {
   raw_data        Json     // Payload original devuelto por el proveedor
 
   plants          Plant[]
+  regional_species RegionalPlantSpecies[]
 
   @@unique([provider, external_id], name: "provider_external_id_unique")
   @@map("plant_references")
@@ -153,4 +177,117 @@ model Photo {
   @@index([plant_id])
   @@index([is_primary])
   @@map("photos")
+}
+
+model DataSource {
+  id          String     @id // UUIDv7
+  name        String
+  type        SourceType
+  url         String?
+  description String?    @db.Text
+  version     String?
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+
+  phenology_records PlantPhenology[]
+
+  @@map("data_sources")
+}
+
+model EcologicalRegion {
+  id          String   @id // UUIDv7
+  code        String   @unique
+  name        String
+  biome       String
+  description String?  @db.Text
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  growing_regions   GrowingRegionEcologicalRegion[]
+  regional_species  RegionalPlantSpecies[]
+  phenology_records PlantPhenology[]
+
+  @@map("ecological_regions")
+}
+
+model GrowingRegion {
+  id          String   @id // UUIDv7
+  code        String   @unique
+  name        String
+  country     String
+  province    String
+  locality    String?
+  latitude    Float?
+  longitude   Float?
+  description String?  @db.Text
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  ecological_regions GrowingRegionEcologicalRegion[]
+
+  @@map("growing_regions")
+}
+
+model GrowingRegionEcologicalRegion {
+  growing_region_id    String
+  ecological_region_id String
+  is_primary           Boolean  @default(false)
+  notes                String?  @db.Text
+  created_at           DateTime @default(now())
+
+  growing_region    GrowingRegion    @relation(fields: [growing_region_id], references: [id], onDelete: Cascade)
+  ecological_region EcologicalRegion @relation(fields: [ecological_region_id], references: [id], onDelete: Cascade)
+
+  @@id([growing_region_id, ecological_region_id])
+  @@index([ecological_region_id])
+  @@map("growing_region_ecological_regions")
+}
+
+model RegionalPlantSpecies {
+  id                   String           @id // UUIDv7
+  scientific_name      String
+  canonical_name       String?
+  family               String?
+  common_names         Json?            // Array de strings
+  native_status        NativeStatus     @default(NATIVE)
+  ecological_region_id String
+  reference_id         String?
+  growth_habit         String?          // arbol, arbusto, hierba, trepadora, etc.
+  conservation_status  String?          // LC, VU, EN, etc.
+  notes                String?          @db.Text
+  created_at           DateTime         @default(now())
+  updated_at           DateTime         @updatedAt
+
+  ecological_region EcologicalRegion @relation(fields: [ecological_region_id], references: [id], onDelete: Restrict)
+  reference         PlantReference?  @relation(fields: [reference_id], references: [id], onDelete: SetNull)
+  phenology_records PlantPhenology[]
+
+  @@unique([scientific_name, ecological_region_id], name: "species_ecological_region_unique")
+  @@index([ecological_region_id])
+  @@index([native_status])
+  @@index([reference_id])
+  @@map("regional_plant_species")
+}
+
+model PlantPhenology {
+  id                   String             @id // UUIDv7
+  species_id           String
+  ecological_region_id String
+  event_type           PhenologyEventType
+  month                Int                // 1 a 12
+  source_id            String
+  notes                String?            @db.Text
+  created_at           DateTime           @default(now())
+  updated_at           DateTime           @updatedAt
+
+  species           RegionalPlantSpecies @relation(fields: [species_id], references: [id], onDelete: Cascade)
+  ecological_region EcologicalRegion     @relation(fields: [ecological_region_id], references: [id], onDelete: Cascade)
+  source            DataSource           @relation(fields: [source_id], references: [id], onDelete: Restrict)
+
+  @@unique([species_id, ecological_region_id, event_type, month, source_id], name: "phenology_event_unique")
+  @@index([species_id])
+  @@index([ecological_region_id, month])
+  @@index([event_type, month])
+  @@index([source_id])
+  @@map("plant_phenologies")
 }

@@ -20,3 +20,5 @@ export * from './use-cases/GetOrCreatePlantReferenceUseCase';
 export * from './use-cases/GetPlantLiveTelemetryUseCase';
 export * from './use-cases/IngestHomeAssistantEventUseCase';
 export * from './use-cases/GetPlantCareContextUseCase';
+export * from './use-cases/GetSeasonalRegionalFloraUseCase';
+export * from './use-cases/GetNativeRegionalFloraUseCase';

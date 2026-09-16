@@ -161,4 +161,123 @@ export interface IPlantOperationalEventRepository {
   create(dto: CreatePlantOperationalEventPersistenceDTO): Promise<import('../entities').PlantOperationalEventEntity>;
   findRecentByPlantId(plantId: string, limit?: number): Promise<import('../entities').PlantOperationalEventEntity[]>;
 }
+
+// ---------------------------------------------------------------------------
+// Regional & Seasonal Flora Repositories (ATP-ECO-001A)
+// ---------------------------------------------------------------------------
+export interface CreateDataSourceDTO {
+  id?: string;
+  name: string;
+  type: import('../entities').SourceType;
+  url?: string | null;
+  description?: string | null;
+  version?: string | null;
+}
+
+export interface IDataSourceRepository {
+  findById(id: string): Promise<import('../entities').DataSourceEntity | null>;
+  findByName(name: string): Promise<import('../entities').DataSourceEntity | null>;
+  findAll(): Promise<import('../entities').DataSourceEntity[]>;
+  create(dto: CreateDataSourceDTO): Promise<import('../entities').DataSourceEntity>;
+}
+
+export interface CreateEcologicalRegionDTO {
+  id?: string;
+  code: string;
+  name: string;
+  biome: string;
+  description?: string | null;
+}
+
+export interface IEcologicalRegionRepository {
+  findById(id: string): Promise<import('../entities').EcologicalRegionEntity | null>;
+  findByCode(code: string): Promise<import('../entities').EcologicalRegionEntity | null>;
+  findAll(): Promise<import('../entities').EcologicalRegionEntity[]>;
+  create(dto: CreateEcologicalRegionDTO): Promise<import('../entities').EcologicalRegionEntity>;
+}
+
+export interface CreateGrowingRegionDTO {
+  id?: string;
+  code: string;
+  name: string;
+  country: string;
+  province: string;
+  locality?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  description?: string | null;
+}
+
+export interface LinkGrowingRegionEcologicalRegionDTO {
+  growing_region_id: string;
+  ecological_region_id: string;
+  is_primary?: boolean;
+  notes?: string | null;
+}
+
+export interface IGrowingRegionRepository {
+  findById(id: string): Promise<import('../entities').GrowingRegionEntity | null>;
+  findByCode(code: string): Promise<import('../entities').GrowingRegionEntity | null>;
+  findAll(): Promise<import('../entities').GrowingRegionEntity[]>;
+  create(dto: CreateGrowingRegionDTO): Promise<import('../entities').GrowingRegionEntity>;
+  linkEcologicalRegion(dto: LinkGrowingRegionEcologicalRegionDTO): Promise<void>;
+}
+
+export interface CreateRegionalSpeciesDTO {
+  id?: string;
+  scientific_name: string;
+  canonical_name?: string | null;
+  family?: string | null;
+  common_names?: string[] | null;
+  native_status?: import('../entities').NativeStatus;
+  ecological_region_id: string;
+  reference_id?: string | null;
+  growth_habit?: string | null;
+  conservation_status?: string | null;
+  notes?: string | null;
+}
+
+export interface CreatePlantPhenologyDTO {
+  id?: string;
+  species_id: string;
+  ecological_region_id: string;
+  event_type: import('../entities').PhenologyEventType;
+  month: number;
+  source_id: string;
+  notes?: string | null;
+}
+
+export interface SeasonalFloraFilterOptions {
+  ecological_region_id?: string;
+  growing_region_code?: string;
+  month: number;
+  event_type?: import('../entities').PhenologyEventType;
+  native_status?: import('../entities').NativeStatus;
+}
+
+export interface NativeFloraFilterOptions {
+  ecological_region_id?: string;
+  growing_region_code?: string;
+  growth_habit?: string;
+  native_status?: import('../entities').NativeStatus;
+}
+
+export interface SeasonalFloraItem {
+  species: import('../entities').RegionalPlantSpeciesEntity;
+  phenology: import('../entities').PlantPhenologyEntity[];
+  ecological_region: import('../entities').EcologicalRegionEntity;
+}
+
+export interface IRegionalFloraRepository {
+  findSpeciesById(id: string): Promise<import('../entities').RegionalPlantSpeciesEntity | null>;
+  findSpeciesByScientificNameAndRegion(
+    scientificName: string,
+    ecologicalRegionId: string
+  ): Promise<import('../entities').RegionalPlantSpeciesEntity | null>;
+  listSpeciesByRegion(options: NativeFloraFilterOptions): Promise<import('../entities').RegionalPlantSpeciesEntity[]>;
+  listSeasonalEvents(options: SeasonalFloraFilterOptions): Promise<SeasonalFloraItem[]>;
+  createSpecies(dto: CreateRegionalSpeciesDTO): Promise<import('../entities').RegionalPlantSpeciesEntity>;
+  createPhenology(dto: CreatePlantPhenologyDTO): Promise<import('../entities').PlantPhenologyEntity>;
+}
+
 

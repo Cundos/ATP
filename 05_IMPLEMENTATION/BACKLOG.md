@@ -725,6 +725,20 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Integridad Referencial: 13 plantas asociadas a `location_id` activo no nulo (Cocina: 3, Baño: 1, Patio de Luz: 1, Living: 8).
   - Pruebas Automatizadas: Extensión de `src/infrastructure/db/__tests__/bootstrap-seed.test.ts` con validación de catálogo canónico, asignación 1-a-1 de ejemplares y conteos por ubicación.
 
+#### `ATP-ECO-001A` — Discovery + Data Model for Regional & Seasonal Flora
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Definir el modelo de datos, arquitectura de persistencia, casos de uso y trazabilidad de fuentes botánicas para flora regional y eventos fenológicos estacionales según región geográfica (Arroyito, Córdoba) y ecorregión (Espinal / Chaco Seco).
+- **Tipo:** `DATA / DOMAIN / INTEGRATION` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Esquema Relacional PostgreSQL / Prisma: Modelos `DataSource`, `EcologicalRegion`, `GrowingRegion`, `GrowingRegionEcologicalRegion`, `RegionalPlantSpecies`, `PlantPhenology` y enums `NativeStatus`, `PhenologyEventType`, `SourceType` en `prisma/schema.prisma`.
+  - Entidades de Dominio & Repositorios: `DataSourceEntity`, `EcologicalRegionEntity`, `GrowingRegionEntity`, `RegionalPlantSpeciesEntity`, `PlantPhenologyEntity` en `src/core/domain/entities/index.ts` e interfaces `IRegionalFloraRepository`, `IEcologicalRegionRepository`, `IDataSourceRepository`, `IGrowingRegionRepository` en `src/core/domain/repositories/index.ts`.
+  - Casos de Uso: `GetSeasonalRegionalFloraUseCase` y `GetNativeRegionalFloraUseCase` en `src/core/application/use-cases/` con validación de entradas (`RegionalFloraValidationError`).
+  - Repositorio de Infraestructura: `PrismaRegionalFloraRepository`, `PrismaEcologicalRegionRepository`, `PrismaDataSourceRepository`, `PrismaGrowingRegionRepository` en `src/infrastructure/db/repositories/PrismaRegionalFloraRepository.ts` e inyección en `src/infrastructure/services/serviceContainer.ts`.
+  - Seed Curado con Trazabilidad: Carga en `prisma/seed.ts` de fuentes botánicas (`Flora Argentina`, `INTA`), ecorregiones (`Espinal`, `Chaco Seco`), localidad (`Arroyito, Córdoba`) y especies nativas con fenología completa (*Prosopis alba*, *Geoffroea decorticans*, *Vachellia caven*).
+  - Pruebas Automatizadas: Tests unitarios (`src/core/application/__tests__/regional-flora-use-cases.test.ts`) y de integración PostgreSQL (`src/infrastructure/db/__tests__/regional-flora-integration.test.ts`).
+  - Arquitectura: `04_ARCHITECTURE/ADR-021-REGIONAL-SEASONAL-FLORA-DATA-MODEL.md`.
+
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)

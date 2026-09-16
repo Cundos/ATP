@@ -107,3 +107,23 @@ export class UnauthorizedError extends Error {
     this.name = 'UnauthorizedError';
   }
 }
+
+/**
+ * Error de aplicación lanzado cuando una región o especie flora no existe.
+ */
+export class RegionalFloraNotFoundError extends Error {
+  constructor(identifier: string) {
+    super(`No se encontró el recurso de flora regional con identificador: ${identifier}`);
+    this.name = 'RegionalFloraNotFoundError';
+  }
+}
+
+/**
+ * Error de aplicación lanzado cuando los parámetros de consulta o datos de flora regional no son válidos.
+ */
+export class RegionalFloraValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'RegionalFloraValidationError';
+  }
+}

@@ -12,12 +12,18 @@ import {
   IPlantHomeAssistantBindingRepository,
   IPlantOperationalEventRepository,
   IPhotoRepository,
+  IRegionalFloraRepository,
+  IEcologicalRegionRepository,
+  IDataSourceRepository,
+  IGrowingRegionRepository,
 } from '../../core/domain/repositories';
 import {
   GetOrCreatePlantReferenceUseCase,
   GetPlantLiveTelemetryUseCase,
   IngestHomeAssistantEventUseCase,
   GetPlantCareContextUseCase,
+  GetSeasonalRegionalFloraUseCase,
+  GetNativeRegionalFloraUseCase,
 } from '../../core/application';
 import { createStorageService } from '../storage';
 import { SharpImageProcessingService } from '../image/SharpImageProcessingService';
@@ -26,6 +32,12 @@ import { PrismaPlantRepository } from '../db/repositories/PrismaPlantRepository'
 import { PrismaPlantHomeAssistantBindingRepository } from '../db/repositories/PrismaPlantHomeAssistantBindingRepository';
 import { PrismaPlantOperationalEventRepository } from '../db/repositories/PrismaPlantOperationalEventRepository';
 import { PrismaPhotoRepository } from '../db/repositories/PrismaPhotoRepository';
+import {
+  PrismaRegionalFloraRepository,
+  PrismaEcologicalRegionRepository,
+  PrismaDataSourceRepository,
+  PrismaGrowingRegionRepository,
+} from '../db/repositories/PrismaRegionalFloraRepository';
 import { OpenPlantbookMapper } from '../open-plantbook/OpenPlantbookMapper';
 import { OpenPlantbookClient } from '../open-plantbook/OpenPlantbookClient';
 import { OAuth2TokenManager } from '../open-plantbook/OAuth2TokenManager';
@@ -42,6 +54,26 @@ let customPlantReferenceMapper: IPlantReferenceMapper | null = null;
 let customOpenPlantbookClient: IOpenPlantbookClient | null = null;
 let customOAuth2TokenManager: IOAuth2TokenManager | null = null;
 let customHomeAssistantClient: IHomeAssistantClient | null = null;
+let customRegionalFloraRepository: IRegionalFloraRepository | null = null;
+let customEcologicalRegionRepository: IEcologicalRegionRepository | null = null;
+let customDataSourceRepository: IDataSourceRepository | null = null;
+let customGrowingRegionRepository: IGrowingRegionRepository | null = null;
+
+export function setRegionalFloraRepository(repo: IRegionalFloraRepository | null): void {
+  customRegionalFloraRepository = repo;
+}
+
+export function setEcologicalRegionRepository(repo: IEcologicalRegionRepository | null): void {
+  customEcologicalRegionRepository = repo;
+}
+
+export function setDataSourceRepository(repo: IDataSourceRepository | null): void {
+  customDataSourceRepository = repo;
+}
+
+export function setGrowingRegionRepository(repo: IGrowingRegionRepository | null): void {
+  customGrowingRegionRepository = repo;
+}
 
 export function setFileStorageService(service: IFileStorageService | null): void {
   customFileStorageService = service;
@@ -195,6 +227,43 @@ export function getPlantCareContextUseCase(): GetPlantCareContextUseCase {
     getPhotoRepository()
   );
 }
+
+export function getRegionalFloraRepository(): IRegionalFloraRepository {
+  if (customRegionalFloraRepository) {
+    return customRegionalFloraRepository;
+  }
+  return new PrismaRegionalFloraRepository();
+}
+
+export function getEcologicalRegionRepository(): IEcologicalRegionRepository {
+  if (customEcologicalRegionRepository) {
+    return customEcologicalRegionRepository;
+  }
+  return new PrismaEcologicalRegionRepository();
+}
+
+export function getDataSourceRepository(): IDataSourceRepository {
+  if (customDataSourceRepository) {
+    return customDataSourceRepository;
+  }
+  return new PrismaDataSourceRepository();
+}
+
+export function getGrowingRegionRepository(): IGrowingRegionRepository {
+  if (customGrowingRegionRepository) {
+    return customGrowingRegionRepository;
+  }
+  return new PrismaGrowingRegionRepository();
+}
+
+export function getSeasonalRegionalFloraUseCase(): GetSeasonalRegionalFloraUseCase {
+  return new GetSeasonalRegionalFloraUseCase(getRegionalFloraRepository());
+}
+
+export function getNativeRegionalFloraUseCase(): GetNativeRegionalFloraUseCase {
+  return new GetNativeRegionalFloraUseCase(getRegionalFloraRepository());
+}
+
 
 
 

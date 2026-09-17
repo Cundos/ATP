@@ -38,7 +38,7 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
   return response;
 }
 
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname, search } = request.nextUrl;
 
   // 1. Public metadata & Machine-to-Machine Home Assistant routes: EXCLUDED from human session auth
@@ -90,3 +90,5 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   return applySecurityHeaders(NextResponse.next());
 }
+
+export { proxy as middleware };

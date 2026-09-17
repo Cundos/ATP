@@ -753,7 +753,33 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Fenología Estricta: 125+ registros fenológicos mensuales con `source_id` obligatorio y sin inferencias artificiales.
   - Pruebas de Integración Extendidas: 11 tests en `src/infrastructure/db/__tests__/regional-flora-integration.test.ts` con cobertura de meses primavera/verano (Sep, Oct, Nov, Dic), filtros por hábito y trazabilidad de fuentes.
 
+#### `ATP-ECO-001C` — UI "Este mes en tu región" (`/regional`)
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Construir la experiencia visible del módulo ECO consumiendo exclusivamente el modelo de datos, repositorio y casos de uso botánicos implementados en ATP-ECO-001A/B para la región configurada (Arroyito / Espinal).
+- **Tipo:** `FRONTEND / FEATURE` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - View & Componentes: `src/features/regional/components/RegionalFloraView.tsx`, `RegionalSpeciesCard.tsx`, `MonthFilter.tsx`, `HabitFilter.tsx`.
+  - Página Next.js: `src/app/regional/page.tsx` con SSR y fallback seguro.
+  - Navegación: Entrada en `TopBar.tsx` ("Flora Regional") y banner de acceso en `DashboardView.tsx`.
+  - Pruebas Automatizadas: Tests unitarios y de integración de componentes (`src/features/regional/__tests__/regional-flora-view.test.tsx`).
 
+#### `ATP-ECO-001C.1` — Polish & Hardening de /regional
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Eliminar fallbacks inventados, formatear rangos fenológicos con soporte de cruce de fin de año / meses no contiguos, y añadir filtros por evento fenológico y estado de conservación.
+- **Tipo:** `FRONTEND / POLISH` | **Prioridad:** `MEDIUM`
+- **Artefactos Técnicos Creados:**
+  - Formatters Puros: `src/features/regional/utils/floraFormatters.ts` (`formatMonthRange`, `formatMonthList`, `formatEcologicalRegions`, `formatDataSource`).
+  - Componentes Hardened: `src/features/regional/components/RegionalSpeciesCard.tsx`, `RegionalFloraView.tsx`.
+  - Pruebas Automatizadas: Tests unitarios exhaustivos (`src/features/regional/__tests__/flora-formatters.test.ts`).
+
+#### `ATP-SEC-001R` — Restore Auth Proxy After Next.js 16 Migration
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Migrar la convención de autenticación de `middleware.ts` a `proxy.ts` exigida por Next.js 16.3.4, restaurando el control de acceso private-by-default y eliminando advertencias de compilación Turbopack.
+- **Tipo:** `SECURITY / ARCHITECTURE` | **Prioridad:** `CRITICAL`
+- **Artefactos Técnicos Creados:**
+  - Proxy Handler: `src/proxy.ts` (exportando `proxy()`, `export { proxy as middleware }`, y `config.matcher`).
+  - Eliminación: Removido `src/middleware.ts`.
+  - Pruebas Automatizadas: Tests de regresión en `src/core/application/auth/__tests__/proxy.test.ts` (15 tests de redirección, headers, APIs y excepciones M2M).
 
 ---
 

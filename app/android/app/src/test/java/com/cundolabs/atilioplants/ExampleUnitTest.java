@@ -1,4 +1,4 @@
-package com.getcapacitor.myapp;
+package com.cundolabs.atilioplants;
 
 import static org.junit.Assert.*;
 

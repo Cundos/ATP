@@ -8,6 +8,7 @@ import {
 import { PlantEntity } from '@/core/domain/entities';
 import { Button, EmptyState, HealthBadge } from '@/components/ui';
 import { PlantThumbnail } from '@/features/plants/components/PlantThumbnail';
+import { ScanQrButton } from '@/features/qr';
 import { DashboardMetricCard } from './DashboardMetricCard';
 import styles from './DashboardView.module.css';
 
@@ -159,13 +160,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ plants }) => {
         </section>
       )}
 
-      {/* Acción Principal CTA */}
-      <section className={styles.ctaSection} aria-label="Acción principal">
+      {/* Acciones Principales CTA */}
+      <section className={styles.ctaSection} aria-label="Acciones principales">
         <Link href="/plants/new" className={styles.ctaLink}>
           <Button fullWidth size="lg" leftIcon={<Plus size={20} />}>
             Nueva Planta
           </Button>
         </Link>
+        <ScanQrButton fullWidth size="lg" variant="secondary" className={styles.scanQrBtn} />
       </section>
 
       {/* Accesos Secundarios */}

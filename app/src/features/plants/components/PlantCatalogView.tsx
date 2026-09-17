@@ -5,6 +5,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Search, Trees, Filter, Plus, X } from 'lucide-react';
 import { PlantEntity, LocationEntity, HealthStatus } from '@/core/domain/entities';
 import { HealthBadge, Button, EmptyState, Select } from '@/components/ui';
+import { ScanQrButton } from '@/features/qr';
 import { PlantCard } from './PlantCard';
 import styles from './PlantCatalogView.module.css';
 
@@ -169,15 +170,18 @@ export const PlantCatalogView: React.FC<PlantCatalogViewProps> = ({
           </div>
         </div>
 
-        <div className={styles.sortWrapper}>
-          <Select
-            id="inventory-sort"
-            label="Ordenar por"
-            value={selectedSort}
-            onChange={(e) => updateQueryParams({ sort: e.target.value })}
-            options={sortOptions}
-            className={styles.sortSelect}
-          />
+        <div className={styles.actionsWrapper}>
+          <div className={styles.sortWrapper}>
+            <Select
+              id="inventory-sort"
+              label="Ordenar por"
+              value={selectedSort}
+              onChange={(e) => updateQueryParams({ sort: e.target.value })}
+              options={sortOptions}
+              className={styles.sortSelect}
+            />
+          </div>
+          <ScanQrButton variant="secondary" size="md" className={styles.scanQrBtn} />
         </div>
       </div>
 

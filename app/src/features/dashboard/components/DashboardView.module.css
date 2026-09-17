@@ -213,17 +213,33 @@
 /* CTA Section */
 .ctaSection {
   margin: 4px 0;
-}
-
-@media (min-width: 1024px) {
-  .ctaSection {
-    max-width: 280px;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .ctaLink {
   display: block;
   text-decoration: none;
+}
+
+.scanQrBtn {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .ctaSection {
+    flex-direction: row;
+    max-width: 480px;
+  }
+
+  .ctaLink {
+    flex: 1;
+  }
+
+  .ctaSection > div {
+    flex: 1;
+  }
 }
 
 /* Quick Nav Section */

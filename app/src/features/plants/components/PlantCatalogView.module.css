@@ -73,14 +73,30 @@
   color: var(--text-primary);
 }
 
-.sortWrapper {
+.actionsWrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
   width: 100%;
 }
 
+.sortWrapper {
+  flex: 1;
+}
+
+.scanQrBtn {
+  white-space: nowrap;
+}
+
 @media (min-width: 640px) {
-  .sortWrapper {
-    width: 220px;
+  .actionsWrapper {
+    width: auto;
     flex-shrink: 0;
+  }
+
+  .sortWrapper {
+    width: 200px;
+    flex: initial;
   }
 }
 
@@ -90,7 +106,7 @@
   }
 
   .sortWrapper {
-    width: 240px;
+    width: 220px;
   }
 }
 

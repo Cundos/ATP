@@ -1,9 +1,20 @@
 // @vitest-environment jsdom
 import React from 'react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { DashboardView, DashboardMetricCard } from '../components';
 import { PlantEntity } from '@/core/domain/entities';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+  }),
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 // Dataset mock representativo (13 plantas: 10 HEALTHY, 2 ATTENTION, 1 RECOVERY, 0 UNKNOWN)
 const mockPlantsDataset: PlantEntity[] = [

@@ -827,6 +827,17 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Navegación Android Back: `src/components/ui/Modal.tsx` integrado con el listener de `backButton` de `@capacitor/app` para cerrar modales de subida y galerías sin alterar la pila de navegación ni salir de la aplicación.
   - Pruebas Automatizadas: Tests unitarios para el hook (`src/features/plants/__tests__/use-photo-picker.test.tsx`) y componentes (`photo-upload.test.tsx`), pasando el 100% de la suite (573 tests unitarios, typecheck sin errores, lint sin errores, build Web exitoso y Gradle assembleDebug exitoso).
 
+#### `ATP-MOB-003` — Native QR Scanner
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Incorporar escaneo QR nativo en Android mediante Capacitor y Google ML Kit (@capacitor-mlkit/barcode-scanning) para identificar ejemplares físicos de Atilio Plants en macetas y navegar directamente a su ficha (`/plants/AT-PL-XXX`) sin alterar la identidad de las plantas, sin bypass de autenticación y con tolerancia ante errores, cancelaciones o códigos no pertenecientes a la aplicación.
+- **Tipo:** `MOBILE / FEATURE` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Plugin Nativo & Hardware: `@capacitor-mlkit/barcode-scanning` (v8.2.1) integrado con escaneo on-device 100% local (Google Code Scanner / ML Kit, sin subida de frames ni dependencias cloud) y filtrado estricto `BarcodeFormat.QrCode`.
+  - Parser y Validación Robusta: `src/features/qr/utils/parseAtilioQr.ts` con sanitización de esquemas peligrosos (`javascript:`, `intent:`, `file:`), validación de whitelist de dominios autorizados (`app-iota-three-66.vercel.app`, `atp-sigma.vercel.app`, `localhost`, `10.0.2.2`, `window.location.host`) y reconocimiento de códigos canónicos (`AT-PL-XXX`).
+  - Hook Multiplataforma: `src/features/qr/hooks/useQrScanner.ts` con solicitud y verificación de permisos de cámara en runtime, lock anti-rebote (`isProcessingRef`), redirección fluida vía `router.push()`, manejo de cancelaciones de usuario sin error y fallback transparente e informativo en navegadores web de escritorio.
+  - Componentes UI: `src/features/qr/components/ScanQrButton.tsx` (con estados visuales `isScanning`, `isProcessing`, feedback de errores en toast accesible y soporte responsive) integrado en el Dashboard (`DashboardView.tsx`) y en el Catálogo/Inventario (`PlantCatalogView.tsx`).
+  - Pruebas Automatizadas: 17 tests unitarios nuevos (12 parser + 5 hook) totalizando 590 tests passing (100% verde), `tsc --noEmit` limpio, `eslint` limpio, `next build` exitoso y APK Android compilado y firmado exitosamente con esquema v2 (`assembleDebug`).
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)

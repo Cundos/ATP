@@ -816,6 +816,17 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Pruebas Automatizadas: Tests unitarios exhaustivos (`src/app/api/integrations/home-assistant/regional/current/__tests__/regional-api.test.ts`).
   - Documentación de Integración & YAML: Actualizado `04_ARCHITECTURE/API.md` (Sección 3.5) y `04_ARCHITECTURE/INTEGRATIONS.md` (Sección 5 con paquete YAML para `rest_command`, scripts e `intent_script`).
 
+#### `ATP-MOB-002` — Native Camera & Photo Experience
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Mejorar la experiencia de captura y selección de fotos en Android usando capacidades nativas de Capacitor (@capacitor/camera), manteniendo intacto el backend actual, la timeline de evolución de fotos, el pipeline de optimización WebP (Sharp) y Vercel Blob, con soporte multiplataforma y fallback transparente en Web.
+- **Tipo:** `MOBILE / FEATURE` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Plugin Nativo: `@capacitor/camera` (v8.0.0) integrado y sincronizado en Android con permisos en `AndroidManifest.xml` (`CAMERA`, `READ_MEDIA_IMAGES`, `READ_EXTERNAL_STORAGE`).
+  - Hook Multiplataforma: `src/features/plants/hooks/usePhotoPicker.ts` con detección dinámica de entorno (`Capacitor.isNativePlatform()`), captura nativa de cámara (`CameraSource.Camera`), selección nativa de galería (`CameraSource.Photos`), conversión automática a `File`, captura graciosa de cancelaciones sin error y mensajes de permisos claros en español.
+  - Componente UI: `src/features/plants/components/PhotoUpload.tsx` integrado con `usePhotoPicker`, vista previa interactiva, sincronización con inputs estándar vía `DataTransfer` y preservación del fallback web (`input[type=file]`).
+  - Navegación Android Back: `src/components/ui/Modal.tsx` integrado con el listener de `backButton` de `@capacitor/app` para cerrar modales de subida y galerías sin alterar la pila de navegación ni salir de la aplicación.
+  - Pruebas Automatizadas: Tests unitarios para el hook (`src/features/plants/__tests__/use-photo-picker.test.tsx`) y componentes (`photo-upload.test.tsx`), pasando el 100% de la suite (573 tests unitarios, typecheck sin errores, lint sin errores, build Web exitoso y Gradle assembleDebug exitoso).
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)
@@ -828,4 +839,5 @@ Las siguientes funcionalidades forman parte de las Etapas 2 a 6 del Roadmap (`00
 - **Etapa 5 (Motor de Cuidados):** Algoritmos y reglas de recomendación proactiva de riego, alertas de estrés hídrico y calendarios estacionales asistidos.
 - **Etapa 6 (IA y Visión):** Diagnóstico fitosanitario asistido por visión computacional, comparación temporal de crecimiento (timelapse) y agentes de IA botánicos.
 - **Infraestructura Avanzada:** Autenticación multi-usuario con roles, soporte PWA offline-first total con IndexedDB en navegador, y migración a Object Storage S3 en la nube.
+
 

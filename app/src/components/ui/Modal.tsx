@@ -40,9 +40,30 @@ export const Modal: React.FC<ModalProps> = ({
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
+    let cleanupCapacitor: (() => void) | undefined;
+    const setupCapacitor = async () => {
+      try {
+        const { Capacitor } = await import('@capacitor/core');
+        if (Capacitor.isNativePlatform()) {
+          const { App } = await import('@capacitor/app');
+          const handle = await App.addListener('backButton', () => {
+            onClose();
+          });
+          cleanupCapacitor = () => {
+            handle.remove();
+          };
+        }
+      } catch {
+        // Safe fallback in non-Capacitor environments
+      }
+    };
+
+    setupCapacitor();
+
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = originalOverflow;
+      cleanupCapacitor?.();
     };
   }, [isOpen, onClose]);
 

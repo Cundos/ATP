@@ -6,6 +6,11 @@ import {
   PhenologyEventType,
   EcologicalRegionEntity,
 } from '@/core/domain/entities';
+import {
+  formatMonthRanges,
+  formatGrowthHabit,
+  MONTH_SHORT_NAMES,
+} from '../utils/floraFormatters';
 import styles from './RegionalSpeciesCard.module.css';
 
 export interface RegionalSpeciesCardProps {
@@ -32,22 +37,6 @@ const EVENT_CLASSES: Record<PhenologyEventType, string> = {
   PLANTING: styles.eventPlanting,
 };
 
-const MONTH_SHORT_NAMES = [
-  '',
-  'Ene',
-  'Feb',
-  'Mar',
-  'Abr',
-  'May',
-  'Jun',
-  'Jul',
-  'Ago',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dic',
-];
-
 export const RegionalSpeciesCard: React.FC<RegionalSpeciesCardProps> = ({
   species,
   activePhenology = [],
@@ -60,20 +49,24 @@ export const RegionalSpeciesCard: React.FC<RegionalSpeciesCardProps> = ({
       ? species.common_names.join(' / ')
       : species.canonical_name || species.scientific_name;
 
+  // Ecorregión real (sin inventar fallback como 'Espinal')
   const ecoregionName =
-    ecologicalRegion?.name || species.ecological_region?.name || 'Espinal';
+    ecologicalRegion?.name || species.ecological_region?.name || null;
 
+  // Fuente real (sin inventar fallback como 'Flora Argentina / Institución botánica')
   const source =
     activePhenology[0]?.source ||
-    species.phenology_records?.find((p) => p.source)?.source;
+    species.phenology_records?.find((p) => p.source)?.source ||
+    null;
 
-  const sourceName = source?.name || 'Flora Argentina / Institución botánica';
-  const sourceUrl = source?.url;
+  const sourceName = source?.name || null;
+  const sourceUrl = source?.url || null;
 
   const eventsToShow = highlightEvent
     ? [highlightEvent]
     : Array.from(new Set(activePhenology.map((p) => p.event_type)));
 
+  // Calcular rangos reales usando el helper puro formatMonthRanges
   const matchingEventRecords = species.phenology_records?.filter(
     (p) => !highlightEvent || p.event_type === highlightEvent
   );
@@ -83,14 +76,12 @@ export const RegionalSpeciesCard: React.FC<RegionalSpeciesCardProps> = ({
 
   let monthsRangeLabel = '';
   if (monthsForEvent.length > 0) {
-    if (monthsForEvent.length === 1) {
-      monthsRangeLabel = MONTH_SHORT_NAMES[monthsForEvent[0]];
-    } else {
-      monthsRangeLabel = `${MONTH_SHORT_NAMES[monthsForEvent[0]]} – ${MONTH_SHORT_NAMES[monthsForEvent[monthsForEvent.length - 1]]}`;
-    }
-  } else if (currentMonth) {
+    monthsRangeLabel = formatMonthRanges(monthsForEvent);
+  } else if (currentMonth && MONTH_SHORT_NAMES[currentMonth]) {
     monthsRangeLabel = MONTH_SHORT_NAMES[currentMonth];
   }
+
+  const humanHabit = formatGrowthHabit(species.growth_habit);
 
   return (
     <article className={styles.card} aria-label={`Especie regional: ${commonName}`}>
@@ -104,8 +95,8 @@ export const RegionalSpeciesCard: React.FC<RegionalSpeciesCardProps> = ({
           {species.native_status === 'NATIVE' && (
             <span className={styles.nativeBadge}>Nativa</span>
           )}
-          {species.growth_habit && (
-            <span className={styles.habitBadge}>{species.growth_habit}</span>
+          {humanHabit && (
+            <span className={styles.habitBadge}>{humanHabit}</span>
           )}
         </div>
       </div>
@@ -131,10 +122,17 @@ export const RegionalSpeciesCard: React.FC<RegionalSpeciesCardProps> = ({
             <span className={styles.metaValue}>{species.family}</span>
           </div>
         )}
-        <div className={styles.metaItem}>
-          <span className={styles.metaLabel}>Ecorregión:</span>
-          <span className={styles.metaValue}>{ecoregionName}</span>
-        </div>
+        {ecoregionName ? (
+          <div className={styles.metaItem}>
+            <span className={styles.metaLabel}>Ecorregión:</span>
+            <span className={styles.metaValue}>{ecoregionName}</span>
+          </div>
+        ) : (
+          <div className={styles.metaItem}>
+            <span className={styles.metaLabel}>Ecorregión:</span>
+            <span className={styles.metaValue}>No informada</span>
+          </div>
+        )}
         {species.notes && (
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>Observaciones:</span>
@@ -150,9 +148,9 @@ export const RegionalSpeciesCard: React.FC<RegionalSpeciesCardProps> = ({
       </div>
 
       <footer className={styles.sourceRow}>
-        <span className={styles.sourceLabel} title={`Fuente: ${sourceName}`}>
+        <span className={styles.sourceLabel} title={sourceName ? `Fuente: ${sourceName}` : 'Fuente no informada'}>
           <BookOpen size={12} aria-hidden="true" />
-          Fuente: {sourceName}
+          Fuente: {sourceName || 'Fuente no informada'}
         </span>
         {sourceUrl && (
           <a

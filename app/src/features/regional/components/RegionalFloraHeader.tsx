@@ -1,6 +1,7 @@
 import React from 'react';
 import { MapPin, Globe } from 'lucide-react';
 import { GrowingRegionEntity, EcologicalRegionEntity } from '@/core/domain/entities';
+import { MONTH_FULL_NAMES } from '../utils/floraFormatters';
 import styles from './RegionalFloraHeader.module.css';
 
 export interface RegionalFloraHeaderProps {
@@ -9,27 +10,12 @@ export interface RegionalFloraHeaderProps {
   primaryEcologicalRegion?: EcologicalRegionEntity | null;
 }
 
-const MONTH_NAMES: Record<number, string> = {
-  1: 'Enero',
-  2: 'Febrero',
-  3: 'Marzo',
-  4: 'Abril',
-  5: 'Mayo',
-  6: 'Junio',
-  7: 'Julio',
-  8: 'Agosto',
-  9: 'Septiembre',
-  10: 'Octubre',
-  11: 'Noviembre',
-  12: 'Diciembre',
-};
-
 export const RegionalFloraHeader: React.FC<RegionalFloraHeaderProps> = ({
   month,
   growingRegion,
   primaryEcologicalRegion,
 }) => {
-  const monthName = MONTH_NAMES[month] || 'Mes actual';
+  const monthName = MONTH_FULL_NAMES[month] || 'Mes actual';
 
   const localityParts = [
     growingRegion?.locality || 'Arroyito',
@@ -38,7 +24,11 @@ export const RegionalFloraHeader: React.FC<RegionalFloraHeaderProps> = ({
   ].filter(Boolean);
   const locationSubtitle = localityParts.join(' · ');
 
-  const ecoregionName = primaryEcologicalRegion?.name || 'Espinal';
+  // Ecorregión real si existe; sin fallbacks inventados
+  const ecoregionName =
+    primaryEcologicalRegion?.name ||
+    growingRegion?.ecological_regions?.[0]?.ecological_region?.name ||
+    null;
 
   return (
     <header className={styles.header}>

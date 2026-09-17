@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Leaf } from 'lucide-react';
+import { Leaf, ChevronDown, ChevronUp } from 'lucide-react';
 import { RegionalPlantSpeciesEntity, EcologicalRegionEntity } from '@/core/domain/entities';
+import { formatGrowthHabit } from '../utils/floraFormatters';
 import { RegionalSpeciesCard } from './RegionalSpeciesCard';
 import styles from './NativeFloraSection.module.css';
 
@@ -10,14 +11,19 @@ export interface NativeFloraSectionProps {
   nativeSpecies: RegionalPlantSpeciesEntity[];
   currentMonth: number;
   ecologicalRegion?: EcologicalRegionEntity;
+  initialLimit?: number;
 }
+
+const DEFAULT_INITIAL_LIMIT = 9;
 
 export const NativeFloraSection: React.FC<NativeFloraSectionProps> = ({
   nativeSpecies,
   currentMonth,
   ecologicalRegion,
+  initialLimit = DEFAULT_INITIAL_LIMIT,
 }) => {
   const [selectedHabit, setSelectedHabit] = useState<string>('ALL');
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const habits = useMemo(() => {
     const set = new Set<string>();
@@ -39,9 +45,18 @@ export const NativeFloraSection: React.FC<NativeFloraSectionProps> = ({
     return nativeSpecies.filter((sp) => sp.growth_habit === selectedHabit);
   }, [nativeSpecies, selectedHabit]);
 
+  const displayedSpecies = useMemo(() => {
+    if (isExpanded || filteredSpecies.length <= initialLimit) {
+      return filteredSpecies;
+    }
+    return filteredSpecies.slice(0, initialLimit);
+  }, [filteredSpecies, isExpanded, initialLimit]);
+
   if (!nativeSpecies || nativeSpecies.length === 0) {
     return null;
   }
+
+  const hasMore = filteredSpecies.length > initialLimit;
 
   return (
     <section className={styles.section} aria-label="Nativas de tu región" data-testid="native-flora-section">
@@ -69,12 +84,16 @@ export const NativeFloraSection: React.FC<NativeFloraSectionProps> = ({
             role="tab"
             aria-selected={selectedHabit === 'ALL'}
             className={`${styles.filterTab} ${selectedHabit === 'ALL' ? styles.filterTabActive : ''}`}
-            onClick={() => setSelectedHabit('ALL')}
+            onClick={() => {
+              setSelectedHabit('ALL');
+              setIsExpanded(false);
+            }}
           >
             Todas ({nativeSpecies.length})
           </button>
           {habits.map((habit) => {
             const count = nativeSpecies.filter((s) => s.growth_habit === habit).length;
+            const humanLabel = formatGrowthHabit(habit) || habit;
             return (
               <button
                 key={habit}
@@ -82,9 +101,12 @@ export const NativeFloraSection: React.FC<NativeFloraSectionProps> = ({
                 role="tab"
                 aria-selected={selectedHabit === habit}
                 className={`${styles.filterTab} ${selectedHabit === habit ? styles.filterTabActive : ''}`}
-                onClick={() => setSelectedHabit(habit)}
+                onClick={() => {
+                  setSelectedHabit(habit);
+                  setIsExpanded(false);
+                }}
               >
-                {habit} ({count})
+                {humanLabel} ({count})
               </button>
             );
           })}
@@ -92,7 +114,7 @@ export const NativeFloraSection: React.FC<NativeFloraSectionProps> = ({
       )}
 
       <div className={styles.grid}>
-        {filteredSpecies.map((species) => (
+        {displayedSpecies.map((species) => (
           <RegionalSpeciesCard
             key={species.id}
             species={species}
@@ -102,6 +124,29 @@ export const NativeFloraSection: React.FC<NativeFloraSectionProps> = ({
           />
         ))}
       </div>
+
+      {hasMore && (
+        <div className={styles.showMoreRow}>
+          <button
+            type="button"
+            className={styles.showMoreButton}
+            onClick={() => setIsExpanded((prev) => !prev)}
+            aria-expanded={isExpanded}
+          >
+            {isExpanded ? (
+              <>
+                <span>Mostrar menos</span>
+                <ChevronUp size={16} aria-hidden="true" />
+              </>
+            ) : (
+              <>
+                <span>Ver todas ({filteredSpecies.length})</span>
+                <ChevronDown size={16} aria-hidden="true" />
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </section>
   );
 };

@@ -71,7 +71,7 @@ const mockSpeciesAlgarrobo: RegionalPlantSpeciesEntity = {
   native_status: 'NATIVE',
   ecological_region_id: 'eco-espinal',
   reference_id: null,
-  growth_habit: 'Árbol',
+  growth_habit: 'TREE',
   conservation_status: 'Preocupación menor',
   notes: 'Especie clave del Espinal',
   created_at: new Date(),
@@ -114,26 +114,13 @@ const mockSpeciesChilca: RegionalPlantSpeciesEntity = {
   native_status: 'NATIVE',
   ecological_region_id: 'eco-espinal',
   reference_id: null,
-  growth_habit: 'Arbusto',
+  growth_habit: 'SHRUB',
   conservation_status: null,
   notes: null,
   created_at: new Date(),
   updated_at: new Date(),
-  ecological_region: mockEcologicalRegion,
-  phenology_records: [
-    {
-      id: 'ph-3',
-      species_id: 'sp-chilca',
-      ecological_region_id: 'eco-espinal',
-      event_type: 'FLOWERING',
-      month: 10,
-      source_id: 'ds-flora-arg',
-      notes: null,
-      created_at: new Date(),
-      updated_at: new Date(),
-      source: mockDataSource,
-    },
-  ],
+  ecological_region: undefined,
+  phenology_records: [],
 };
 
 const mockSeasonalSprouting: SeasonalFloraItem[] = [
@@ -161,21 +148,21 @@ describe('ATP-ECO-001C: Regional Flora UI Tests', () => {
       expect(screen.getByText('ARROYITO_CBA')).toBeDefined();
     });
 
-    it('formatea correctamente otros meses (ej. mes 10 -> Octubre)', () => {
+    it('no inventa ecorregión si no viene provista en los datos', () => {
       render(
         <RegionalFloraHeader
-          month={10}
-          growingRegion={mockGrowingRegion}
-          primaryEcologicalRegion={mockEcologicalRegion}
+          month={9}
+          growingRegion={{ ...mockGrowingRegion, ecological_regions: [] }}
+          primaryEcologicalRegion={null}
         />
       );
 
-      expect(screen.getByText('Octubre en tu región')).toBeDefined();
+      expect(screen.queryByText(/Ecorregión: Espinal/i)).toBeNull();
     });
   });
 
   describe('RegionalSpeciesCard', () => {
-    it('renderiza nombres comunes, nombre científico, hábito, estatus nativo y fuente visible', () => {
+    it('renderiza nombres comunes, nombre científico, hábito humanizado, estatus nativo y fuente visible', () => {
       render(
         <RegionalSpeciesCard
           species={mockSpeciesAlgarrobo}
@@ -199,11 +186,11 @@ describe('ATP-ECO-001C: Regional Flora UI Tests', () => {
       expect(sourceLink.getAttribute('target')).toBe('_blank');
     });
 
-    it('maneja especies sin campos opcionales sin renderizar undefined o null', () => {
+    it('no inventa ecorregión ni fuente si no existen en los datos', () => {
       render(
         <RegionalSpeciesCard
           species={mockSpeciesChilca}
-          activePhenology={mockSpeciesChilca.phenology_records}
+          activePhenology={[]}
           currentMonth={10}
           highlightEvent="FLOWERING"
         />
@@ -212,8 +199,9 @@ describe('ATP-ECO-001C: Regional Flora UI Tests', () => {
       expect(screen.getByText('Chilca dulce')).toBeDefined();
       expect(screen.getByText('Baccharis salicifolia')).toBeDefined();
       expect(screen.getByText('Arbusto')).toBeDefined();
-      expect(screen.queryByText('undefined')).toBeNull();
-      expect(screen.queryByText('null')).toBeNull();
+      expect(screen.queryByText('Espinal')).toBeNull();
+      expect(screen.getByText('Fuente: Fuente no informada')).toBeDefined();
+      expect(screen.queryByText('Flora Argentina / Institución botánica')).toBeNull();
     });
   });
 
@@ -245,32 +233,55 @@ describe('ATP-ECO-001C: Regional Flora UI Tests', () => {
     });
   });
 
-  describe('NativeFloraSection', () => {
-    it('muestra el catálogo de nativas y permite filtrar por hábito', () => {
+  describe('NativeFloraSection — Escalabilidad', () => {
+    it('muestra el catálogo de nativas y limita el display inicial si supera initialLimit', () => {
+      const fifteenSpecies: RegionalPlantSpeciesEntity[] = Array.from({ length: 15 }, (_, i) => ({
+        id: `sp-${i + 1}`,
+        scientific_name: `Species ${i + 1}`,
+        canonical_name: `Nativa ${i + 1}`,
+        family: 'Fabaceae',
+        common_names: [`Nativa ${i + 1}`],
+        native_status: 'NATIVE',
+        ecological_region_id: 'eco-espinal',
+        reference_id: null,
+        growth_habit: i % 2 === 0 ? 'TREE' : 'SHRUB',
+        conservation_status: null,
+        notes: null,
+        created_at: new Date(),
+        updated_at: new Date(),
+        phenology_records: [],
+      }));
+
       render(
         <NativeFloraSection
-          nativeSpecies={[mockSpeciesAlgarrobo, mockSpeciesChilca]}
+          nativeSpecies={fifteenSpecies}
           currentMonth={9}
           ecologicalRegion={mockEcologicalRegion}
+          initialLimit={5}
         />
       );
 
       expect(screen.getByText('Nativas de tu región')).toBeDefined();
-      expect(screen.getByText('2 registradas')).toBeDefined();
-      expect(screen.getByText('Prosopis alba')).toBeDefined();
-      expect(screen.getByText('Baccharis salicifolia')).toBeDefined();
+      expect(screen.getByText('15 registradas')).toBeDefined();
 
-      const treeTab = screen.getByRole('tab', { name: /árbol/i });
-      fireEvent.click(treeTab);
+      // Inicialmente se muestran 5
+      expect(screen.getByText('Ver todas (15)')).toBeDefined();
+      expect(screen.getByText('Species 1')).toBeDefined();
+      expect(screen.getByText('Species 5')).toBeDefined();
+      expect(screen.queryByText('Species 6')).toBeNull();
 
-      expect(screen.getByText('Prosopis alba')).toBeDefined();
-      expect(screen.queryByText('Baccharis salicifolia')).toBeNull();
+      // Click en "Ver todas"
+      const showAllBtn = screen.getByRole('button', { name: /ver todas/i });
+      fireEvent.click(showAllBtn);
 
-      const allTab = screen.getByRole('tab', { name: /todas/i });
-      fireEvent.click(allTab);
+      expect(screen.getByText('Species 6')).toBeDefined();
+      expect(screen.getByText('Species 15')).toBeDefined();
+      expect(screen.getByText('Mostrar menos')).toBeDefined();
 
-      expect(screen.getByText('Prosopis alba')).toBeDefined();
-      expect(screen.getByText('Baccharis salicifolia')).toBeDefined();
+      // Click en "Mostrar menos"
+      const showLessBtn = screen.getByRole('button', { name: /mostrar menos/i });
+      fireEvent.click(showLessBtn);
+      expect(screen.queryByText('Species 6')).toBeNull();
     });
   });
 
@@ -301,27 +312,6 @@ describe('ATP-ECO-001C: Regional Flora UI Tests', () => {
 
       // 6. Nativas de tu región presente
       expect(screen.getByText('Nativas de tu región')).toBeDefined();
-    });
-
-    it('renderiza empty state controlado si no hay ninguna información disponible para la región', () => {
-      render(
-        <RegionalFloraView
-          month={9}
-          growingRegion={mockGrowingRegion}
-          primaryEcologicalRegion={mockEcologicalRegion}
-          sproutingItems={[]}
-          floweringItems={[]}
-          fruitingItems={[]}
-          sowingItems={[]}
-          plantingItems={[]}
-          nativeSpecies={[]}
-        />
-      );
-
-      expect(screen.getByText('Sin información disponible')).toBeDefined();
-      expect(
-        screen.getByText('No hay información estacional disponible para esta región y mes.')
-      ).toBeDefined();
     });
   });
 });

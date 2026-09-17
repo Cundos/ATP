@@ -56,33 +56,36 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
         <span>Fotografía del ejemplar {currentPhotoUrl ? '(opcional para reemplazar)' : '(opcional)'}</span>
       </label>
 
-      {/* Hidden gallery file input (without capture attribute) */}
-      <input
-        ref={galleryInputRef}
-        id="plant-photo-gallery-input"
-        data-testid="photo-gallery-input"
-        name={name}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        disabled={disabled || isLoading}
-        onChange={handleFileChange}
-        className={styles.hiddenInput}
-        aria-label="Elegir fotografía de galería o archivos"
-      />
+      {/* Hidden file inputs are ONLY rendered for real browser web fallback, never in native app */}
+      {!isNative && (
+        <>
+          <input
+            ref={galleryInputRef}
+            id="plant-photo-gallery-input"
+            data-testid="photo-gallery-input"
+            name={name}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={disabled || isLoading}
+            onChange={handleFileChange}
+            className={styles.hiddenInput}
+            aria-label="Elegir fotografía de galería o archivos"
+          />
 
-      {/* Hidden camera file input (with capture environment attribute) */}
-      <input
-        ref={cameraInputRef}
-        id="plant-photo-camera-input"
-        data-testid="photo-camera-input"
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        capture="environment"
-        disabled={disabled || isLoading}
-        onChange={handleFileChange}
-        className={styles.hiddenInput}
-        aria-label="Tomar fotografía con la cámara"
-      />
+          <input
+            ref={cameraInputRef}
+            id="plant-photo-camera-input"
+            data-testid="photo-camera-input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            capture="environment"
+            disabled={disabled || isLoading}
+            onChange={handleFileChange}
+            className={styles.hiddenInput}
+            aria-label="Tomar fotografía con la cámara"
+          />
+        </>
+      )}
 
       {activeDisplayUrl ? (
         <div className={styles.previewContainer}>

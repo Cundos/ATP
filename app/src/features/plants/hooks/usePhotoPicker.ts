@@ -20,7 +20,22 @@ export function usePhotoPicker(options: UsePhotoPickerOptions = {}) {
     allowedMimeTypes = DEFAULT_ALLOWED_MIME_TYPES,
   } = options;
 
-  const [isNative, setIsNative] = useState<boolean>(false);
+  const getIsNativeSynchronous = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    const win = window as unknown as {
+      Capacitor?: { isNativePlatform?: () => boolean; isNative?: boolean; getPlatform?: () => string };
+      androidBridge?: unknown;
+    };
+    if (win.androidBridge || win.Capacitor?.isNative) return true;
+    if (typeof win.Capacitor?.isNativePlatform === 'function') return win.Capacitor.isNativePlatform();
+    if (typeof win.Capacitor?.getPlatform === 'function') {
+      const p = win.Capacitor.getPlatform();
+      return p === 'android' || p === 'ios';
+    }
+    return false;
+  };
+
+  const [isNative, setIsNative] = useState<boolean>(getIsNativeSynchronous);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
@@ -32,15 +47,16 @@ export function usePhotoPicker(options: UsePhotoPickerOptions = {}) {
   // Detect Capacitor native platform safely on client side
   useEffect(() => {
     let mounted = true;
+
     import('@capacitor/core')
       .then(({ Capacitor }) => {
         if (mounted) {
-          setIsNative(Capacitor.isNativePlatform());
+          setIsNative(Capacitor.isNativePlatform() || getIsNativeSynchronous());
         }
       })
       .catch(() => {
         if (mounted) {
-          setIsNative(false);
+          setIsNative(getIsNativeSynchronous());
         }
       });
     return () => {
@@ -195,10 +211,10 @@ export function usePhotoPicker(options: UsePhotoPickerOptions = {}) {
   const handleTriggerGallery = useCallback(async () => {
     if (disabled || isLoading) return;
 
-    let native = false;
+    let native = getIsNativeSynchronous();
     try {
       const { Capacitor } = await import('@capacitor/core');
-      native = Capacitor.isNativePlatform();
+      native = native || Capacitor.isNativePlatform();
       console.log('[PhotoPicker] handleTriggerGallery - isNative:', native, 'platform:', Capacitor.getPlatform?.() ?? 'unknown');
     } catch {
       // In web or environments where @capacitor/core isn't native
@@ -219,10 +235,10 @@ export function usePhotoPicker(options: UsePhotoPickerOptions = {}) {
   const handleTriggerCamera = useCallback(async () => {
     if (disabled || isLoading) return;
 
-    let native = false;
+    let native = getIsNativeSynchronous();
     try {
       const { Capacitor } = await import('@capacitor/core');
-      native = Capacitor.isNativePlatform();
+      native = native || Capacitor.isNativePlatform();
       console.log('[PhotoPicker] handleTriggerCamera - isNative:', native, 'platform:', Capacitor.getPlatform?.() ?? 'unknown');
     } catch {
       // In web or environments where @capacitor/core isn't native

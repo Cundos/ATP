@@ -137,7 +137,11 @@ export function usePhotoPicker(options: UsePhotoPickerOptions = {}) {
       setClientError(null);
 
       try {
+        const { Capacitor } = await import('@capacitor/core');
+        console.log('[PhotoPicker] handleNativeCapture - platform:', Capacitor.getPlatform?.() ?? 'unknown', 'sourceType:', sourceType);
+
         const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera');
+        console.log('[PhotoPicker] Invoking Camera.getPhoto({ source:', sourceType === 'camera' ? 'Camera' : 'Photos', '})');
 
         const photo = await Camera.getPhoto({
           quality: 85,
@@ -147,8 +151,12 @@ export function usePhotoPicker(options: UsePhotoPickerOptions = {}) {
           correctOrientation: true,
         });
 
+        console.log('[PhotoPicker] Camera.getPhoto result received, format:', photo.format);
+
         const fetchUrl = photo.webPath || photo.path;
-        if (!fetchUrl) return;
+        if (!fetchUrl) {
+          throw new Error('No se recibió la ruta de la fotografía capturada.');
+        }
 
         const response = await fetch(fetchUrl);
         const blob = await response.blob();
@@ -161,10 +169,11 @@ export function usePhotoPicker(options: UsePhotoPickerOptions = {}) {
         const file = new File([blob], fileName, { type: mimeType });
         validateAndProcessFile(file);
       } catch (err: unknown) {
+        console.error('[PhotoPicker] Error in handleNativeCapture:', err);
         const errMsg = err instanceof Error ? err.message : String(err);
 
         // Graceful user cancellation detection across devices/emulators
-        if (/cancel|dismiss|closed/i.test(errMsg)) {
+        if (/cancel|dismiss|closed|back/i.test(errMsg)) {
           // User deliberately cancelled the picker or camera — no visible error
           return;
         }
@@ -175,7 +184,7 @@ export function usePhotoPicker(options: UsePhotoPickerOptions = {}) {
           return;
         }
 
-        setClientError('No se pudo obtener la fotografía. Intentá nuevamente.');
+        setClientError(`Error al capturar fotografía: ${errMsg || 'Intentá nuevamente.'}`);
       } finally {
         setIsLoading(false);
       }
@@ -186,16 +195,22 @@ export function usePhotoPicker(options: UsePhotoPickerOptions = {}) {
   const handleTriggerGallery = useCallback(async () => {
     if (disabled || isLoading) return;
 
+    let native = false;
     try {
       const { Capacitor } = await import('@capacitor/core');
-      if (Capacitor.isNativePlatform()) {
-        await handleNativeCapture('photos');
-        return;
-      }
+      native = Capacitor.isNativePlatform();
+      console.log('[PhotoPicker] handleTriggerGallery - isNative:', native, 'platform:', Capacitor.getPlatform?.() ?? 'unknown');
     } catch {
-      // Fallback to web
+      // In web or environments where @capacitor/core isn't native
     }
 
+    if (native) {
+      // En plataforma nativa Capacitor: NUNCA degradar a input file
+      await handleNativeCapture('photos');
+      return;
+    }
+
+    // Fallback exclusivo para navegador web
     if (galleryInputRef.current) {
       galleryInputRef.current.click();
     }
@@ -204,16 +219,22 @@ export function usePhotoPicker(options: UsePhotoPickerOptions = {}) {
   const handleTriggerCamera = useCallback(async () => {
     if (disabled || isLoading) return;
 
+    let native = false;
     try {
       const { Capacitor } = await import('@capacitor/core');
-      if (Capacitor.isNativePlatform()) {
-        await handleNativeCapture('camera');
-        return;
-      }
+      native = Capacitor.isNativePlatform();
+      console.log('[PhotoPicker] handleTriggerCamera - isNative:', native, 'platform:', Capacitor.getPlatform?.() ?? 'unknown');
     } catch {
-      // Fallback to web
+      // In web or environments where @capacitor/core isn't native
     }
 
+    if (native) {
+      // En plataforma nativa Capacitor: NUNCA degradar a input file
+      await handleNativeCapture('camera');
+      return;
+    }
+
+    // Fallback exclusivo para navegador web
     if (cameraInputRef.current) {
       cameraInputRef.current.click();
     }

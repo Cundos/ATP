@@ -857,6 +857,16 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Pruebas Automatizadas: `src/features/qr/__tests__/parse-atilio-qr.test.ts` con casos obligatorios PASS (`app-iota-three-66.vercel.app`, `atp-sigma.vercel.app`, `localhost`, `AT-PL-007`) y FAIL (`evil.vercel.app`, `atilio-fake.vercel.app`, `app-iota-three-66.vercel.app.evil.com`, `javascript:`, `intent:`, `file:`, `data:`), alcanzando 591 tests unitarios pasando al 100%.
   - Binario Android: APK recompilado con `assembleDebug` y verificado con esquema de firma v2.
 
+#### `ATP-MOB-002.3` — Native Camera Fallback Diagnostic & Fix
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Diagnosticar y resolver la degradación silenciosa a `android.intent.action.GET_CONTENT` (DocumentsUI/Galería) al pulsar "Tomar foto" en Android nativo. Garantizar que en plataforma Capacitor Android se invoque exclusivamente `@capacitor/camera` con `ACTION_IMAGE_CAPTURE`, capturando y mostrando cualquier error explícito al usuario en vez de hacer fallback inadvertido al `input type="file"`, y preservando el fallback web estándar únicamente en navegadores de escritorio.
+- **Tipo:** `BUGFIX / MOBILE` | **Prioridad:** `CRITICAL`
+- **Artefactos Técnicos Creados:**
+  - Hook Multiplataforma: `src/features/plants/hooks/usePhotoPicker.ts` con logs de diagnóstico (`[PhotoPicker] platform`, `isNative`, `sourceType`), eliminación de degradación silenciosa en entornos nativos y control de errores visible al usuario.
+  - Manifest & Queries: `AndroidManifest.xml` con `<queries>` para `android.media.action.IMAGE_CAPTURE` y `android.hardware.camera` declarados.
+  - Pruebas Automatizadas: `src/features/plants/__tests__/use-photo-picker.test.tsx` con verificación de que en Android nativo los errores de cámara no disparan el click del input de archivo web. Total de 594 tests unitarios pasando (100% verde).
+  - Verificación de Calidad: `tsc --noEmit` exitoso, `eslint` limpio, `next build` exitoso, `cap sync android` completado y APK Debug compilado con Gradle y verificado con `apksigner`.
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)

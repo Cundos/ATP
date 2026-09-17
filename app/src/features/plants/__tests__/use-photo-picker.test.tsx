@@ -1,4 +1,4 @@
-﻿// @vitest-environment jsdom
+// @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
@@ -233,12 +233,58 @@ describe('usePhotoPicker hook (ATP-MOB-002)', () => {
       await new Promise((r) => setTimeout(r, 20));
     });
 
+    const mockCameraClick = vi.fn();
+    // @ts-expect-error - mock ref for testing
+    resultHook.current.cameraInputRef.current = { click: mockCameraClick };
+
     await act(async () => {
       await resultHook.current.handleTriggerCamera();
     });
 
     expect(resultHook.current.clientError).toContain('Permiso denegado');
     expect(resultHook.current.clientError).toContain('Ajustes del dispositivo');
+    expect(mockCameraClick).not.toHaveBeenCalled();
+  });
+
+  it('displays controlled error in native platform when camera throws generic error and does NOT fallback to file input (ATP-MOB-002.3)', async () => {
+    const onFileSelect = vi.fn();
+    const getPhotoMock = vi.fn().mockRejectedValue(new Error('Hardware camera initialization failure'));
+
+    vi.doMock('@capacitor/core', () => ({
+      Capacitor: {
+        isNativePlatform: () => true,
+        getPlatform: () => 'android',
+      },
+    }));
+
+    vi.doMock('@capacitor/camera', () => ({
+      Camera: {
+        getPhoto: getPhotoMock,
+      },
+      CameraResultType: { Uri: 'uri' },
+      CameraSource: { Camera: 'CAMERA', Photos: 'PHOTOS' },
+    }));
+
+    const { usePhotoPicker: hook } = await import('../hooks/usePhotoPicker');
+
+    let resultHook!: { current: PhotoPickerResult };
+    await act(async () => {
+      const rendered = renderHook(() => hook({ onFileSelect }));
+      resultHook = rendered.result;
+      await new Promise((r) => setTimeout(r, 20));
+    });
+
+    const mockCameraClick = vi.fn();
+    // @ts-expect-error - mock ref for testing
+    resultHook.current.cameraInputRef.current = { click: mockCameraClick };
+
+    await act(async () => {
+      await resultHook.current.handleTriggerCamera();
+    });
+
+    expect(resultHook.current.clientError).toContain('Error al capturar fotografía: Hardware camera initialization failure');
+    expect(mockCameraClick).not.toHaveBeenCalled();
+    expect(onFileSelect).not.toHaveBeenCalled();
   });
 
   it('validates web file changes and rejects unsupported format or oversized file', async () => {

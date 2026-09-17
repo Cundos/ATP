@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { parseAtilioQr } from '../utils/parseAtilioQr';
 
 describe('parseAtilioQr utility (ATP-MOB-003)', () => {
@@ -50,9 +50,26 @@ describe('parseAtilioQr utility (ATP-MOB-003)', () => {
     expect(result.error).toBe('Este código no pertenece a Atilio Plants.');
   });
 
-  it('rejects malicious or non-http schemes', () => {
+  it('rejects other unapproved vercel.app domains (ATP-MOB-003.1)', () => {
+    // evil.vercel.app
+    const evilResult = parseAtilioQr('https://evil.vercel.app/plants/AT-PL-007');
+    expect(evilResult.valid).toBe(false);
+    expect(evilResult.error).toBe('Este código no pertenece a Atilio Plants.');
+
+    // atilio-fake.vercel.app
+    const fakeResult = parseAtilioQr('https://atilio-fake.vercel.app/plants/AT-PL-007');
+    expect(fakeResult.valid).toBe(false);
+    expect(fakeResult.error).toBe('Este código no pertenece a Atilio Plants.');
+
+    // app-iota-three-66.vercel.app.evil.com (subdomain spoofing)
+    const spoofResult = parseAtilioQr('https://app-iota-three-66.vercel.app.evil.com/plants/AT-PL-007');
+    expect(spoofResult.valid).toBe(false);
+    expect(spoofResult.error).toBe('Este código no pertenece a Atilio Plants.');
+  });
+
+  it('rejects malicious or non-http schemes (ATP-MOB-003.1)', () => {
     expect(parseAtilioQr('javascript:alert(1)').valid).toBe(false);
-    expect(parseAtilioQr('intent://plants/AT-PL-001').valid).toBe(false);
+    expect(parseAtilioQr('intent://plants/AT-PL-007').valid).toBe(false);
     expect(parseAtilioQr('file:///sdcard/exploit.txt').valid).toBe(false);
     expect(parseAtilioQr('data:text/html,<html>').valid).toBe(false);
   });

@@ -838,6 +838,15 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Componentes UI: `src/features/qr/components/ScanQrButton.tsx` (con estados visuales `isScanning`, `isProcessing`, feedback de errores en toast accesible y soporte responsive) integrado en el Dashboard (`DashboardView.tsx`) y en el Catálogo/Inventario (`PlantCatalogView.tsx`).
   - Pruebas Automatizadas: 17 tests unitarios nuevos (12 parser + 5 hook) totalizando 590 tests passing (100% verde), `tsc --noEmit` limpio, `eslint` limpio, `next build` exitoso y APK Android compilado y firmado exitosamente con esquema v2 (`assembleDebug`).
 
+#### `ATP-MOB-003.1` — QR Host Whitelist Hardening & Physical Validation
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Endurecer la validación de URLs en `parseAtilioQr` eliminando cualquier coincidencia genérica por wildcard (`*.vercel.app`) y la inyección implícita de `window.location.hostname`. Requerir coincidencia exacta de hostname contra la lista blanca estricta (`app-iota-three-66.vercel.app`, `atp-sigma.vercel.app`, `localhost`, `127.0.0.1`, `10.0.2.2`) o hosts pasados explícitamente por configuración.
+- **Tipo:** `SECURITY / MOBILE` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Hardening de Parser: `src/features/qr/utils/parseAtilioQr.ts` aplicando coincidencia exacta de hostname (`hostname === normAllowed`), eliminando wildcards y eliminando lectura automática de `window.location.hostname`.
+  - Pruebas Automatizadas: `src/features/qr/__tests__/parse-atilio-qr.test.ts` con casos obligatorios PASS (`app-iota-three-66.vercel.app`, `atp-sigma.vercel.app`, `localhost`, `AT-PL-007`) y FAIL (`evil.vercel.app`, `atilio-fake.vercel.app`, `app-iota-three-66.vercel.app.evil.com`, `javascript:`, `intent:`, `file:`, `data:`), alcanzando 591 tests unitarios pasando al 100%.
+  - Binario Android: APK recompilado con `assembleDebug` y verificado con esquema de firma v2.
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)

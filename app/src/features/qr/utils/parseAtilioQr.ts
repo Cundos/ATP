@@ -1,4 +1,4 @@
-﻿import { isValidPermanentCode } from '@/core/domain/permanent-code';
+import { isValidPermanentCode } from '@/core/domain/permanent-code';
 
 export interface ParseQrResult {
   valid: boolean;
@@ -95,25 +95,16 @@ export function parseAtilioQr(
     };
   }
 
-  // 4. Validación de lista blanca de hosts
+  // 4. Validación estricta de lista blanca de hosts (coincidencia exacta, sin wildcards)
   const allowedHosts = [
     ...DEFAULT_ALLOWED_HOSTS,
     ...(customAllowedHosts || []),
   ];
 
-  if (typeof window !== 'undefined' && window.location?.hostname) {
-    allowedHosts.push(window.location.hostname);
-  }
-
   const hostname = parsedUrl.hostname.toLowerCase();
   const isAllowedHost = allowedHosts.some((allowed) => {
-    const normAllowed = allowed.toLowerCase().split(':')[0];
-    return (
-      hostname === normAllowed ||
-      (normAllowed.startsWith('*.') &&
-        hostname.endsWith(normAllowed.slice(1))) ||
-      (hostname.endsWith('.vercel.app') && normAllowed.endsWith('.vercel.app'))
-    );
+    const normAllowed = allowed.trim().toLowerCase().split(':')[0];
+    return hostname === normAllowed;
   });
 
   if (!isAllowedHost) {

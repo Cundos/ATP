@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Atilio Plants</string>
+    <string name="title_activity_main">Atilio Plants</string>
+    <string name="package_name">com.cundolabs.atilioplants</string>
+    <string name="custom_url_scheme">com.cundolabs.atilioplants</string>
+</resources>

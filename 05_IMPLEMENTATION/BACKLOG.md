@@ -794,6 +794,18 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Helpers y Formateadores: `src/features/regional/utils/floraFormatters.ts` (`formatGrowthHabitPlural`).
   - Pruebas Automatizadas: 24 tests unitarios y de componentes pasando (`src/features/regional/__tests__/regional-flora-view.test.tsx`, `flora-formatters.test.ts`).
 
+#### `ATP-MOB-001` — Android App Foundation with Capacitor
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Establecer la base técnica para ejecutar Atilio Plants como aplicación nativa Android mediante Capacitor, reutilizando al 100% el backend (Next.js App Router, SSR, Server Actions, Edge Proxy, PostgreSQL y Vercel Blob) y las vistas web móviles existentes sin divergencia de código ni reescritura en React Native.
+- **Tipo:** `MOBILE / INFRASTRUCTURE` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Configuración Capacitor: `app/capacitor.config.ts` con App ID (`com.cundolabs.atilioplants`), App Name (`Atilio Plants`), soporte para producción HTTPS (`https://app-iota-three-66.vercel.app`) y desarrollo local (`CAPACITOR_SERVER_URL`).
+  - Proyecto Nativo Android: `app/android/` inicializado con Gradle, AndroidManifest (`INTERNET`, `ACCESS_NETWORK_STATE`), assets y soporte de WebView seguro (`cleartext: false`, `allowMixedContent: false`).
+  - Integración de Hardware & Ciclo de Vida: Hook `useCapacitorNative.ts` integrado en `AppShell.tsx` para manejo controlado de hardware back button con `@capacitor/app`.
+  - Pruebas Automatizadas: Tests unitarios para el hook nativo (`src/components/__tests__/useCapacitorNative.test.tsx`) manteniendo 654 tests pasando (100% verde).
+  - Arquitectura: `04_ARCHITECTURE/ADR-022-ANDROID-CLIENT-ARCHITECTURE-CAPACITOR.md`.
+  - Backlog Móvil Futuro: Definidos `ATP-MOB-002` (Experiencia Nativa de Cámara y Fotos) y `ATP-MOB-003` (Escaneo Nativo de Códigos QR).
+
 #### `ATP-ECO-001D` — Cecilio Consumer for Regional Flora
 - **Estado:** `COMPLETADO`
 - **Objetivo:** Exponer un endpoint REST read-only y seguro (`GET /api/integrations/home-assistant/regional/current`) para que Cecilio / Home Assistant Assist responda consultas de voz y chat sobre eventos fenológicos (brotación, floración, fructificación, siembra, plantación) y flora nativa regional sin duplicar la lógica botánica ni persistir datasets en Home Assistant.

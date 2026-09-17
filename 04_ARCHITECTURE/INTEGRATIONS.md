@@ -222,4 +222,151 @@ rest_command:
 1. **Identificación Exclusiva por Código Permanente:** Solo resuelve por `AT-PL-XXX`. No acepta UUIDs ni IDs internos.
 2. **Minimización de Respuesta:** Se omiten datos técnicos internos (UUIDs, IDs de tabla, paths de archivos en blob/storage, datos crudos JSON, identificadores de entidades de Home Assistant).
 3. **Manejo Resiliente y Degradado:** Si Home Assistant se encuentra temporalmente inaccesible, el motor degrada transparentemente retornando `200 OK` con `telemetry_available: false` y evaluación basada en la referencia botánica disponible.
+
+---
+
+## 5. Puente Cecilio / Home Assistant Read-Only Regional Flora API (ATP-ECO-001D)
+
+### 5.1 Principio de Autoridad y Desacoplamiento:
+- **Atilio Plants = Fuente de la verdad botánica regional:**
+  - Persiste regiones geográficas (`GrowingRegion`), ecorregiones (`EcologicalRegion`), flora nativa curada (`RegionalPlantSpecies`) y fenología mensual (`PlantPhenology`).
+  - Provee trazabilidad mediante fuentes oficiales (`DataSource`).
+  - Ejecuta los casos de uso `GetSeasonalRegionalFloraUseCase`, `GetNativeRegionalFloraUseCase` y `GetRegionalGrowingContextUseCase`.
+- **Home Assistant / Cecilio = Consumidor de voz y chat:**
+  - Realiza consultas bajo demanda vía `rest_command` hacia `/api/integrations/home-assistant/regional/current`.
+  - **NO almacena ni duplica el dataset botánico.**
+  - Construye respuestas breves, naturales y precisas para el asistente de voz.
+
+### 5.2 Arquitectura del Flujo de Consulta:
+
+```text
+┌────────────────────────────────────────────────────────┐
+│     Usuario: "Cecilio, qué florece este mes"           │
+│                           │                            │
+│                           ▼                            │
+│       [Home Assistant Assist / Custom Sentence]        │
+│                           │                            │
+│                           ▼                            │
+│     [rest_command.atp_get_regional_flora]              │
+└───────────────────────────┬────────────────────────────┘
+                            │ GET /api/integrations/home-assistant/regional/current?event=FLOWERING
+                            │ Authorization: Bearer <HOME_ASSISTANT_READ_API_SECRET>
+                            ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                        Atilio Plants Backend                           │
+│                                                                        │
+│   [Timing-Safe Auth Verification (HOME_ASSISTANT_READ_API_SECRET)]     │
+│                        │                                               │
+│                        ▼                                               │
+│   [GetRegionalGrowingContextUseCase + GetSeasonalRegionalFloraUseCase] │
+│                        │                                               │
+│                        ▼                                               │
+│   [HomeAssistantRegionalFloraResponseDTO (schema_version: "1")]        │
+│        ├── Summary counts (brotan, florecen, fructifican, etc.)        │
+│        └── Species array (common_name, scientific_name, habit, source) │
+└───────────────────────────┬────────────────────────────────────────────┘
+                            │ JSON Response (200 OK)
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│       [Home Assistant / Cecilio Response Builder]      │
+│                           │                            │
+│                           ▼                            │
+│  "Este mes hay 16 especies en floración en tu región.  │
+│   Entre ellas están el algarrobo blanco, el chañar y   │
+│   la margarita punzó."                                 │
+└────────────────────────────────────────────────────────┘
 ```
+
+### 5.3 Paquete de Configuración Home Assistant (`atilio_regional_flora.yaml`):
+
+```yaml
+# homeassistant/packages/atilio_regional_flora.yaml
+
+rest_command:
+  atp_get_regional_flora:
+    url: "https://<tu-app>.vercel.app/api/integrations/home-assistant/regional/current?{{ query | default('') }}"
+    method: GET
+    headers:
+      Authorization: "Bearer !secret atp_ha_read_api_secret"
+      Content-Type: "application/json"
+
+script:
+  atp_ask_regional_flora:
+    alias: "Consultar Flora Regional en Atilio Plants"
+    description: "Consulta eventos fenológicos y flora nativa regional de Atilio Plants para Cecilio."
+    fields:
+      event_type:
+        description: "Tipo de evento (FLOWERING, SPROUTING, FRUITING, SOWING, PLANTING, NATIVES)"
+        example: "FLOWERING"
+    sequence:
+      - service: rest_command.atp_get_regional_flora
+        data:
+          query: >
+            {% if event_type == 'NATIVES' %}
+              month={{ now().month }}
+            {% elif event_type is defined and event_type != '' %}
+              month={{ now().month }}&event={{ event_type }}
+            {% else %}
+              month={{ now().month }}
+            {% endif %}
+        response_variable: api_response
+      - stop: "OK"
+        response_data:
+          result: "{{ api_response }}"
+
+intent_script:
+  AtilioFloraRegional:
+    speech:
+      text: >
+        {% set resp = action_response.result.content | from_json if action_response is defined and action_response.result is defined else None %}
+        {% if resp is none or resp.summary is not defined %}
+          No pude consultar Atilio Plants en este momento.
+        {% else %}
+          {% set ev = event | default('FLOWERING') %}
+          {% if ev == 'FLOWERING' %}
+            {% set count = resp.summary.flowering_count %}
+            {% set items = resp.events.flowering %}
+            {% if count == 0 %}
+              No tengo especies registradas en floración para este mes.
+            {% else %}
+              Este mes hay {{ count }} especies en floración en tu región.
+              Entre ellas están: {{ items[:3] | map(attribute='common_name') | join(', ') }}.
+            {% endif %}
+          {% elif ev == 'SPROUTING' %}
+            {% set count = resp.summary.sprouting_count %}
+            {% set items = resp.events.sprouting %}
+            {% if count == 0 %}
+              No hay brotaciones registradas para este mes en tu región.
+            {% else %}
+              Hay {{ count }} especies brotando este mes, como {{ items[:3] | map(attribute='common_name') | join(', ') }}.
+            {% endif %}
+          {% elif ev == 'SOWING' %}
+            {% set count = resp.summary.sowing_count %}
+            {% set items = resp.events.sowing %}
+            {% if count == 0 %}
+              No hay sugerencias de siembra para este mes.
+            {% else %}
+              Es buen momento para sembrar {{ count }} especies nativas, incluyendo {{ items[:3] | map(attribute='common_name') | join(', ') }}.
+            {% endif %}
+          {% elif ev == 'PLANTING' %}
+            {% set count = resp.summary.planting_count %}
+            {% set items = resp.events.planting %}
+            {% if count == 0 %}
+              No hay recomendaciones de plantación para este mes.
+            {% else %}
+              Es buen momento para plantar {{ count }} especies en tu región: {{ items[:3] | map(attribute='common_name') | join(', ') }}.
+            {% endif %}
+          {% elif ev == 'FRUITING' %}
+            {% set count = resp.summary.fruiting_count %}
+            {% set items = resp.events.fruiting %}
+            {% if count == 0 %}
+              No hay especies fructificando este mes en tu región.
+            {% else %}
+              Hay {{ count }} especies fructificando este mes, como {{ items[:3] | map(attribute='common_name') | join(', ') }}.
+            {% endif %}
+          {% else %}
+            Tu región {{ resp.region.name }} ({{ resp.region.ecological_region }}) tiene {{ resp.summary.native_count }} especies nativas registradas.
+          {% endif %}
+        {% endif %}
+```
+

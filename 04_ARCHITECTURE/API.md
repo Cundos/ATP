@@ -239,3 +239,64 @@ En una arquitectura Next.js full-stack monolítica moderna, no es necesario expo
   - `404 Not Found`: Ejemplar no encontrado en el sistema.
   - `500 Internal Server Error`: Fallo no recuperable al construir el contexto.
 
+### 3.5 Consulta de Flora Regional y Estacional Read-Only (ATP-ECO-001D — Cecilio Regional Flora API)
+- **Método / Ruta:** `GET /api/integrations/home-assistant/regional/current`
+- **Autenticación:** Cabecera `Authorization: Bearer <HOME_ASSISTANT_READ_API_SECRET>` validada en tiempo constante (`crypto.timingSafeEqual` con SHA-256).
+- **Propósito:** Exponer la síntesis del mes actual y eventos fenológicos de flora nativa de la región para respuestas de voz y chat en Cecilio / Home Assistant Assist.
+- **Parámetros de Consulta (Query Params):**
+  - `month` (opcional): entero `1..12` (default: mes actual en servidor).
+  - `event` (opcional): `SPROUTING` | `FLOWERING` | `FRUITING` | `SOWING` | `PLANTING`.
+  - `habit` (opcional): `TREE` | `SHRUB` | `VINE` | `HERB` | `GRASS` | `CACTUS`.
+  - `region` (opcional): código de región geográfica (default: `ARROYITO_CBA`).
+- **Esquema de Respuesta (200 OK):**
+  ```json
+  {
+    "schema_version": "1",
+    "region": {
+      "code": "ARROYITO_CBA",
+      "name": "Arroyito",
+      "province": "Córdoba",
+      "country": "Argentina",
+      "ecological_region": "Espinal"
+    },
+    "month": {
+      "number": 9,
+      "name": "Septiembre"
+    },
+    "summary": {
+      "sprouting_count": 7,
+      "flowering_count": 16,
+      "fruiting_count": 7,
+      "sowing_count": 3,
+      "planting_count": 4,
+      "native_count": 20
+    },
+    "events": {
+      "sprouting": [
+        {
+          "common_name": "Algarrobo blanco / Iboká",
+          "scientific_name": "Prosopis alba",
+          "growth_habit": "Árbol",
+          "native_status": "NATIVE",
+          "relevant_months": "Sep–Oct",
+          "source_name": "Flora Argentina / IBODA",
+          "source_url": "http://www.floraargentina.edu.ar"
+        }
+      ],
+      "flowering": [],
+      "fruiting": [],
+      "sowing": [],
+      "planting": []
+    },
+    "filter": {
+      "event": "SPROUTING"
+    },
+    "generated_at": "2026-09-17T01:30:00.000Z"
+  }
+  ```
+- **Códigos de Error:**
+  - `400 Bad Request`: Parámetro `month`, `event` o `habit` inválido.
+  - `401 Unauthorized`: Token Bearer ausente, incorrecto o secreto no configurado.
+  - `500 Internal Server Error`: Error no recuperable al obtener la información regional.
+
+

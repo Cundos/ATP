@@ -794,6 +794,16 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Helpers y Formateadores: `src/features/regional/utils/floraFormatters.ts` (`formatGrowthHabitPlural`).
   - Pruebas Automatizadas: 24 tests unitarios y de componentes pasando (`src/features/regional/__tests__/regional-flora-view.test.tsx`, `flora-formatters.test.ts`).
 
+#### `ATP-ECO-001D` — Cecilio Consumer for Regional Flora
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Exponer un endpoint REST read-only y seguro (`GET /api/integrations/home-assistant/regional/current`) para que Cecilio / Home Assistant Assist responda consultas de voz y chat sobre eventos fenológicos (brotación, floración, fructificación, siembra, plantación) y flora nativa regional sin duplicar la lógica botánica ni persistir datasets en Home Assistant.
+- **Tipo:** `INTEGRATION / VOICE` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Route Handler: `src/app/api/integrations/home-assistant/regional/current/route.ts` con autenticación Bearer en tiempo constante (`HOME_ASSISTANT_READ_API_SECRET`), filtrado por `event`, `habit`, `month` y `region`.
+  - DTO Sanitizado: `HomeAssistantRegionalFloraResponseDTO` (`schema_version: "1"`) con minimización estricta de datos (sin IDs internos, sin UUIDs, sin paths).
+  - Pruebas Automatizadas: Tests unitarios exhaustivos (`src/app/api/integrations/home-assistant/regional/current/__tests__/regional-api.test.ts`).
+  - Documentación de Integración & YAML: Actualizado `04_ARCHITECTURE/API.md` (Sección 3.5) y `04_ARCHITECTURE/INTEGRATIONS.md` (Sección 5 con paquete YAML para `rest_command`, scripts e `intent_script`).
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)

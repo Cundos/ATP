@@ -867,6 +867,14 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Pruebas Automatizadas: `src/features/plants/__tests__/use-photo-picker.test.tsx` con verificación de que en Android nativo los errores de cámara no disparan el click del input de archivo web. Total de 594 tests unitarios pasando (100% verde).
   - Verificación de Calidad: `tsc --noEmit` exitoso, `eslint` limpio, `next build` exitoso, `cap sync android` completado y APK Debug compilado con Gradle y verificado con `apksigner`.
 
+#### `ATP-MOB-002.4` — Remove WebView Capture Interference
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Eliminar cualquier interferencia del WebView de Android con inputs capture/file eliminando `captureInput: true` de `capacitor.config.ts`, asegurando que la captura nativa dependa 100% de `@capacitor/camera` y no del interceptor WebView de Capacitor, requiriendo recompilación limpia de APK.
+- **Tipo:** `CONFIG / MOBILE` | **Prioridad:** `CRITICAL`
+- **Artefactos Técnicos Creados:**
+  - Configuración Capacitor: `app/capacitor.config.ts` actualizado eliminando `android.captureInput: true`, manteniendo `server.url`, `androidScheme`, `allowMixedContent: false` y `webContentsDebuggingEnabled`.
+  - Recompilación Limpia: `npx cap sync android`, `gradlew.bat clean` y `gradlew.bat assembleDebug` completados y verificados con `apksigner`.
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)

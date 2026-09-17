@@ -172,6 +172,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ plants }) => {
       <section className={styles.quickNavSection} aria-label="Accesos secundarios">
         <h2 className={styles.sectionTitle}>Accesos Rápidos</h2>
         <div className={styles.quickNavGrid}>
+          <Link href="/regional" className={styles.quickNavLink}>
+            <div className={styles.quickNavText}>
+              <span className={styles.quickNavTitle}>Este mes en tu región</span>
+              <span className={styles.quickNavDesc}>Flora autóctona y eventos estacionales</span>
+            </div>
+            <ArrowRight size={16} className={styles.quickNavArrow} />
+          </Link>
+
           <Link href="/inventory" className={styles.quickNavLink}>
             <div className={styles.quickNavText}>
               <span className={styles.quickNavTitle}>Inventario Completo</span>

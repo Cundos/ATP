@@ -153,6 +153,7 @@ describe('UI Base Components (ATP-IMP-010)', () => {
 
       // Abrir menú y verificar links secundarios
       fireEvent.click(menuButton);
+      expect(screen.getByRole('menuitem', { name: /este mes/i })).toBeDefined();
       expect(screen.getByRole('menuitem', { name: /ubicaciones/i })).toBeDefined();
       expect(screen.getByRole('menuitem', { name: /plantas archivadas/i })).toBeDefined();
     });

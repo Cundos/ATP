@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sprout, Menu, X, MapPin, Archive, LogOut } from 'lucide-react';
+import { Sprout, Menu, X, MapPin, Archive, LogOut, Calendar } from 'lucide-react';
 import { logoutAction } from '@/features/auth/actions';
 import styles from './TopBar.module.css';
 
@@ -58,6 +58,7 @@ export const TopBar: React.FC = () => {
   const isNewActive = pathname === '/plants/new';
   const isLocationsActive = pathname.startsWith('/locations');
   const isArchivedActive = pathname.startsWith('/plants/archived');
+  const isRegionalActive = pathname.startsWith('/regional');
 
   return (
     <header className={styles.header}>
@@ -92,6 +93,13 @@ export const TopBar: React.FC = () => {
             aria-current={isNewActive ? 'page' : undefined}
           >
             Nueva Planta
+          </Link>
+          <Link
+            href="/regional"
+            className={`${styles.desktopNavLink} ${isRegionalActive ? styles.desktopNavActive : ''}`}
+            aria-current={isRegionalActive ? 'page' : undefined}
+          >
+            Este mes
           </Link>
           <Link
             href="/locations"
@@ -136,6 +144,14 @@ export const TopBar: React.FC = () => {
           {isMenuOpen && (
             <div className={styles.dropdownMenu} role="menu">
               <div className={styles.menuSectionHeader}>Gestión Secundaria</div>
+              <Link
+                href="/regional"
+                role="menuitem"
+                className={`${styles.menuItem} ${pathname === '/regional' ? styles.menuItemActive : ''}`}
+              >
+                <Calendar size={18} />
+                <span>Este mes</span>
+              </Link>
               <Link
                 href="/locations"
                 role="menuitem"

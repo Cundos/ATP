@@ -22,3 +22,4 @@ export * from './use-cases/IngestHomeAssistantEventUseCase';
 export * from './use-cases/GetPlantCareContextUseCase';
 export * from './use-cases/GetSeasonalRegionalFloraUseCase';
 export * from './use-cases/GetNativeRegionalFloraUseCase';
+export * from './use-cases/GetRegionalGrowingContextUseCase';

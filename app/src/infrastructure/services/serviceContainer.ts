@@ -24,6 +24,7 @@ import {
   GetPlantCareContextUseCase,
   GetSeasonalRegionalFloraUseCase,
   GetNativeRegionalFloraUseCase,
+  GetRegionalGrowingContextUseCase,
 } from '../../core/application';
 import { createStorageService } from '../storage';
 import { SharpImageProcessingService } from '../image/SharpImageProcessingService';
@@ -262,6 +263,10 @@ export function getSeasonalRegionalFloraUseCase(): GetSeasonalRegionalFloraUseCa
 
 export function getNativeRegionalFloraUseCase(): GetNativeRegionalFloraUseCase {
   return new GetNativeRegionalFloraUseCase(getRegionalFloraRepository());
+}
+
+export function getRegionalGrowingContextUseCase(): GetRegionalGrowingContextUseCase {
+  return new GetRegionalGrowingContextUseCase(getGrowingRegionRepository());
 }
 
 

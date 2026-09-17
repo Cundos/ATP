@@ -168,8 +168,11 @@ describe('ATP-IMP-012: Dashboard Summary (SCR-001) Tests', () => {
       expect(link?.getAttribute('href')).toBe('/plants/new');
     });
 
-    it('los enlaces de accesos rápidos apuntan a /inventory, /locations y /plants/archived', () => {
+    it('los enlaces de accesos rápidos apuntan a /regional, /inventory, /locations y /plants/archived', () => {
       render(<DashboardView plants={mockPlantsDataset} />);
+
+      const regionalLink = screen.getByRole('link', { name: /este mes en tu región/i });
+      expect(regionalLink.getAttribute('href')).toBe('/regional');
 
       const inventoryLink = screen.getByRole('link', { name: /inventario completo/i });
       expect(inventoryLink.getAttribute('href')).toBe('/inventory');

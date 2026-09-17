@@ -781,6 +781,19 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Eliminación: Removido `src/middleware.ts`.
   - Pruebas Automatizadas: Tests de regresión en `src/core/application/auth/__tests__/proxy.test.ts` (15 tests de redirección, headers, APIs y excepciones M2M).
 
+#### `ATP-ECO-001C.2` — Regional UX Redesign (Resumen Primero, Detalle Después)
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Rediseñar la experiencia visual de `/regional` para que sea rápida de leer, fácil de escanear y útil en 3–5 segundos aplicando el principio "Resumen Primero, Detalle Después", con barra de resumen de contadores visuales, cards compactas sin sobrecarga de texto, modal accesible de ficha botánica completa, límites iniciales de 4 cards con revelación progresiva ("Ver todas las X especies" / "Mostrar menos") y desglose de nativas por hábito.
+- **Tipo:** `FRONTEND / UX` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Barra de Resumen: `src/features/regional/components/SeasonalSummaryBar.tsx` (contadores de brotación, floración, fructificación, siembra, plantación y nativas con navegación por click a sección).
+  - Cards Compactas: `src/features/regional/components/RegionalSpeciesCard.tsx` (nombres, badges de nativa/hábito, evento activo y botón de detalle).
+  - Modal de Detalle Botánico: `src/features/regional/components/SpeciesDetailModal.tsx` (ficha integral con familia, ecorregión, observaciones, calendario fenológico completo, fuente oficial y enlace externo).
+  - Secciones Estacionales: `src/features/regional/components/SeasonalSection.tsx` (límite inicial de 4 ejemplares y toggle "Ver todas").
+  - Catálogo de Nativas: `src/features/regional/components/NativeFloraSection.tsx` (resumen de distribución por hábito, selector de filtros y límite inicial de 4 ejemplares).
+  - Helpers y Formateadores: `src/features/regional/utils/floraFormatters.ts` (`formatGrowthHabitPlural`).
+  - Pruebas Automatizadas: 24 tests unitarios y de componentes pasando (`src/features/regional/__tests__/regional-flora-view.test.tsx`, `flora-formatters.test.ts`).
+
 ---
 
 ## 8. Backlog POST-MVP (Fuera del Alcance de v0.1)

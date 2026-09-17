@@ -1,0 +1,112 @@
+.summaryBar {
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.chipsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.chip:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+}
+
+.iconWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.countText {
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.labelText {
+  color: var(--text-secondary);
+}
+
+.chipEmpty {
+  opacity: 0.6;
+  background-color: var(--bg-surface-subtle);
+  cursor: default;
+}
+
+.chipEmpty:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Color thematic accents for active counts */
+.itemSprouting {
+  border-color: #C8E6C9;
+}
+.itemSprouting .iconWrapper,
+.itemSprouting .countText {
+  color: #2E7D32;
+}
+
+.itemFlowering {
+  border-color: #FFE0B2;
+}
+.itemFlowering .iconWrapper,
+.itemFlowering .countText {
+  color: #E65100;
+}
+
+.itemFruiting {
+  border-color: #F8BBD0;
+}
+.itemFruiting .iconWrapper,
+.itemFruiting .countText {
+  color: #C2185B;
+}
+
+.itemSowing {
+  border-color: #B2DFDB;
+}
+.itemSowing .iconWrapper,
+.itemSowing .countText {
+  color: #00695C;
+}
+
+.itemPlanting {
+  border-color: #D1C4E9;
+}
+.itemPlanting .iconWrapper,
+.itemPlanting .countText {
+  color: #512DA8;
+}
+
+.itemNative {
+  border-color: var(--brand-primary-subtle);
+}
+.itemNative .iconWrapper,
+.itemNative .countText {
+  color: var(--brand-primary);
+}

@@ -1,15 +1,15 @@
 .section {
   margin-top: 16px;
-  margin-bottom: 40px;
-  padding-top: 24px;
+  margin-bottom: 32px;
+  padding-top: 20px;
   border-top: 1px solid var(--border-subtle);
 }
 
 .sectionHeader {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .titleRow {
@@ -37,7 +37,7 @@
 
 .sectionTitle {
   font-family: var(--font-serif-family);
-  font-size: 1.25rem;
+  font-size: 1.1875rem;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
@@ -53,24 +53,39 @@
   border: 1px solid var(--border-subtle);
 }
 
-.description {
-  font-size: 0.875rem;
+.habitBreakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
-  margin: 0;
-  line-height: 1.4;
+  background-color: var(--bg-surface-subtle);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.breakdownItem {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.breakdownItem strong {
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 .filterTabs {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .filterTab {
   font-size: 0.8125rem;
   font-weight: 500;
-  padding: 6px 12px;
+  padding: 5px 12px;
   border-radius: var(--radius-full);
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -82,6 +97,11 @@
 .filterTab:hover {
   background-color: var(--bg-surface-subtle);
   color: var(--text-primary);
+}
+
+.filterTab:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
 }
 
 .filterTabActive {
@@ -98,34 +118,39 @@
 .grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
 .showMoreRow {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 14px;
 }
 
 .showMoreButton {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
-  padding: 8px 20px;
+  padding: 6px 16px;
   border-radius: var(--radius-full);
   background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .showMoreButton:hover {
-  background-color: var(--brand-primary-subtle);
-  border-color: var(--brand-primary);
-  color: var(--brand-primary);
+  background-color: var(--bg-surface-subtle);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+.showMoreButton:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
 }
 
 @media (min-width: 640px) {

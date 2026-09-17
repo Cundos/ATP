@@ -143,3 +143,42 @@ export function formatGrowthHabit(habit?: string | null): string | null {
       return habit.trim().charAt(0).toUpperCase() + habit.trim().slice(1);
   }
 }
+
+/**
+ * Formatea el plural en español del hábito de crecimiento para resúmenes y tabs.
+ */
+export function formatGrowthHabitPlural(habit?: string | null): string {
+  if (!habit || !habit.trim()) return '';
+  const normalized = habit.trim().toUpperCase();
+
+  switch (normalized) {
+    case 'TREE':
+    case 'ÁRBOL':
+    case 'ARBOL':
+      return 'Árboles';
+    case 'SHRUB':
+    case 'ARBUSTO':
+      return 'Arbustos';
+    case 'VINE':
+    case 'CLIMBER':
+    case 'TREPADORA':
+      return 'Trepadoras';
+    case 'HERB':
+    case 'HERBACEOUS':
+    case 'HIERBA':
+      return 'Herbáceas';
+    case 'GRASS':
+    case 'GRAMINOID':
+    case 'GRAMÍNEA':
+    case 'GRAMINEA':
+      return 'Gramíneas';
+    case 'CACTUS':
+    case 'SUCCULENT':
+    case 'CACTÁCEA':
+    case 'SUCULENTA':
+      return 'Cactáceas / Suculentas';
+    default:
+      return `${habit.trim()}s`;
+  }
+}
+

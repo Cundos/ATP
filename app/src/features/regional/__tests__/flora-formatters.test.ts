@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatMonthRanges, formatGrowthHabit } from '../utils/floraFormatters';
+import { formatMonthRanges, formatGrowthHabit, formatGrowthHabitPlural } from '../utils/floraFormatters';
 
 describe('ATP-ECO-001C.1: Flora Formatters & Presentation Helpers', () => {
   describe('formatMonthRanges', () => {
@@ -73,4 +73,21 @@ describe('ATP-ECO-001C.1: Flora Formatters & Presentation Helpers', () => {
       expect(formatGrowthHabit('epífita')).toBe('Epífita');
     });
   });
+
+  describe('formatGrowthHabitPlural', () => {
+    it('genera el plural en español para cada hábito', () => {
+      expect(formatGrowthHabitPlural('TREE')).toBe('Árboles');
+      expect(formatGrowthHabitPlural('SHRUB')).toBe('Arbustos');
+      expect(formatGrowthHabitPlural('VINE')).toBe('Trepadoras');
+      expect(formatGrowthHabitPlural('HERB')).toBe('Herbáceas');
+      expect(formatGrowthHabitPlural('GRASS')).toBe('Gramíneas');
+      expect(formatGrowthHabitPlural('CACTUS')).toBe('Cactáceas / Suculentas');
+    });
+
+    it('devuelve string vacío ante nulos o vacíos', () => {
+      expect(formatGrowthHabitPlural(null)).toBe('');
+      expect(formatGrowthHabitPlural('')).toBe('');
+    });
+  });
 });
+

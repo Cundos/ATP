@@ -1,5 +1,5 @@
-﻿.header {
-  margin-bottom: 24px;
+.header {
+  margin-bottom: 20px;
 }
 
 .topRow {
@@ -38,21 +38,21 @@
 
 .title {
   font-family: var(--font-serif-family);
-  font-size: 1.75rem;
+  font-size: 1.625rem;
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.25;
-  margin: 0 0 4px 0;
+  margin: 0 0 3px 0;
 }
 
 .subtitle {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
   margin: 0;
 }
 
 @media (min-width: 768px) {
   .title {
-    font-size: 2.125rem;
+    font-size: 2rem;
   }
 }

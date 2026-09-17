@@ -2,18 +2,33 @@ import React from 'react';
 import { MapPin, Globe } from 'lucide-react';
 import { GrowingRegionEntity, EcologicalRegionEntity } from '@/core/domain/entities';
 import { MONTH_FULL_NAMES } from '../utils/floraFormatters';
+import { SeasonalSummaryBar } from './SeasonalSummaryBar';
 import styles from './RegionalFloraHeader.module.css';
 
 export interface RegionalFloraHeaderProps {
   month: number;
   growingRegion?: GrowingRegionEntity | null;
   primaryEcologicalRegion?: EcologicalRegionEntity | null;
+  sproutingCount?: number;
+  floweringCount?: number;
+  fruitingCount?: number;
+  sowingCount?: number;
+  plantingCount?: number;
+  nativeCount?: number;
+  onSelectSection?: (sectionId: string) => void;
 }
 
 export const RegionalFloraHeader: React.FC<RegionalFloraHeaderProps> = ({
   month,
   growingRegion,
   primaryEcologicalRegion,
+  sproutingCount = 0,
+  floweringCount = 0,
+  fruitingCount = 0,
+  sowingCount = 0,
+  plantingCount = 0,
+  nativeCount = 0,
+  onSelectSection,
 }) => {
   const monthName = MONTH_FULL_NAMES[month] || 'Mes actual';
 
@@ -47,6 +62,17 @@ export const RegionalFloraHeader: React.FC<RegionalFloraHeaderProps> = ({
 
       <h1 className={styles.title}>{monthName} en tu región</h1>
       <p className={styles.subtitle}>{locationSubtitle}</p>
+
+      {/* Bloque de resumen estacional con contadores escaneables */}
+      <SeasonalSummaryBar
+        sproutingCount={sproutingCount}
+        floweringCount={floweringCount}
+        fruitingCount={fruitingCount}
+        sowingCount={sowingCount}
+        plantingCount={plantingCount}
+        nativeCount={nativeCount}
+        onSelectSection={onSelectSection}
+      />
     </header>
   );
 };

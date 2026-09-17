@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExternalLink, BookOpen, Sparkles } from 'lucide-react';
+import { Sparkles, ChevronRight } from 'lucide-react';
 import {
   RegionalPlantSpeciesEntity,
   PlantPhenologyEntity,
@@ -19,6 +19,7 @@ export interface RegionalSpeciesCardProps {
   currentMonth?: number;
   highlightEvent?: PhenologyEventType;
   ecologicalRegion?: EcologicalRegionEntity;
+  onOpenDetail?: (species: RegionalPlantSpeciesEntity) => void;
 }
 
 const EVENT_LABELS: Record<PhenologyEventType, string> = {
@@ -42,31 +43,18 @@ export const RegionalSpeciesCard: React.FC<RegionalSpeciesCardProps> = ({
   activePhenology = [],
   currentMonth,
   highlightEvent,
-  ecologicalRegion,
+  onOpenDetail,
 }) => {
   const commonName =
     species.common_names && species.common_names.length > 0
       ? species.common_names.join(' / ')
       : species.canonical_name || species.scientific_name;
 
-  // Ecorregión real (sin inventar fallback como 'Espinal')
-  const ecoregionName =
-    ecologicalRegion?.name || species.ecological_region?.name || null;
-
-  // Fuente real (sin inventar fallback como 'Flora Argentina / Institución botánica')
-  const source =
-    activePhenology[0]?.source ||
-    species.phenology_records?.find((p) => p.source)?.source ||
-    null;
-
-  const sourceName = source?.name || null;
-  const sourceUrl = source?.url || null;
-
   const eventsToShow = highlightEvent
     ? [highlightEvent]
     : Array.from(new Set(activePhenology.map((p) => p.event_type)));
 
-  // Calcular rangos reales usando el helper puro formatMonthRanges
+  // Calcular rangos reales usando el helper formatMonthRanges
   const matchingEventRecords = species.phenology_records?.filter(
     (p) => !highlightEvent || p.event_type === highlightEvent
   );
@@ -83,8 +71,29 @@ export const RegionalSpeciesCard: React.FC<RegionalSpeciesCardProps> = ({
 
   const humanHabit = formatGrowthHabit(species.growth_habit);
 
+  const handleCardClick = () => {
+    if (onOpenDetail) {
+      onOpenDetail(species);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleCardClick();
+    }
+  };
+
   return (
-    <article className={styles.card} aria-label={`Especie regional: ${commonName}`}>
+    <article
+      className={`${styles.card} ${onOpenDetail ? styles.cardClickable : ''}`}
+      aria-label={`Especie regional: ${commonName}`}
+      onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={onOpenDetail ? 0 : undefined}
+      role={onOpenDetail ? 'button' : undefined}
+      data-testid={`species-card-${species.id}`}
+    >
       <div className={styles.headerRow}>
         <div className={styles.titleArea}>
           <h3 className={styles.commonName}>{commonName}</h3>
@@ -101,69 +110,30 @@ export const RegionalSpeciesCard: React.FC<RegionalSpeciesCardProps> = ({
         </div>
       </div>
 
-      {eventsToShow.length > 0 && (
-        <div className={styles.badgeGroup} aria-label="Eventos estacionales activos">
-          {eventsToShow.map((evt) => (
-            <span
-              key={evt}
-              className={`${styles.eventBadge} ${EVENT_CLASSES[evt] || ''}`}
-            >
-              <Sparkles size={11} aria-hidden="true" />
-              {EVENT_LABELS[evt]} {monthsRangeLabel ? `(${monthsRangeLabel})` : ''}
-            </span>
-          ))}
-        </div>
-      )}
-
-      <div className={styles.metaGrid}>
-        {species.family && (
-          <div className={styles.metaItem}>
-            <span className={styles.metaLabel}>Familia:</span>
-            <span className={styles.metaValue}>{species.family}</span>
-          </div>
-        )}
-        {ecoregionName ? (
-          <div className={styles.metaItem}>
-            <span className={styles.metaLabel}>Ecorregión:</span>
-            <span className={styles.metaValue}>{ecoregionName}</span>
+      <div className={styles.footerRow}>
+        {eventsToShow.length > 0 ? (
+          <div className={styles.eventBadgeGroup} aria-label="Eventos activos">
+            {eventsToShow.map((evt) => (
+              <span
+                key={evt}
+                className={`${styles.eventBadge} ${EVENT_CLASSES[evt] || ''}`}
+              >
+                <Sparkles size={11} aria-hidden="true" />
+                {EVENT_LABELS[evt]} {monthsRangeLabel ? `· ${monthsRangeLabel}` : ''}
+              </span>
+            ))}
           </div>
         ) : (
-          <div className={styles.metaItem}>
-            <span className={styles.metaLabel}>Ecorregión:</span>
-            <span className={styles.metaValue}>No informada</span>
-          </div>
+          <div />
         )}
-        {species.notes && (
-          <div className={styles.metaItem}>
-            <span className={styles.metaLabel}>Observaciones:</span>
-            <span className={styles.metaValue}>{species.notes}</span>
-          </div>
-        )}
-        {species.conservation_status && (
-          <div className={styles.metaItem}>
-            <span className={styles.metaLabel}>Conservación:</span>
-            <span className={styles.metaValue}>{species.conservation_status}</span>
-          </div>
+
+        {onOpenDetail && (
+          <span className={styles.detailLink} aria-hidden="true">
+            <span>Detalle</span>
+            <ChevronRight size={14} />
+          </span>
         )}
       </div>
-
-      <footer className={styles.sourceRow}>
-        <span className={styles.sourceLabel} title={sourceName ? `Fuente: ${sourceName}` : 'Fuente no informada'}>
-          <BookOpen size={12} aria-hidden="true" />
-          Fuente: {sourceName || 'Fuente no informada'}
-        </span>
-        {sourceUrl && (
-          <a
-            href={sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.sourceLink}
-            aria-label={`Abrir fuente oficial de ${species.scientific_name} en nueva pestaña`}
-          >
-            Ver fuente <ExternalLink size={10} style={{ marginLeft: 2, display: 'inline' }} />
-          </a>
-        )}
-      </footer>
     </article>
   );
 };

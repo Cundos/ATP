@@ -1,8 +1,8 @@
-﻿'use client';
+'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Camera, Image as ImageIcon, X } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button, Modal } from '@/components/ui';
 import { usePhotoPicker } from '../hooks/usePhotoPicker';
 import styles from './PhotoUpload.module.css';
 
@@ -20,6 +20,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
   name = 'photo',
 }) => {
   const {
+    isNative,
     selectedFile,
     previewUrl,
     clientError,
@@ -35,7 +36,18 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
     disabled,
   });
 
+  const [isChoiceModalOpen, setIsChoiceModalOpen] = useState<boolean>(false);
+
   const activeDisplayUrl = previewUrl || currentPhotoUrl;
+
+  const handlePlaceholderClick = () => {
+    if (disabled || isLoading) return;
+    if (isNative) {
+      setIsChoiceModalOpen(true);
+    } else {
+      handleTriggerGallery();
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -88,15 +100,15 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
         <div
           role="button"
           tabIndex={0}
-          onClick={handleTriggerGallery}
+          onClick={handlePlaceholderClick}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              handleTriggerGallery();
+              handlePlaceholderClick();
             }
           }}
           className={styles.placeholderBox}
-          aria-label="Elegir fotografía de la galería o archivos"
+          aria-label="Agregar fotografía al ejemplar"
         >
           <Camera size={32} className={styles.placeholderIcon} aria-hidden="true" />
           <span className={styles.placeholderText}>Elegí una foto de galería o tomá una nueva</span>
@@ -147,6 +159,57 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
           {clientError}
         </p>
       )}
+
+      {/* Native Photo Source Choice Modal / Action Sheet */}
+      <Modal
+        isOpen={isChoiceModalOpen}
+        onClose={() => setIsChoiceModalOpen(false)}
+        title="Agregar fotografía"
+        description="Elegí de dónde querés obtener la imagen para este ejemplar."
+      >
+        <div className={styles.choiceModalContent}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            fullWidth
+            leftIcon={<Camera size={20} />}
+            onClick={() => {
+              setIsChoiceModalOpen(false);
+              handleTriggerCamera();
+            }}
+            className={styles.choiceOptionBtn}
+          >
+            Tomar foto
+          </Button>
+
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            fullWidth
+            leftIcon={<ImageIcon size={20} />}
+            onClick={() => {
+              setIsChoiceModalOpen(false);
+              handleTriggerGallery();
+            }}
+            className={styles.choiceOptionBtn}
+          >
+            Elegir de galería
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="md"
+            fullWidth
+            onClick={() => setIsChoiceModalOpen(false)}
+            className={styles.choiceCancelBtn}
+          >
+            Cancelar
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 };

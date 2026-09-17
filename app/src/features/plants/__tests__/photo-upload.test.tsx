@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import React from 'react';
 import { PhotoUpload } from '../components/PhotoUpload';
 
@@ -150,5 +150,83 @@ describe('PhotoUpload Component', () => {
     const cameraBtn = screen.getByRole('button', { name: /Tomar foto/i });
     expect(galleryBtn).toBeDisabled();
     expect(cameraBtn).toBeDisabled();
+  });
+
+  it('triggers file input directly on web environment when clicking placeholder', async () => {
+    vi.doMock('@capacitor/core', () => ({
+      Capacitor: {
+        isNativePlatform: () => false,
+      },
+    }));
+
+    const { container } = render(<PhotoUpload />);
+    const galleryInput = container.querySelector('input[data-testid="photo-gallery-input"]') as HTMLInputElement;
+    const galleryClickSpy = vi.spyOn(galleryInput, 'click').mockImplementation(() => {});
+
+    const placeholder = screen.getByLabelText(/Agregar fotografía al ejemplar/i);
+    fireEvent.click(placeholder);
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(galleryClickSpy).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('opens choice modal in native platform on clicking placeholder, allowing Tomar foto, Elegir de galería or Cancelar (ATP-MOB-002.2)', async () => {
+    vi.doMock('@capacitor/core', () => ({
+      Capacitor: {
+        isNativePlatform: () => true,
+      },
+    }));
+
+    const getPhotoMock = vi.fn().mockResolvedValue({
+      webPath: 'blob:capacitor://fake-cam',
+      format: 'jpeg',
+    });
+
+    vi.doMock('@capacitor/camera', () => ({
+      Camera: {
+        getPhoto: getPhotoMock,
+      },
+      CameraResultType: { Uri: 'uri' },
+      CameraSource: { Camera: 'CAMERA', Photos: 'PHOTOS' },
+    }));
+
+    const { PhotoUpload: NativePhotoUpload } = await import('../components/PhotoUpload');
+    render(<NativePhotoUpload />);
+
+    // Wait for native platform detection
+    await new Promise((r) => setTimeout(r, 30));
+
+    const placeholder = screen.getByLabelText(/Agregar fotografía al ejemplar/i);
+    fireEvent.click(placeholder);
+
+    // Verify modal is displayed
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toBeInTheDocument();
+    expect(within(dialog).getByText('Agregar fotografía')).toBeInTheDocument();
+    expect(within(dialog).getByText('Elegí de dónde querés obtener la imagen para este ejemplar.')).toBeInTheDocument();
+
+    // Verify buttons inside dialog
+    const takePhotoBtn = within(dialog).getByRole('button', { name: /tomar foto/i });
+    const galleryBtn = within(dialog).getByRole('button', { name: /elegir de galería/i });
+    const cancelBtn = within(dialog).getByRole('button', { name: /cancelar/i });
+
+    expect(takePhotoBtn).toBeInTheDocument();
+    expect(galleryBtn).toBeInTheDocument();
+    expect(cancelBtn).toBeInTheDocument();
+
+    // Test Cancelar closes modal
+    fireEvent.click(cancelBtn);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    // Reopen modal and test Tomar foto
+    fireEvent.click(placeholder);
+    const dialog2 = screen.getByRole('dialog');
+    expect(dialog2).toBeInTheDocument();
+    const takePhotoBtn2 = within(dialog2).getByRole('button', { name: /tomar foto/i });
+    fireEvent.click(takePhotoBtn2);
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

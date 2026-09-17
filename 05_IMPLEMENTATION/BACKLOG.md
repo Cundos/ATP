@@ -827,6 +827,16 @@ Un Milestone se considera **COMPLETADO** cuando:
   - Navegación Android Back: `src/components/ui/Modal.tsx` integrado con el listener de `backButton` de `@capacitor/app` para cerrar modales de subida y galerías sin alterar la pila de navegación ni salir de la aplicación.
   - Pruebas Automatizadas: Tests unitarios para el hook (`src/features/plants/__tests__/use-photo-picker.test.tsx`) y componentes (`photo-upload.test.tsx`), pasando el 100% de la suite (573 tests unitarios, typecheck sin errores, lint sin errores, build Web exitoso y Gradle assembleDebug exitoso).
 
+#### `ATP-MOB-002.2` — Native Photo Entry UX Fix (Choice Modal)
+- **Estado:** `COMPLETADO`
+- **Objetivo:** Corregir el comportamiento del área principal de tap "Agregar foto" en Android nativo para que no abra automáticamente la galería de fotos, sino que despliegue un selector de acción accesible (Action Sheet / Modal) que permita al usuario elegir explícitamente entre: "Tomar foto", "Elegir de galería" o "Cancelar", preservando el soporte de hardware back y manteniendo el fallback directo en web.
+- **Tipo:** `UX / MOBILE` | **Prioridad:** `HIGH`
+- **Artefactos Técnicos Creados:**
+  - Selector de Acción en UI: Actualizado `src/features/plants/components/PhotoUpload.tsx` y `PhotoUpload.module.css` con modal de elección `isChoiceModalOpen` cuando `isNative` es verdadero.
+  - Botones Directos Preservados: Los botones independientes "Tomar foto" y "Elegir de galería" siguen funcionando de forma directa.
+  - Pruebas Automatizadas: Tests de componentes en `src/features/plants/__tests__/photo-upload.test.tsx` verificando que en native el tap principal abre el modal de elección, que las opciones invocan cámara/galería respectivamente, que cancelar cierra el modal y que en web se preserva el fallback directo. Suite total en 593 tests passing (100% verde).
+  - Binario Android: APK recompilado con `assembleDebug` y verificado.
+
 #### `ATP-MOB-003` — Native QR Scanner
 - **Estado:** `COMPLETADO`
 - **Objetivo:** Incorporar escaneo QR nativo en Android mediante Capacitor y Google ML Kit (@capacitor-mlkit/barcode-scanning) para identificar ejemplares físicos de Atilio Plants en macetas y navegar directamente a su ficha (`/plants/AT-PL-XXX`) sin alterar la identidad de las plantas, sin bypass de autenticación y con tolerancia ante errores, cancelaciones o códigos no pertenecientes a la aplicación.

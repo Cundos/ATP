@@ -1,6 +1,5 @@
 import {
   IFileStorageService,
-  IImageProcessingService,
   IOpenPlantbookClient,
   IPlantReferenceMapper,
   IOAuth2TokenManager,
@@ -27,7 +26,6 @@ import {
   GetRegionalGrowingContextUseCase,
 } from '../../core/application';
 import { createStorageService } from '../storage';
-import { LazySharpImageProcessingService } from '../image/LazySharpImageProcessingService';
 import { PrismaPlantReferenceRepository } from '../db/repositories/PrismaPlantReferenceRepository';
 import { PrismaPlantRepository } from '../db/repositories/PrismaPlantRepository';
 import { PrismaPlantHomeAssistantBindingRepository } from '../db/repositories/PrismaPlantHomeAssistantBindingRepository';
@@ -45,7 +43,6 @@ import { OAuth2TokenManager } from '../open-plantbook/OAuth2TokenManager';
 import { HomeAssistantRestClient } from '../home-assistant/HomeAssistantRestClient';
 
 let customFileStorageService: IFileStorageService | null = null;
-let customImageProcessingService: IImageProcessingService | null = null;
 let customPlantReferenceRepository: IPlantReferenceRepository | null = null;
 let customPlantRepository: IPlantRepository | null = null;
 let customPlantHomeAssistantBindingRepository: IPlantHomeAssistantBindingRepository | null = null;
@@ -78,10 +75,6 @@ export function setGrowingRegionRepository(repo: IGrowingRegionRepository | null
 
 export function setFileStorageService(service: IFileStorageService | null): void {
   customFileStorageService = service;
-}
-
-export function setImageProcessingService(service: IImageProcessingService | null): void {
-  customImageProcessingService = service;
 }
 
 export function setPlantReferenceRepository(repo: IPlantReferenceRepository | null): void {
@@ -125,13 +118,6 @@ export function getFileStorageService(): IFileStorageService {
     return customFileStorageService;
   }
   return createStorageService();
-}
-
-export function getImageProcessingService(): IImageProcessingService {
-  if (customImageProcessingService) {
-    return customImageProcessingService;
-  }
-  return new LazySharpImageProcessingService();
 }
 
 export function getPlantReferenceRepository(): IPlantReferenceRepository {

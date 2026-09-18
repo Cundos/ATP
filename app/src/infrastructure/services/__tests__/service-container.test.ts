@@ -1,13 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   getFileStorageService,
-  getImageProcessingService,
   setFileStorageService,
-  setImageProcessingService,
 } from '../serviceContainer';
 import { LocalFileStorageService } from '../../storage/LocalFileStorageService';
 import { VercelBlobStorageService } from '../../storage/VercelBlobStorageService';
-import { LazySharpImageProcessingService } from '../../image/LazySharpImageProcessingService';
 import { StorageUnavailableError } from '../../../core/domain/errors';
 import { IFileStorageService } from '../../../core/domain/services';
 
@@ -16,7 +13,6 @@ describe('serviceContainer', () => {
 
   beforeEach(() => {
     setFileStorageService(null);
-    setImageProcessingService(null);
     process.env = { ...originalEnv };
     delete process.env.VERCEL;
     delete process.env.VERCEL_ENV;
@@ -27,7 +23,6 @@ describe('serviceContainer', () => {
   afterEach(() => {
     process.env = originalEnv;
     setFileStorageService(null);
-    setImageProcessingService(null);
   });
 
   it('returns custom injected file storage service when set', () => {
@@ -60,10 +55,5 @@ describe('serviceContainer', () => {
     expect(() => getFileStorageService()).toThrow(
       /Persistent photo storage is not configured for Vercel deployment/
     );
-  });
-
-  it('returns LazySharpImageProcessingService by default', () => {
-    const service = getImageProcessingService();
-    expect(service).toBeInstanceOf(LazySharpImageProcessingService);
   });
 });

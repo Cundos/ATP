@@ -3,7 +3,8 @@ import { isValidPermanentCode } from '@/core/domain/permanent-code';
 import { buildPhotoStorageKey } from '@/core/domain/services';
 import { generateUuid } from '@/core/domain/uuid';
 import { ImageProcessingError, StorageUnavailableError } from '@/core/domain/errors';
-import { getFileStorageService, getImageProcessingService } from '@/infrastructure/services';
+import { getFileStorageService } from '@/infrastructure/services';
+import { createImageProcessingService } from '@/infrastructure/image/imageProcessingFactory';
 
 export const runtime = 'nodejs';
 
@@ -111,7 +112,7 @@ export async function POST(request: Request) {
     // 8. Convert to Buffer and Process Image
     const arrayBuffer = await fileEntry.arrayBuffer();
     const inputBuffer = Buffer.from(arrayBuffer);
-    const imageService = getImageProcessingService();
+    const imageService = await createImageProcessingService();
 
     let processedResult;
     try {

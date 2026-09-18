@@ -2,7 +2,7 @@ import { IFileStorageService, IImageProcessingService, buildPhotoStorageKey } fr
 import { IPhotoRepository, IPlantRepository } from '@/core/domain/repositories';
 import { generateUUIDv7 } from '@/core/domain/uuid';
 import { RegisterPlantPhotoUseCase } from '@/core/application/use-cases/RegisterPlantPhotoUseCase';
-import { getImageProcessingService, getFileStorageService } from '@/infrastructure/services';
+import { getFileStorageService } from '@/infrastructure/services';
 import { PrismaPhotoRepository } from '@/infrastructure/db/repositories/PrismaPhotoRepository';
 import { PrismaPlantRepository } from '@/infrastructure/db/repositories/PrismaPlantRepository';
 import { PhotoEntity } from '@/core/domain/entities';
@@ -57,7 +57,14 @@ export async function uploadAndRegisterPlantPhoto(
     throw new Error('El archivo de imagen no contiene datos válidos.');
   }
 
-  const imageProcessor = deps?.imageProcessor || getImageProcessingService();
+  let imageProcessor = deps?.imageProcessor;
+  if (!imageProcessor) {
+    // Dynamic import to avoid bundling sharp in routes that don't execute photo processing
+    const factoryModule = await import(
+      /* webpackIgnore: true */ '@/infrastructure/image/imageProcessingFactory'
+    );
+    imageProcessor = await factoryModule.createImageProcessingService();
+  }
   const fileStorage = deps?.fileStorage || getFileStorageService();
   const photoRepo = deps?.photoRepo || new PrismaPhotoRepository();
   const plantRepo = deps?.plantRepo || new PrismaPlantRepository();

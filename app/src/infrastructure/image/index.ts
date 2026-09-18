@@ -1,2 +1,1 @@
-export * from './SharpImageProcessingService';
-export * from './LazySharpImageProcessingService';
+export * from './imageProcessingFactory';

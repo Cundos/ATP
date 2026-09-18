@@ -8,8 +8,8 @@ import { GET } from '../view/[...storageKey]/route';
 import { LocalFileStorageService } from '@/infrastructure/storage/LocalFileStorageService';
 import {
   setFileStorageService,
-  setImageProcessingService,
 } from '@/infrastructure/services';
+import { setImageProcessingService } from '@/infrastructure/image/imageProcessingFactory';
 import { IFileStorageService, IImageProcessingService } from '@/core/domain/services';
 import { StorageUnavailableError, ImageProcessingError } from '@/core/domain/errors';
 
@@ -504,10 +504,10 @@ describe('Photo API Route Handlers (ATP-IMP-018)', () => {
       expect(() => getFileStorageService()).toThrow(StorageUnavailableError);
     });
 
-    it('returns SharpImageProcessingService by default', async () => {
+    it('creates SharpImageProcessingService by default', async () => {
       setImageProcessingService(null);
-      const { getImageProcessingService } = await import('@/infrastructure/services');
-      const service = getImageProcessingService();
+      const { createImageProcessingService } = await import('@/infrastructure/image/imageProcessingFactory');
+      const service = await createImageProcessingService();
       expect(service).toBeDefined();
     });
   });

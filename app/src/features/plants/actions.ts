@@ -12,7 +12,6 @@ import { SetPrimaryPhotoUseCase } from '@/core/application/use-cases/SetPrimaryP
 import { UpdatePlantPhotoMetadataUseCase } from '@/core/application/use-cases/UpdatePlantPhotoMetadataUseCase';
 import { DeletePlantPhotoUseCase } from '@/core/application/use-cases/DeletePlantPhotoUseCase';
 import { PlantFormInputSchema, PlantFormRawInput } from './schemas/plant-form.schema';
-import { uploadAndRegisterPlantPhoto } from './server/photo-service';
 import {
   getOrCreatePlantReferenceUseCase,
   getFileStorageService,
@@ -129,6 +128,7 @@ export async function createPlantAction(
     if (photoFile && typeof photoFile === 'object' && 'size' in photoFile && photoFile.size > 0) {
       try {
         const fileBuffer = Buffer.from(await photoFile.arrayBuffer());
+        const { uploadAndRegisterPlantPhoto } = await import('./server/photo-service');
         await uploadAndRegisterPlantPhoto({
           plantId: createdPlant.id,
           permanentCode: createdPlant.permanent_code,
@@ -271,6 +271,7 @@ export async function updatePlantAction(
     if (photoFile && typeof photoFile === 'object' && 'size' in photoFile && photoFile.size > 0) {
       try {
         const fileBuffer = Buffer.from(await photoFile.arrayBuffer());
+        const { uploadAndRegisterPlantPhoto } = await import('./server/photo-service');
         await uploadAndRegisterPlantPhoto({
           plantId: updatedPlant.id,
           permanentCode: updatedPlant.permanent_code,
@@ -421,6 +422,7 @@ export async function addPlantPhotoAction(
     const makePrimary = formData.get('make_primary') === 'true' || formData.get('make_primary') === 'on';
 
     const fileBuffer = Buffer.from(await photoFile.arrayBuffer());
+    const { uploadAndRegisterPlantPhoto } = await import('./server/photo-service');
     await uploadAndRegisterPlantPhoto({
       plantId: plant.id,
       permanentCode: plant.permanent_code,

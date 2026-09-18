@@ -3,7 +3,7 @@ import { parseAtilioQr } from '../utils/parseAtilioQr';
 
 describe('parseAtilioQr utility (ATP-MOB-003)', () => {
   it('parses valid production canonical URLs', () => {
-    const result = parseAtilioQr('https://app-iota-three-66.vercel.app/plants/AT-PL-007');
+    const result = parseAtilioQr('https://atp-sigma.vercel.app/plants/AT-PL-007');
     expect(result.valid).toBe(true);
     expect(result.permanentCode).toBe('AT-PL-007');
     expect(result.targetPath).toBe('/plants/AT-PL-007');
@@ -11,7 +11,7 @@ describe('parseAtilioQr utility (ATP-MOB-003)', () => {
   });
 
   it('parses valid canonical URL with trailing slash or query params', () => {
-    const result = parseAtilioQr('https://app-iota-three-66.vercel.app/plants/AT-PL-001/?source=qr&campaign=spring#overview');
+    const result = parseAtilioQr('https://atp-sigma.vercel.app/plants/AT-PL-001/?source=qr&campaign=spring#overview');
     expect(result.valid).toBe(true);
     expect(result.permanentCode).toBe('AT-PL-001');
     expect(result.targetPath).toBe('/plants/AT-PL-001');
@@ -61,8 +61,8 @@ describe('parseAtilioQr utility (ATP-MOB-003)', () => {
     expect(fakeResult.valid).toBe(false);
     expect(fakeResult.error).toBe('Este código no pertenece a Atilio Plants.');
 
-    // app-iota-three-66.vercel.app.evil.com (subdomain spoofing)
-    const spoofResult = parseAtilioQr('https://app-iota-three-66.vercel.app.evil.com/plants/AT-PL-007');
+    // atp-sigma.vercel.app.evil.com (subdomain spoofing)
+    const spoofResult = parseAtilioQr('https://atp-sigma.vercel.app.evil.com/plants/AT-PL-007');
     expect(spoofResult.valid).toBe(false);
     expect(spoofResult.error).toBe('Este código no pertenece a Atilio Plants.');
   });
@@ -75,7 +75,7 @@ describe('parseAtilioQr utility (ATP-MOB-003)', () => {
   });
 
   it('rejects non-plant URLs on Atilio domain', () => {
-    const result = parseAtilioQr('https://app-iota-three-66.vercel.app/inventory');
+    const result = parseAtilioQr('https://atp-sigma.vercel.app/inventory');
     expect(result.valid).toBe(false);
     expect(result.error).toBe('El código QR no corresponde a un ejemplar botánico de Atilio Plants.');
   });

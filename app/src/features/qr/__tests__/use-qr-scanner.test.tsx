@@ -1,4 +1,4 @@
-﻿// @vitest-environment jsdom
+// @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
@@ -54,7 +54,7 @@ describe('useQrScanner hook (ATP-MOB-003)', () => {
     const scanMock = vi.fn().mockResolvedValue({
       barcodes: [
         {
-          displayValue: 'https://app-iota-three-66.vercel.app/plants/AT-PL-007',
+          displayValue: 'https://atp-sigma.vercel.app/plants/AT-PL-007',
           format: 'QR_CODE',
         },
       ],

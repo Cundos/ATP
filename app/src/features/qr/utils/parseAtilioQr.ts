@@ -8,7 +8,6 @@ export interface ParseQrResult {
 }
 
 export const DEFAULT_ALLOWED_HOSTS = [
-  'app-iota-three-66.vercel.app',
   'atp-sigma.vercel.app',
   'localhost',
   '127.0.0.1',

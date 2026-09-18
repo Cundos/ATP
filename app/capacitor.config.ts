@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Atilio Plants',
   webDir: 'public',
   server: {
-    url: process.env.CAPACITOR_SERVER_URL || 'https://app-iota-three-66.vercel.app',
+    url: process.env.CAPACITOR_SERVER_URL || 'https://atp-sigma.vercel.app',
     cleartext: process.env.NODE_ENV !== 'production' && !!process.env.CAPACITOR_SERVER_URL?.startsWith('http://'),
     androidScheme: 'https',
   },

@@ -17,7 +17,7 @@ Se establecieron los siguientes principios rectores:
 ## Opciones Evaluadas
 
 ### Opción A: Contenedor Remoto Seguro con Capacitor (Seleccionada)
-- La aplicación nativa Android se configura mediante Capacitor para cargar como origen seguro la URL de producción (`https://app-iota-three-66.vercel.app`), o el host de desarrollo local (`http://10.0.2.2:3000` / IP local) mediante la variable `CAPACITOR_SERVER_URL`.
+- La aplicación nativa Android se configura mediante Capacitor para cargar como origen seguro la URL de producción canónica (`https://atp-sigma.vercel.app`), o el host de desarrollo local (`http://10.0.2.2:3000` / IP local) mediante la variable `CAPACITOR_SERVER_URL`.
 - **Ventajas**:
   - Soporte nativo y transparente de Server Actions, Server Components (RSC) y Edge Proxy de Next.js 16 sin modificaciones.
   - Manejo estándar y seguro de cookies de sesión (`atp_session` con `SameSite=Lax` y `HttpOnly`).

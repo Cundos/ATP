@@ -1,4 +1,3 @@
-import sharp from 'sharp';
 import {
   IImageProcessingService,
   ImageProcessingOptions,
@@ -63,6 +62,7 @@ export class SharpImageProcessingService implements IImageProcessingService {
 
     // 4. Sharp transformation pipeline
     try {
+      const { default: sharp } = await import('sharp');
       const pipeline = sharp(inputBuffer, {
         failOn: 'warning',
         // Limit input pixels to ~268 megapixels to guard against decompression bombs

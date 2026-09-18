@@ -27,7 +27,7 @@ import {
   GetRegionalGrowingContextUseCase,
 } from '../../core/application';
 import { createStorageService } from '../storage';
-import { SharpImageProcessingService } from '../image/SharpImageProcessingService';
+import { LazySharpImageProcessingService } from '../image/LazySharpImageProcessingService';
 import { PrismaPlantReferenceRepository } from '../db/repositories/PrismaPlantReferenceRepository';
 import { PrismaPlantRepository } from '../db/repositories/PrismaPlantRepository';
 import { PrismaPlantHomeAssistantBindingRepository } from '../db/repositories/PrismaPlantHomeAssistantBindingRepository';
@@ -131,7 +131,7 @@ export function getImageProcessingService(): IImageProcessingService {
   if (customImageProcessingService) {
     return customImageProcessingService;
   }
-  return new SharpImageProcessingService();
+  return new LazySharpImageProcessingService();
 }
 
 export function getPlantReferenceRepository(): IPlantReferenceRepository {

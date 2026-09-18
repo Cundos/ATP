@@ -7,7 +7,7 @@ import {
 } from '../serviceContainer';
 import { LocalFileStorageService } from '../../storage/LocalFileStorageService';
 import { VercelBlobStorageService } from '../../storage/VercelBlobStorageService';
-import { SharpImageProcessingService } from '../../image/SharpImageProcessingService';
+import { LazySharpImageProcessingService } from '../../image/LazySharpImageProcessingService';
 import { StorageUnavailableError } from '../../../core/domain/errors';
 import { IFileStorageService } from '../../../core/domain/services';
 
@@ -62,8 +62,8 @@ describe('serviceContainer', () => {
     );
   });
 
-  it('returns SharpImageProcessingService by default', () => {
+  it('returns LazySharpImageProcessingService by default', () => {
     const service = getImageProcessingService();
-    expect(service).toBeInstanceOf(SharpImageProcessingService);
+    expect(service).toBeInstanceOf(LazySharpImageProcessingService);
   });
 });

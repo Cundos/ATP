@@ -226,3 +226,32 @@ Contiene la información de relevamiento de los **13 ejemplares físicos existen
 3. **Cero Dependencias Circulares:** Al iniciar la importación en la base de datos, ningún registro debe depender de tablas foráneas `Location`, `PlantReference` ni `Photo`.
 4. **Respeto a la Secuencia Posterior:** Tras la ingestión de estos 13 registros, los futuros identificadores se generarán de forma automática durante el alta de cada nuevo ejemplar según la estrategia técnica que se defina en la implementación, garantizando la unicidad global, inmutabilidad y no reutilización de códigos, sin reservar identificadores manualmente por anticipado.
 
+---
+
+## 6. Inventario Patio (AT-PL-014 a AT-PL-029) — ATP-DATA-002
+
+- **Fecha de relevamiento:** 19 de Septiembre de 2026.
+- **Ubicación canónica:** `Patio` (creada como ubicación activa).
+- **Cantidad de ejemplares:** 16 nuevas plantas (`AT-PL-014` a `AT-PL-029`).
+- **Estado de ciclo de vida:** `ACTIVE` (16 activas, 0 archivadas).
+
+| Código | Nombre Común | Nombre Científico | Estado Salud | Ubicación | Observaciones / Notas |
+|:---|:---|:---|:---:|:---:|:---|
+| **AT-PL-014** | Limonero | *Citrus limon* | `HEALTHY` | `Patio` | En maceta, con floración y brotes nuevos. [source: manual patio inventory 2026-09-19] |
+| **AT-PL-015** | Palta | *Persea americana* | `HEALTHY` | `Patio` | Ejemplar joven. [source: manual patio inventory 2026-09-19] |
+| **AT-PL-016** | Suculenta colgante | `null` (pendiente) | `ATTENTION` | `Patio` | Maceta colgante; taxonomía a precisar. [source: manual patio inventory 2026-09-19] |
+| **AT-PL-017** | Monstera joven | *Monstera deliciosa* | `ATTENTION` | `Patio` | Comparte maceta con otro ejemplar (AT-PL-018). [source: manual patio inventory 2026-09-19] |
+| **AT-PL-018** | Planta de hojas acintadas | `null` (pendiente) | `HEALTHY` | `Patio` | Comparte maceta con AT-PL-017. [source: manual patio inventory 2026-09-19] |
+| **AT-PL-019** | Potus | *Epipremnum aureum* | `RECOVERY` | `Patio` | Ejemplar estresado / en recuperación. [source: manual patio inventory 2026-09-19] |
+| **AT-PL-020** | Monstera grande | *Monstera deliciosa* | `HEALTHY` | `Patio` | Estado healthy confirmado. [source: manual patio inventory 2026-09-19] |
+| **AT-PL-021** | Sansevieria enana / Hahnii | *Dracaena trifasciata* | `ATTENTION` | `Patio` | Roseta compacta. [source: manual patio inventory 2026-09-19] |
+| **AT-PL-022** | Tradescantia morada | *Tradescantia spathacea* | `HEALTHY` | `Patio` | [source: manual patio inventory 2026-09-19] |
+| **AT-PL-023** | Portulacaria / Arbusto elefante | *Portulacaria afra* | `HEALTHY` | `Patio` | [source: manual patio inventory 2026-09-19] |
+| **AT-PL-024** | Kalanchoe | *Kalanchoe blossfeldiana* | `ATTENTION` | `Patio` | En flor. [source: manual patio inventory 2026-09-19] |
+| **AT-PL-025** | Suculenta de roseta | `null` (pendiente) | `HEALTHY` | `Patio` | Identificación tentativa: Graptopetalum / Graptoveria sp. No persistir especie definitiva todavía. [source: manual patio inventory 2026-09-19] |
+| **AT-PL-026** | Suculenta de rosetas sobre tallos | `null` (pendiente) | `HEALTHY` | `Patio` | Identificación tentativa: Aeonium / Sedum sp. No persistir especie definitiva todavía. [source: manual patio inventory 2026-09-19] |
+| **AT-PL-027** | Lantana | *Lantana camara* | `HEALTHY` | `Patio` | Al pie del nogal. [source: manual patio inventory 2026-09-19] |
+| **AT-PL-028** | Nogal | *Juglans regia* | `HEALTHY` | `Patio` | Árbol principal del patio. [source: manual patio inventory 2026-09-19] |
+| **AT-PL-029** | Arbolito joven | `null` (pendiente) | `HEALTHY` | `Patio` | Hojas palmatilobadas; falta identificación definitiva. [source: manual patio inventory 2026-09-19] |
+
+

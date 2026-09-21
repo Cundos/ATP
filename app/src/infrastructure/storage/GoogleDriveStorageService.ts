@@ -203,7 +203,7 @@ export class GoogleDriveStorageService implements IFileStorageService {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'image/webp',
         },
-        body: buffer,
+        body: new Uint8Array(buffer),
       });
 
       if (!res.ok) {
@@ -246,7 +246,7 @@ export class GoogleDriveStorageService implements IFileStorageService {
         'Content-Type': `multipart/related; boundary=${boundary}`,
         'Content-Length': String(payloadBuffer.length),
       },
-      body: payloadBuffer,
+      body: new Uint8Array(payloadBuffer),
     });
 
     if (!res.ok) {

@@ -109,7 +109,9 @@ describe('File Storage Contract Verification', () => {
         }
 
         if (urlStr.includes('upload/drive/v3/files') && init?.method === 'POST') {
-          const bodyBuffer = init.body as Buffer;
+          const bodyBuffer = Buffer.isBuffer(init.body)
+            ? init.body
+            : Buffer.from(init.body as Uint8Array);
           const bodyStr = bodyBuffer.toString('utf8');
           const match = bodyStr.match(/{"name":"([^"]+)"/);
           const name = match ? match[1] : `file-${Date.now()}`;

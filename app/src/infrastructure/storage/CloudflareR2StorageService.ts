@@ -202,7 +202,7 @@ export class CloudflareR2StorageService implements IFileStorageService {
     const res = await fetch(url.toString(), {
       method: 'PUT',
       headers: signedHeaders,
-      body: buffer,
+      body: new Uint8Array(buffer),
     });
 
     if (!res.ok) {

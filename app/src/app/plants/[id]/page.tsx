@@ -20,6 +20,7 @@ interface PlantDetailPageProps {
 
 export default async function PlantDetailPage({ params }: PlantDetailPageProps) {
   const { id } = await params;
+  const cleanId = decodeURIComponent(id || '').trim();
 
   const plantRepository = new PrismaPlantRepository();
   const getPlantUseCase = new GetPlantUseCase(plantRepository);
@@ -28,9 +29,10 @@ export default async function PlantDetailPage({ params }: PlantDetailPageProps) 
   try {
     // La búsqueda se realiza prioritariamente por permanent_code (AT-PL-XXX)
     // o fallback a id si es un UUID
-    plant = id.toUpperCase().startsWith('AT-PL-')
-      ? await getPlantUseCase.executeByPermanentCode(id.toUpperCase())
-      : await getPlantUseCase.executeById(id);
+    const isPermanentCode = cleanId.toUpperCase().startsWith('AT-PL-');
+    plant = isPermanentCode
+      ? await getPlantUseCase.executeByPermanentCode(cleanId.toUpperCase())
+      : await getPlantUseCase.executeById(cleanId);
   } catch (error: unknown) {
     const err = error as { name?: string };
     if (err?.name === 'PlantNotFoundError' || err?.name === 'PlantValidationError') {
@@ -92,7 +94,7 @@ export default async function PlantDetailPage({ params }: PlantDetailPageProps) 
     ha_binding: undefined,
   };
 
-  const sanitizedRecentEvents: PlantOperationalEventEntity[] = recentEvents.map((evt) => ({
+  const sanitizedRecentEvents: PlantOperationalEventEntity[] = (recentEvents || []).map((evt) => ({
     ...evt,
     event_key: '',
     metadata: null,
@@ -101,14 +103,22 @@ export default async function PlantDetailPage({ params }: PlantDetailPageProps) 
   const sanitizedCareContext: PlantCareContextDTO | null = careContext
     ? {
         ...careContext,
-        recent_context: {
-          ...careContext.recent_context,
-          last_operational_events: careContext.recent_context.last_operational_events.map((evt) => ({
-            ...evt,
-            event_key: '',
-            metadata: null,
-          })),
-        },
+        recent_context: careContext.recent_context
+          ? {
+              ...careContext.recent_context,
+              last_operational_events: (
+                careContext.recent_context.last_operational_events || []
+              ).map((evt) => ({
+                ...evt,
+                event_key: '',
+                metadata: null,
+              })),
+            }
+          : {
+              last_operational_events: [],
+              last_photo_at: null,
+              recent_photo_caption: null,
+            },
       }
     : null;
 

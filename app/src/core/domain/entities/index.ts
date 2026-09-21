@@ -319,3 +319,8 @@ export interface PlantPhenologyEntity {
   ecological_region?: EcologicalRegionEntity;
   source?: DataSourceEntity;
 }
+
+// ---------------------------------------------------------------------------
+// AI Plant Identification Domain
+// ---------------------------------------------------------------------------
+export * from './PlantIdentification';

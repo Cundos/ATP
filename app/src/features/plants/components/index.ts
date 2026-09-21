@@ -17,4 +17,5 @@ export * from './PlantPhotoLightboxModal';
 export * from './PlantPhotoComparisonModal';
 export * from './PlantPhotoUploadModal';
 export * from './PlantCareContextSection';
+export * from './AiPlantIdentifier';
 export * from '../hooks';

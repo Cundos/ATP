@@ -28,6 +28,10 @@ import {
   BotanicalSearchResult,
   SelectedBotanicalReference,
 } from './BotanicalReferencePicker';
+import {
+  AiPlantIdentifier,
+  AiPlantIdentificationApplyPayload,
+} from './AiPlantIdentifier';
 import styles from './PlantForm.module.css';
 
 export interface PlantFormProps {
@@ -148,6 +152,42 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
     setSelectedReference(null);
     setSelectedPid(null);
     setClearReference(true);
+  };
+
+  const handleApplyAiIdentification = async (
+    payload: AiPlantIdentificationApplyPayload
+  ) => {
+    if (payload.commonName) {
+      setCommonName(payload.commonName);
+    }
+    if (payload.scientificName) {
+      setScientificName(payload.scientificName);
+    }
+    if (payload.photoFile) {
+      setSelectedPhoto(payload.photoFile);
+    }
+    if (payload.rawCandidate?.healthObservation && !notes.trim()) {
+      setNotes(`Observación visual IA: ${payload.rawCandidate.healthObservation}`);
+    }
+
+    // Auto-search and link in Open Plantbook if available
+    if (payload.scientificName) {
+      try {
+        const res = await fetch(
+          `/api/integrations/plantbook/search?q=${encodeURIComponent(
+            payload.scientificName
+          )}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (data.results && data.results.length > 0) {
+            handleSelectReference(data.results[0]);
+          }
+        }
+      } catch {
+        // Optional integration
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -294,6 +334,12 @@ export function PlantForm({ mode, initialData, activeLocations }: PlantFormProps
         </div>
 
         <div className={styles.fieldsGrid}>
+          {/* Identificación Botánica con Foto (IA) */}
+          <AiPlantIdentifier
+            onApply={handleApplyAiIdentification}
+            disabled={isPending}
+          />
+
           {/* Asistente de Búsqueda Botánica Open Plantbook */}
           <BotanicalReferencePicker
             selectedReference={selectedReference}

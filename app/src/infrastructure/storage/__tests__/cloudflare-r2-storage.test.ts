@@ -22,9 +22,10 @@ describe('CloudflareR2StorageService', () => {
       const method = (init?.method || 'GET').toUpperCase();
 
       if (method === 'PUT') {
-        const bodyBuffer = Buffer.isBuffer(init?.body)
-          ? init.body
-          : Buffer.from(init?.body as ArrayBuffer);
+        const rawBody = init?.body as Uint8Array | Buffer;
+        const bodyBuffer: Buffer = Buffer.isBuffer(rawBody)
+          ? rawBody
+          : Buffer.from(rawBody);
         mockStore.set(key, bodyBuffer);
         return {
           ok: true,

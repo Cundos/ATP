@@ -109,9 +109,10 @@ describe('File Storage Contract Verification', () => {
         }
 
         if (urlStr.includes('upload/drive/v3/files') && init?.method === 'POST') {
-          const bodyBuffer = Buffer.isBuffer(init.body)
-            ? init.body
-            : Buffer.from(init.body as Uint8Array);
+          const rawBody = init.body as Uint8Array | Buffer;
+          const bodyBuffer: Buffer = Buffer.isBuffer(rawBody)
+            ? rawBody
+            : Buffer.from(rawBody);
           const bodyStr = bodyBuffer.toString('utf8');
           const match = bodyStr.match(/{"name":"([^"]+)"/);
           const name = match ? match[1] : `file-${Date.now()}`;
@@ -123,13 +124,13 @@ describe('File Storage Contract Verification', () => {
 
           const mediaHeader = Buffer.from('Content-Type: image/webp\r\n\r\n');
           const headerIdx = bodyBuffer.indexOf(mediaHeader);
-          let binaryContent = bodyBuffer;
+          let binaryContent: Buffer = bodyBuffer;
           if (headerIdx !== -1) {
             const startOfContent = headerIdx + mediaHeader.length;
             const endDelimiter = Buffer.from(`\r\n--${boundary}--`);
             const endIdx = bodyBuffer.indexOf(endDelimiter, startOfContent);
             if (endIdx !== -1) {
-              binaryContent = bodyBuffer.subarray(startOfContent, endIdx);
+              binaryContent = Buffer.from(bodyBuffer.subarray(startOfContent, endIdx));
             }
           }
 

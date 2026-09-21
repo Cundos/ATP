@@ -12,8 +12,8 @@ export interface GeminiServiceOptions {
 }
 
 const DEFAULT_MODELS = [
-  'gemini-flash-lite-latest',
   'gemini-2.5-flash',
+  'gemini-flash-lite-latest',
   'gemini-3.5-flash-lite',
   'gemini-flash-latest',
 ];
@@ -43,6 +43,76 @@ export class GeminiPlantIdentificationService
     return this.apiKey;
   }
 
+  private sanitizeCandidate(raw: {
+    scientificName?: string;
+    commonName?: string;
+    family?: string;
+    confidence?: number;
+    description?: string;
+    observedHealth?: string;
+  }): {
+    scientificName: string;
+    commonName: string;
+    family: string | null;
+    confidence: number;
+    description: string | null;
+    observedHealth: string | null;
+  } {
+    let scientificName = (raw.scientificName || '').trim();
+    let commonName = (raw.commonName || '').trim();
+    let family = raw.family ? String(raw.family).trim() : null;
+    let description = raw.description ? String(raw.description).trim() : null;
+    let observedHealth = raw.observedHealth
+      ? String(raw.observedHealth).trim()
+      : null;
+    let confidence =
+      typeof raw.confidence === 'number' ? raw.confidence : 0.85;
+
+    // Check if scientificName contains concatenated/dictionary fields
+    if (
+      scientificName.includes('commonName') ||
+      scientificName.includes('observedHealth') ||
+      scientificName.includes('description') ||
+      scientificName.includes('family')
+    ) {
+      const sciMatch = scientificName.match(/^([^'",:]+)/);
+      const commonMatch = scientificName.match(
+        /['"]?commonName['"]?\s*:\s*['"]([^'"]+)['"]/i
+      );
+      const famMatch = scientificName.match(
+        /['"]?family['"]?\s*:\s*['"]([^'"]+)['"]/i
+      );
+      const healthMatch = scientificName.match(
+        /['"]?observedHealth['"]?\s*:\s*['"]([^'"]+)['"]/i
+      );
+      const descMatch = scientificName.match(
+        /['"]?description['"]?\s*:\s*['"]([^'"]+)['"]/i
+      );
+      const confMatch = scientificName.match(
+        /['"]?confidence['"]?\s*:\s*([0-9.]+)/i
+      );
+
+      if (sciMatch && sciMatch[1]) scientificName = sciMatch[1].trim();
+      if (commonMatch && commonMatch[1]) commonName = commonMatch[1].trim();
+      if (famMatch && famMatch[1]) family = famMatch[1].trim();
+      if (healthMatch && healthMatch[1]) observedHealth = healthMatch[1].trim();
+      if (descMatch && descMatch[1]) description = descMatch[1].trim();
+      if (confMatch && confMatch[1]) confidence = parseFloat(confMatch[1]);
+    }
+
+    // Fix missing space before 'cv.' in botanical names (e.g., 'Epipremnum aureumcv. Jade' -> 'Epipremnum aureum cv. Jade')
+    scientificName = scientificName.replace(/([a-z])cv\./i, '$1 cv.');
+
+    return {
+      scientificName,
+      commonName: commonName || scientificName,
+      family,
+      confidence: Math.min(Math.max(confidence, 0), 1),
+      description,
+      observedHealth,
+    };
+  }
+
   public async identifyPlant(
     imageBuffer: Buffer,
     mimeType: string
@@ -65,22 +135,26 @@ export class GeminiPlantIdentificationService
     }
 
     const base64Data = imageBuffer.toString('base64');
-    const promptText = `Sos un botánico y agrónomo especialista en identificación de plantas, árboles, flores, arbustos y cactus.
+    const systemPromptText = `Sos un botánico y agrónomo especialista en identificación de plantas, árboles, flores, arbustos y cactus.
 Analizá la imagen provista e identificá si corresponde a una planta, árbol o estructura vegetal (hojas, flores, frutos, tallo, tronco).
 Si es una planta:
-- Determiná el nombre científico taxonómico más preciso (género y especie, ej: 'Citrus limon', 'Persea americana').
-- Determiná el nombre común en español de uso frecuente en Argentina / Sudamérica (ej: 'Limonero', 'Palta', 'Ficus').
-- Asigná un nivel de confianza entre 0.0 y 1.0.
-- Proveé la familia botánica si es reconocible (ej: 'Rutaceae', 'Lauraceae').
-- Si hay dudas o especies visualmente similares, agregá hasta 3 alternativas en alternativeCandidates.
-- Indicá observaciones visibles sobre la salud o aspecto (ej: 'Hojas verdes sanas con brotes nuevos', 'Clorosis foliar leve').
-Si NO es una planta o la imagen no permite reconocer ninguna vegetación, asigná isPlant = false.`;
+- scientificName: Nombre científico taxonómico exacto (género y especie, ej: 'Citrus limon', 'Epipremnum aureum', 'Persea americana'). NUNCA concatenes otros atributos aquí.
+- commonName: Nombre común en español de uso frecuente en Argentina / Sudamérica (ej: 'Limonero', 'Potus', 'Palta', 'Ficus').
+- family: Familia botánica (ej: 'Rutaceae', 'Araceae', 'Lauraceae').
+- confidence: Nivel de certeza entre 0.0 y 1.0.
+- description: Breve descripción morfológica observable (máximo 2 oraciones).
+- observedHealth: Observaciones visibles sobre la salud de las hojas/ramas (máximo 2 oraciones).
+- alternativeCandidates: Hasta 3 especies visualmente similares si existen dudas.
+Si NO es una planta o no se distingue vegetación, asigná isPlant = false.`;
 
     const requestPayload = {
+      system_instruction: {
+        parts: [{ text: systemPromptText }],
+      },
       contents: [
         {
           parts: [
-            { text: promptText },
+            { text: 'Identificá la especie botánica de esta planta.' },
             {
               inline_data: {
                 mime_type: mimeType || 'image/jpeg',
@@ -111,18 +185,18 @@ Si NO es una planta o la imagen no permite reconocer ninguna vegetación, asign�
                   commonName: { type: 'STRING' },
                   confidence: { type: 'NUMBER' },
                 },
+                required: ['scientificName', 'commonName'],
               },
             },
             notes: { type: 'STRING' },
           },
-          required: ['isPlant'],
+          required: ['isPlant', 'scientificName', 'commonName'],
         },
       },
     };
 
     let lastError: string | null = null;
 
-    // Try models in sequence for high availability and demand spike resilience
     for (const model of this.models) {
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`;
       const controller = new AbortController();
@@ -151,7 +225,6 @@ Si NO es una planta o la imagen no permite reconocer ninguna vegetación, asign�
             // ignore
           }
 
-          // If demand spike (503), rate limit (429), or model not available (404), continue to next model
           if (
             response.status === 503 ||
             response.status === 429 ||
@@ -212,37 +285,29 @@ Si NO es una planta o la imagen no permite reconocer ninguna vegetación, asign�
           };
         }
 
-        const primaryCandidate: PlantIdentificationCandidate | null =
-          parsed.scientificName || parsed.commonName
-            ? {
-                scientificName: (parsed.scientificName || '').trim(),
-                commonName: (
-                  parsed.commonName ||
-                  parsed.scientificName ||
-                  ''
-                ).trim(),
-                confidence:
-                  typeof parsed.confidence === 'number'
-                    ? Math.min(Math.max(parsed.confidence, 0), 1)
-                    : 0.85,
-                family: parsed.family?.trim() || null,
-                description: parsed.description?.trim() || null,
-                healthObservation: parsed.observedHealth?.trim() || null,
-              }
-            : null;
+        const sanitized = this.sanitizeCandidate(parsed);
+
+        const primaryCandidate: PlantIdentificationCandidate = {
+          scientificName: sanitized.scientificName,
+          commonName: sanitized.commonName,
+          confidence: sanitized.confidence,
+          family: sanitized.family,
+          description: sanitized.description,
+          healthObservation: sanitized.observedHealth,
+        };
 
         const alternativeCandidates: PlantIdentificationCandidate[] =
           Array.isArray(parsed.alternativeCandidates)
             ? parsed.alternativeCandidates
                 .filter((c) => Boolean(c.scientificName || c.commonName))
-                .map((c) => ({
-                  scientificName: (c.scientificName || '').trim(),
-                  commonName: (c.commonName || c.scientificName || '').trim(),
-                  confidence:
-                    typeof c.confidence === 'number'
-                      ? Math.min(Math.max(c.confidence, 0), 1)
-                      : 0.5,
-                }))
+                .map((c) => {
+                  const s = this.sanitizeCandidate(c);
+                  return {
+                    scientificName: s.scientificName,
+                    commonName: s.commonName,
+                    confidence: s.confidence,
+                  };
+                })
             : [];
 
         return {
@@ -250,7 +315,7 @@ Si NO es una planta o la imagen no permite reconocer ninguna vegetación, asign�
           isPlant: true,
           primaryCandidate,
           alternativeCandidates,
-          observedHealth: parsed.observedHealth?.trim() || null,
+          observedHealth: sanitized.observedHealth,
           notes: parsed.notes?.trim() || null,
         };
       } catch (err: unknown) {
@@ -264,7 +329,6 @@ Si NO es una planta o la imagen no permite reconocer ninguna vegetación, asign�
       }
     }
 
-    // If all models failed
     const friendlyError =
       lastError?.includes('demand') || lastError?.includes('503')
         ? 'El servicio de IA está experimentando una alta demanda temporal. Por favor, reintentá en unos segundos.'

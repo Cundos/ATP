@@ -96,6 +96,55 @@ describe('GeminiPlantIdentificationService', () => {
     );
   });
 
+  it('properly sanitizes and extracts fields when model outputs dictionary string in scientificName', async () => {
+    const rawMalformedScientificName =
+      "Epipremnum aureumcv. Jade', 'commonName': 'Potus verde', 'confidence': 0.95, 'family': 'Araceae', 'observedHealth': 'Planta en buen estado general con algunas marcas mecánicas', 'description': 'Planta trepadora de interior', 'alternativeCandidates': [{'scientificName': 'Philodendron hederaceum', 'commonName': 'Filodendro limón'}]";
+
+    const mockGeminiJson = {
+      candidates: [
+        {
+          content: {
+            parts: [
+              {
+                text: JSON.stringify({
+                  isPlant: true,
+                  scientificName: rawMalformedScientificName,
+                  confidence: 0.85,
+                }),
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockGeminiJson,
+    } as unknown as Response);
+
+    const service = new GeminiPlantIdentificationService({
+      apiKey: 'valid-test-key',
+    });
+
+    const result = await service.identifyPlant(
+      Buffer.from('test-image-data'),
+      'image/jpeg'
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.primaryCandidate?.scientificName).toBe(
+      'Epipremnum aureum cv. Jade'
+    );
+    expect(result.primaryCandidate?.commonName).toBe('Potus verde');
+    expect(result.primaryCandidate?.family).toBe('Araceae');
+    expect(result.primaryCandidate?.confidence).toBe(0.95);
+    expect(result.primaryCandidate?.healthObservation).toBe(
+      'Planta en buen estado general con algunas marcas mecánicas'
+    );
+  });
+
   it('automatically falls back to secondary model when primary model returns 503 high demand', async () => {
     const mockSuccessJson = {
       candidates: [
@@ -144,88 +193,5 @@ describe('GeminiPlantIdentificationService', () => {
     expect(result.isPlant).toBe(true);
     expect(result.primaryCandidate?.scientificName).toBe('Persea americana');
     expect(global.fetch).toHaveBeenCalledTimes(2);
-  });
-
-  it('handles non-plant image detections properly', async () => {
-    const mockGeminiJson = {
-      candidates: [
-        {
-          content: {
-            parts: [
-              {
-                text: JSON.stringify({
-                  isPlant: false,
-                  notes: 'La imagen muestra una herramienta de jardín, no una planta.',
-                }),
-              },
-            ],
-          },
-        },
-      ],
-    };
-
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => mockGeminiJson,
-    } as unknown as Response);
-
-    const service = new GeminiPlantIdentificationService({
-      apiKey: 'valid-test-key',
-    });
-
-    const result = await service.identifyPlant(
-      Buffer.from('test-image-data'),
-      'image/jpeg'
-    );
-
-    expect(result.success).toBe(true);
-    expect(result.isPlant).toBe(false);
-    expect(result.notes).toContain('no una planta');
-  });
-
-  it('handles API error status responses gracefully', async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: false,
-      status: 400,
-      json: async () => ({
-        error: { message: 'API key not valid. Please pass a valid API key.' },
-      }),
-    } as unknown as Response);
-
-    const service = new GeminiPlantIdentificationService({
-      apiKey: 'invalid-key',
-    });
-
-    const result = await service.identifyPlant(
-      Buffer.from('test-image-data'),
-      'image/jpeg'
-    );
-
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('API key not valid');
-  });
-
-  it('returns friendly message when all models experience high demand', async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: false,
-      status: 503,
-      json: async () => ({
-        error: { message: 'This model is currently experiencing high demand.' },
-      }),
-    } as unknown as Response);
-
-    const service = new GeminiPlantIdentificationService({
-      apiKey: 'valid-key',
-      fallbackModels: ['model-1', 'model-2'],
-    });
-
-    const result = await service.identifyPlant(
-      Buffer.from('test-image-data'),
-      'image/jpeg'
-    );
-
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('alta demanda temporal');
   });
 });

@@ -7,14 +7,22 @@ import {
 export interface GeminiServiceOptions {
   apiKey?: string;
   model?: string;
+  fallbackModels?: string[];
   timeoutMs?: number;
 }
+
+const DEFAULT_MODELS = [
+  'gemini-flash-lite-latest',
+  'gemini-2.5-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-flash-latest',
+];
 
 export class GeminiPlantIdentificationService
   implements IPlantIdentificationService
 {
   private apiKey: string;
-  private model: string;
+  private models: string[];
   private timeoutMs: number;
 
   constructor(options: GeminiServiceOptions = {}) {
@@ -24,8 +32,11 @@ export class GeminiPlantIdentificationService
       process.env.GOOGLE_AI_API_KEY ||
       process.env.GOOGLE_API_KEY ||
       '';
-    this.model = options.model || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-    this.timeoutMs = options.timeoutMs || 25000;
+    const primaryModel =
+      options.model || process.env.GEMINI_MODEL || DEFAULT_MODELS[0];
+    const fallbackList = options.fallbackModels || DEFAULT_MODELS;
+    this.models = Array.from(new Set([primaryModel, ...fallbackList]));
+    this.timeoutMs = options.timeoutMs || 15000;
   }
 
   public getApiKey(): string {
@@ -54,8 +65,6 @@ export class GeminiPlantIdentificationService
     }
 
     const base64Data = imageBuffer.toString('base64');
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
-
     const promptText = `Sos un botánico y agrónomo especialista en identificación de plantas, árboles, flores, arbustos y cactus.
 Analizá la imagen provista e identificá si corresponde a una planta, árbol o estructura vegetal (hojas, flores, frutos, tallo, tronco).
 Si es una planta:
@@ -111,136 +120,160 @@ Si NO es una planta o la imagen no permite reconocer ninguna vegetación, asign�
       },
     };
 
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+    let lastError: string | null = null;
 
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestPayload),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timer);
-
-      if (!response.ok) {
-        let errMessage = `Error de API Gemini: HTTP ${response.status}`;
-        try {
-          const errData = await response.json();
-          if (errData?.error?.message) {
-            errMessage = errData.error.message;
-          }
-        } catch {
-          // ignore parsing error
-        }
-
-        return {
-          success: false,
-          isPlant: false,
-          error: errMessage,
-        };
-      }
-
-      const data = await response.json();
-      const rawText =
-        data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-      if (!rawText) {
-        return {
-          success: false,
-          isPlant: false,
-          error: 'No se recibió respuesta estructurada del modelo de IA.',
-        };
-      }
-
-      let parsed: {
-        isPlant?: boolean;
-        scientificName?: string;
-        commonName?: string;
-        family?: string;
-        confidence?: number;
-        description?: string;
-        observedHealth?: string;
-        alternativeCandidates?: Array<{
-          scientificName?: string;
-          commonName?: string;
-          confidence?: number;
-        }>;
-        notes?: string;
-      };
+    // Try models in sequence for high availability and demand spike resilience
+    for (const model of this.models) {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), this.timeoutMs);
 
       try {
-        parsed = JSON.parse(rawText);
-      } catch {
-        return {
-          success: false,
-          isPlant: false,
-          error: 'Formato de respuesta no válido recibido de la IA.',
-        };
-      }
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestPayload),
+          signal: controller.signal,
+        });
 
-      if (!parsed.isPlant) {
+        clearTimeout(timer);
+
+        if (!response.ok) {
+          let errMessage = `Error de API Gemini (${model}): HTTP ${response.status}`;
+          try {
+            const errData = await response.json();
+            if (errData?.error?.message) {
+              errMessage = errData.error.message;
+            }
+          } catch {
+            // ignore
+          }
+
+          // If demand spike (503), rate limit (429), or model not available (404), continue to next model
+          if (
+            response.status === 503 ||
+            response.status === 429 ||
+            response.status === 404 ||
+            response.status === 500 ||
+            errMessage.includes('demand') ||
+            errMessage.includes('quota')
+          ) {
+            lastError = errMessage;
+            continue;
+          }
+
+          return {
+            success: false,
+            isPlant: false,
+            error: errMessage,
+          };
+        }
+
+        const data = await response.json();
+        const rawText =
+          data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+        if (!rawText) {
+          lastError = 'No se recibió respuesta estructurada del modelo de IA.';
+          continue;
+        }
+
+        let parsed: {
+          isPlant?: boolean;
+          scientificName?: string;
+          commonName?: string;
+          family?: string;
+          confidence?: number;
+          description?: string;
+          observedHealth?: string;
+          alternativeCandidates?: Array<{
+            scientificName?: string;
+            commonName?: string;
+            confidence?: number;
+          }>;
+          notes?: string;
+        };
+
+        try {
+          parsed = JSON.parse(rawText);
+        } catch {
+          lastError = 'Formato de respuesta no válido recibido de la IA.';
+          continue;
+        }
+
+        if (!parsed.isPlant) {
+          return {
+            success: true,
+            isPlant: false,
+            notes:
+              parsed.notes || 'La imagen no parece ser una planta o árbol.',
+          };
+        }
+
+        const primaryCandidate: PlantIdentificationCandidate | null =
+          parsed.scientificName || parsed.commonName
+            ? {
+                scientificName: (parsed.scientificName || '').trim(),
+                commonName: (
+                  parsed.commonName ||
+                  parsed.scientificName ||
+                  ''
+                ).trim(),
+                confidence:
+                  typeof parsed.confidence === 'number'
+                    ? Math.min(Math.max(parsed.confidence, 0), 1)
+                    : 0.85,
+                family: parsed.family?.trim() || null,
+                description: parsed.description?.trim() || null,
+                healthObservation: parsed.observedHealth?.trim() || null,
+              }
+            : null;
+
+        const alternativeCandidates: PlantIdentificationCandidate[] =
+          Array.isArray(parsed.alternativeCandidates)
+            ? parsed.alternativeCandidates
+                .filter((c) => Boolean(c.scientificName || c.commonName))
+                .map((c) => ({
+                  scientificName: (c.scientificName || '').trim(),
+                  commonName: (c.commonName || c.scientificName || '').trim(),
+                  confidence:
+                    typeof c.confidence === 'number'
+                      ? Math.min(Math.max(c.confidence, 0), 1)
+                      : 0.5,
+                }))
+            : [];
+
         return {
           success: true,
-          isPlant: false,
-          notes: parsed.notes || 'La imagen no parece ser una planta o árbol.',
+          isPlant: true,
+          primaryCandidate,
+          alternativeCandidates,
+          observedHealth: parsed.observedHealth?.trim() || null,
+          notes: parsed.notes?.trim() || null,
         };
+      } catch (err: unknown) {
+        clearTimeout(timer);
+        const isAbort =
+          err instanceof Error &&
+          (err.name === 'AbortError' || err.message?.includes('aborted'));
+        lastError = isAbort
+          ? `Tiempo de espera agotado en modelo ${model}.`
+          : 'Error de conexión con el servicio de IA.';
       }
-
-      const primaryCandidate: PlantIdentificationCandidate | null =
-        parsed.scientificName || parsed.commonName
-          ? {
-              scientificName: (parsed.scientificName || '').trim(),
-              commonName: (parsed.commonName || parsed.scientificName || '').trim(),
-              confidence:
-                typeof parsed.confidence === 'number'
-                  ? Math.min(Math.max(parsed.confidence, 0), 1)
-                  : 0.85,
-              family: parsed.family?.trim() || null,
-              description: parsed.description?.trim() || null,
-              healthObservation: parsed.observedHealth?.trim() || null,
-            }
-          : null;
-
-      const alternativeCandidates: PlantIdentificationCandidate[] =
-        Array.isArray(parsed.alternativeCandidates)
-          ? parsed.alternativeCandidates
-              .filter(
-                (c) => Boolean(c.scientificName || c.commonName)
-              )
-              .map((c) => ({
-                scientificName: (c.scientificName || '').trim(),
-                commonName: (c.commonName || c.scientificName || '').trim(),
-                confidence:
-                  typeof c.confidence === 'number'
-                    ? Math.min(Math.max(c.confidence, 0), 1)
-                    : 0.5,
-              }))
-          : [];
-
-      return {
-        success: true,
-        isPlant: true,
-        primaryCandidate,
-        alternativeCandidates,
-        observedHealth: parsed.observedHealth?.trim() || null,
-        notes: parsed.notes?.trim() || null,
-      };
-    } catch (err: unknown) {
-      clearTimeout(timer);
-      const isAbort =
-        err instanceof Error &&
-        (err.name === 'AbortError' || err.message?.includes('aborted'));
-      return {
-        success: false,
-        isPlant: false,
-        error: isAbort
-          ? 'Tiempo de espera agotado al consultar la IA de identificación.'
-          : 'No se pudo conectar con el servicio de IA.',
-      };
     }
+
+    // If all models failed
+    const friendlyError =
+      lastError?.includes('demand') || lastError?.includes('503')
+        ? 'El servicio de IA está experimentando una alta demanda temporal. Por favor, reintentá en unos segundos.'
+        : lastError || 'No se pudo conectar con el servicio de IA.';
+
+    return {
+      success: false,
+      isPlant: false,
+      error: friendlyError,
+    };
   }
 }

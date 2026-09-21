@@ -96,6 +96,56 @@ describe('GeminiPlantIdentificationService', () => {
     );
   });
 
+  it('automatically falls back to secondary model when primary model returns 503 high demand', async () => {
+    const mockSuccessJson = {
+      candidates: [
+        {
+          content: {
+            parts: [
+              {
+                text: JSON.stringify({
+                  isPlant: true,
+                  scientificName: 'Persea americana',
+                  commonName: 'Palta',
+                  confidence: 0.92,
+                }),
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        json: async () => ({
+          error: { message: 'This model is currently experiencing high demand.' },
+        }),
+      } as unknown as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockSuccessJson,
+      } as unknown as Response);
+
+    const service = new GeminiPlantIdentificationService({
+      apiKey: 'valid-test-key',
+    });
+
+    const result = await service.identifyPlant(
+      Buffer.from('test-image-data'),
+      'image/jpeg'
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.isPlant).toBe(true);
+    expect(result.primaryCandidate?.scientificName).toBe('Persea americana');
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
   it('handles non-plant image detections properly', async () => {
     const mockGeminiJson = {
       candidates: [
@@ -156,11 +206,18 @@ describe('GeminiPlantIdentificationService', () => {
     expect(result.error).toContain('API key not valid');
   });
 
-  it('handles network / timeout aborts', async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error('The operation was aborted'));
+  it('returns friendly message when all models experience high demand', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: async () => ({
+        error: { message: 'This model is currently experiencing high demand.' },
+      }),
+    } as unknown as Response);
 
     const service = new GeminiPlantIdentificationService({
       apiKey: 'valid-key',
+      fallbackModels: ['model-1', 'model-2'],
     });
 
     const result = await service.identifyPlant(
@@ -169,6 +226,6 @@ describe('GeminiPlantIdentificationService', () => {
     );
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain('Tiempo de espera agotado');
+    expect(result.error).toContain('alta demanda temporal');
   });
 });

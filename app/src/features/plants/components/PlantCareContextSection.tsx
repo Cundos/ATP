@@ -94,13 +94,21 @@ export const PlantCareContextSection: React.FC<PlantCareContextSectionProps> = (
   const batteryVal = current_conditions.battery.value;
 
   // Format photo date
-  const lastPhotoAt = recent_context.last_photo_at
-    ? new Intl.DateTimeFormat('es-AR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      }).format(new Date(recent_context.last_photo_at))
-    : 'Sin fotos';
+  let lastPhotoAt = 'Sin fotos';
+  if (recent_context?.last_photo_at) {
+    try {
+      const parsed = new Date(recent_context.last_photo_at);
+      if (!isNaN(parsed.getTime())) {
+        lastPhotoAt = new Intl.DateTimeFormat('es-AR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        }).format(parsed);
+      }
+    } catch {
+      lastPhotoAt = 'Sin fotos';
+    }
+  }
 
   return (
     <section

@@ -6,11 +6,15 @@ import { AlertCircle, RefreshCw, ArrowLeft } from 'lucide-react';
 import { Button, EmptyState } from '@/components/ui';
 
 export default function PlantDetailError({
+  error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  React.useEffect(() => {
+    console.error('[PlantDetailError Caught]:', error);
+  }, [error]);
   return (
     <section>
       <div style={{ marginBottom: '24px' }}>

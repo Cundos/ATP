@@ -47,9 +47,15 @@ export default async function PlantDetailPage({ params }: PlantDetailPageProps) 
   }
 
   // Parse server-side to sanitize botanical reference ViewModel (zero raw_data / UUID leakage)
-  const botanicalReference = plant.reference
-    ? parseBotanicalReferenceViewModel(plant.reference)
-    : null;
+  let botanicalReference = null;
+  if (plant.reference) {
+    try {
+      botanicalReference = parseBotanicalReferenceViewModel(plant.reference);
+    } catch (e) {
+      console.error('[PlantDetailPage] Error parsing botanical reference:', e);
+      botanicalReference = null;
+    }
+  }
 
   // Retrieve server-side live telemetry from Home Assistant if binding exists
   let liveTelemetry: PlantLiveTelemetryDTO | null = null;

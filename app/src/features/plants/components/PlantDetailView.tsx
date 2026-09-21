@@ -64,15 +64,23 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
         ? parseBotanicalReferenceViewModel(plant.reference)
         : null;
 
-  // Formateo de fecha de adquisición
-  const formattedAcquisitionDate = plant.acquisition_date
-    ? new Intl.DateTimeFormat('es-AR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        timeZone: 'UTC',
-      }).format(new Date(plant.acquisition_date))
-    : 'No declarada';
+  // Formateo de fecha de adquisición seguro
+  let formattedAcquisitionDate = 'No declarada';
+  if (plant.acquisition_date) {
+    try {
+      const parsed = new Date(plant.acquisition_date);
+      if (!isNaN(parsed.getTime())) {
+        formattedAcquisitionDate = new Intl.DateTimeFormat('es-AR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          timeZone: 'UTC',
+        }).format(parsed);
+      }
+    } catch {
+      formattedAcquisitionDate = 'No declarada';
+    }
+  }
 
   // Ubicación actual o histórica
   const locationName = plant.location?.name ?? 'Sin ubicación';

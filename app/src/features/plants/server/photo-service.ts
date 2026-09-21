@@ -59,11 +59,10 @@ export async function uploadAndRegisterPlantPhoto(
 
   let imageProcessor = deps?.imageProcessor;
   if (!imageProcessor) {
-    // Dynamic import to avoid bundling sharp in routes that don't execute photo processing
-    const factoryModule = await import(
-      /* webpackIgnore: true */ '@/infrastructure/image/imageProcessingFactory'
+    const { createImageProcessingService } = await import(
+      '@/infrastructure/image/imageProcessingFactory'
     );
-    imageProcessor = await factoryModule.createImageProcessingService();
+    imageProcessor = await createImageProcessingService();
   }
   const fileStorage = deps?.fileStorage || getFileStorageService();
   const photoRepo = deps?.photoRepo || new PrismaPhotoRepository();

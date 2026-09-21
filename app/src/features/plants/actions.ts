@@ -444,6 +444,7 @@ export async function addPlantPhotoAction(
       message: 'Fotografía agregada a la evolución del ejemplar.',
     };
   } catch (error: unknown) {
+    console.error('[addPlantPhotoAction Error]:', error);
     return mapActionError(error, 'Error al subir la fotografía.');
   }
 }

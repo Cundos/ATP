@@ -95,37 +95,46 @@ export default async function PlantDetailPage({ params }: PlantDetailPageProps) 
   }
 
   // Sanitize client-side plant entity and recent events to prevent leaking Home Assistant entity IDs into client RSC bundle
-  const clientPlant: PlantEntity = {
-    ...plant,
-    ha_binding: undefined,
-  };
+  // NOTE: JSON round-trip converts Date objects → ISO strings, safe for RSC serialization across the Server/Client boundary.
+  const clientPlant: PlantEntity = JSON.parse(
+    JSON.stringify({
+      ...plant,
+      ha_binding: undefined,
+    })
+  );
 
-  const sanitizedRecentEvents: PlantOperationalEventEntity[] = (recentEvents || []).map((evt) => ({
-    ...evt,
-    event_key: '',
-    metadata: null,
-  }));
+  const sanitizedRecentEvents: PlantOperationalEventEntity[] = JSON.parse(
+    JSON.stringify(
+      (recentEvents || []).map((evt) => ({
+        ...evt,
+        event_key: '',
+        metadata: null,
+      }))
+    )
+  );
 
   const sanitizedCareContext: PlantCareContextDTO | null = careContext
-    ? {
-        ...careContext,
-        recent_context: careContext.recent_context
-          ? {
-              ...careContext.recent_context,
-              last_operational_events: (
-                careContext.recent_context.last_operational_events || []
-              ).map((evt) => ({
-                ...evt,
-                event_key: '',
-                metadata: null,
-              })),
-            }
-          : {
-              last_operational_events: [],
-              last_photo_at: null,
-              recent_photo_caption: null,
-            },
-      }
+    ? JSON.parse(
+        JSON.stringify({
+          ...careContext,
+          recent_context: careContext.recent_context
+            ? {
+                ...careContext.recent_context,
+                last_operational_events: (
+                  careContext.recent_context.last_operational_events || []
+                ).map((evt) => ({
+                  ...evt,
+                  event_key: '',
+                  metadata: null,
+                })),
+              }
+            : {
+                last_operational_events: [],
+                last_photo_at: null,
+                recent_photo_caption: null,
+              },
+        })
+      )
     : null;
 
   return (
@@ -140,6 +149,7 @@ export default async function PlantDetailPage({ params }: PlantDetailPageProps) 
     </section>
   );
 }
+
 
 
 

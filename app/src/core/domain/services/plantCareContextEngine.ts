@@ -266,7 +266,15 @@ export function evaluatePlantCareContext(input: EvaluateCareContextInput): Plant
     },
     recent_context: {
       last_operational_events: recentEvents,
-      last_photo_at: effectivePhotoDate ? new Date(effectivePhotoDate).toISOString() : null,
+      last_photo_at: (() => {
+        if (!effectivePhotoDate) return null;
+        try {
+          const d = new Date(effectivePhotoDate);
+          return isNaN(d.getTime()) ? null : d.toISOString();
+        } catch {
+          return null;
+        }
+      })(),
       recent_photo_caption: latestPhoto?.caption || null,
     },
     assessment: {

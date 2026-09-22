@@ -73,4 +73,24 @@ describe('PhotoTimeline Domain Service', () => {
     const sortedAsc = sortPhotosChronologically([p1, p2, p3], 'asc');
     expect(sortedAsc.map((p) => p.id)).toEqual(['p1', 'p3', 'p2']);
   });
+
+  it('handles invalid or string serialized dates without throwing RangeError', () => {
+    const photoWithStringDates = {
+      ...basePhoto,
+      created_at: '2026-02-15T00:00:00.000Z' as unknown as Date,
+      taken_at: 'invalid-date' as unknown as Date,
+    };
+
+    expect(() => getPhotoEffectiveDate(photoWithStringDates)).not.toThrow();
+    expect(() => formatPhotoDate(photoWithStringDates)).not.toThrow();
+    expect(formatPhotoDate(photoWithStringDates)).toContain('2026');
+
+    const photoWithTotallyCorruptedDates = {
+      ...basePhoto,
+      created_at: 'bad-date' as unknown as Date,
+      taken_at: undefined,
+      captured_at: undefined,
+    };
+    expect(() => formatPhotoDate(photoWithTotallyCorruptedDates)).not.toThrow();
+  });
 });

@@ -57,7 +57,11 @@ export const PlantPhotoLightboxModal: React.FC<PlantPhotoLightboxModalProps> = (
 
   const startEditMode = () => {
     const effDate = getPhotoEffectiveDate(photo);
-    setEditDate(effDate.toISOString().split('T')[0]);
+    try {
+      setEditDate(!isNaN(effDate.getTime()) ? effDate.toISOString().split('T')[0] : '');
+    } catch {
+      setEditDate('');
+    }
     setEditCaption(photo.caption || '');
     setIsEditing(true);
     setErrorMessage(null);

@@ -42,7 +42,11 @@ export default function PlantDetailError({
       <EmptyState
         icon={<AlertCircle size={32} />}
         title="No pudimos cargar la ficha de la planta"
-        description="Ocurrió un problema de conexión al recuperar los datos del ejemplar. Por favor, intenta nuevamente."
+        description={
+          error?.message
+            ? `Detalle técnico: ${error.message}${error.digest ? ` (Digest: ${error.digest})` : ''}`
+            : 'Ocurrió un problema de conexión al recuperar los datos del ejemplar. Por favor, intenta nuevamente.'
+        }
         action={
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
             <Button onClick={() => reset()} leftIcon={<RefreshCw size={18} />}>

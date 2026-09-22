@@ -64,7 +64,7 @@ export class SharpImageProcessingService implements IImageProcessingService {
     try {
       const { default: sharp } = await import('sharp');
       const pipeline = sharp(inputBuffer, {
-        failOn: 'warning',
+        failOn: 'error',
         // Limit input pixels to ~268 megapixels to guard against decompression bombs
         limitInputPixels: 268402689,
       })

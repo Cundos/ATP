@@ -10,7 +10,16 @@ export interface UsePhotoPickerOptions {
 }
 
 export const DEFAULT_MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB
-export const DEFAULT_ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+export const DEFAULT_ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+  'image/avif',
+];
 
 export function usePhotoPicker(options: UsePhotoPickerOptions = {}) {
   const {
@@ -111,7 +120,11 @@ export function usePhotoPicker(options: UsePhotoPickerOptions = {}) {
 
   const validateAndProcessFile = useCallback(
     (file: File): boolean => {
-      if (!allowedMimeTypes.includes(file.type)) {
+      const isAllowedMime = allowedMimeTypes.includes(file.type);
+      const hasImageExt = /\.(jpe?g|png|webp|heic|heif|avif)$/i.test(file.name || '');
+      const isGenericOrEmpty = !file.type || file.type === 'application/octet-stream' || file.type.startsWith('image/');
+
+      if (!isAllowedMime && !(hasImageExt && isGenericOrEmpty)) {
         setClientError('Formato no compatible. Usá archivos JPEG, PNG o WebP.');
         return false;
       }

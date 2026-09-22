@@ -445,7 +445,8 @@ export async function addPlantPhotoAction(
     };
   } catch (error: unknown) {
     console.error('[addPlantPhotoAction Error]:', error);
-    return mapActionError(error, 'Error al subir la fotografía.');
+    const errMessage = error instanceof Error ? error.message : String(error);
+    return mapActionError(error, `Error al subir la fotografía: ${errMessage}`);
   }
 }
 

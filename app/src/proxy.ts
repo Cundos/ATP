@@ -52,6 +52,12 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     return applySecurityHeaders(NextResponse.next());
   }
 
+  // TEMPORARY: debug endpoints — remove after diagnosing
+  if (pathname.startsWith('/api/debug/')) {
+    return applySecurityHeaders(NextResponse.next());
+  }
+
+
   // 2. Check session validity (fail-closed if AUTH_SECRET is not configured)
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   const isAuthenticated = await verifySessionToken(sessionCookie);

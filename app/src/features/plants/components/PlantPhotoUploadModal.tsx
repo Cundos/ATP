@@ -32,6 +32,7 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
   });
   const [caption, setCaption] = useState<string>('');
   const [makePrimary, setMakePrimary] = useState<boolean>(!hasExistingPhotos);
+  const [isNativeDetected, setIsNativeDetected] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const resetForm = () => {
@@ -50,6 +51,15 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log('[PlantPhotoUploadModal] Before submit:', {
+      hasSelectedFile: selectedFile !== null,
+      fileName: selectedFile?.name,
+      fileType: selectedFile?.type,
+      fileSize: selectedFile?.size,
+      isNative: isNativeDetected,
+    });
+
     if (!selectedFile) {
       setErrorMessage('Por favor seleccioná una fotografía para subir.');
       return;
@@ -91,6 +101,12 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
           return;
         }
 
+        console.error('[PlantPhotoUploadModal] Upload failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          data,
+        });
+
         // Map explicit HTTP error statuses to user-friendly messages in Spanish
         if (response.status === 413) {
           setErrorMessage('La imagen supera el tamaño máximo permitido (20 MB).');
@@ -125,6 +141,8 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
               Cancelar
             </Button>
             <Button
+              form="plant-photo-upload-form"
+              type="submit"
               variant="primary"
               onClick={handleSubmit}
               isLoading={isPending}
@@ -136,7 +154,7 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
           </>
         }
       >
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form id="plant-photo-upload-form" onSubmit={handleSubmit} className={styles.form}>
           {errorMessage && (
             <div className={styles.errorBanner} role="alert">
               {errorMessage}
@@ -149,6 +167,7 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
                 setSelectedFile(file);
                 if (file && errorMessage) setErrorMessage(null);
               }}
+              onNativeDetected={setIsNativeDetected}
               disabled={isPending}
             />
           </div>

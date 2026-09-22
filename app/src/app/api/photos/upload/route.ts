@@ -104,14 +104,43 @@ export async function POST(request: Request) {
       );
     }
 
-    // 5. Validate MIME type
-    const mimeType = fileEntry.type ? fileEntry.type.toLowerCase() : '';
+    // 5. Validate and Normalize MIME type
+    let mimeType = fileEntry.type ? fileEntry.type.toLowerCase().trim() : '';
+    if (mimeType === 'image/jpg') {
+      mimeType = 'image/jpeg';
+    }
+
+    // Mobile fallback: if browser sent empty, generic, or octet-stream MIME, infer from filename extension
+    const fileName = 'name' in fileEntry && typeof (fileEntry as { name?: unknown }).name === 'string'
+      ? (fileEntry as { name: string }).name.toLowerCase()
+      : '';
+
+    if (!mimeType || mimeType === 'application/octet-stream' || mimeType === 'image/*') {
+      if (/\.(jpe?g)$/i.test(fileName)) {
+        mimeType = 'image/jpeg';
+      } else if (/\.png$/i.test(fileName)) {
+        mimeType = 'image/png';
+      } else if (/\.webp$/i.test(fileName)) {
+        mimeType = 'image/webp';
+      }
+    }
+
     if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
+      const isHeicOrHeif = mimeType.includes('heic') || mimeType.includes('heif') || /\.(heic|heif)$/i.test(fileName);
+      const isAvif = mimeType.includes('avif') || /\.avif$/i.test(fileName);
+
+      let customMsg = `MIME type '${mimeType || 'unknown'}' is not supported. Allowed types: image/jpeg, image/png, image/webp.`;
+      if (isHeicOrHeif) {
+        customMsg = 'El formato HEIC/HEIF de Apple no es compatible directamente. Por favor convertí la imagen o configurala como JPEG en tu cámara.';
+      } else if (isAvif) {
+        customMsg = 'El formato AVIF no es compatible. Por favor usá JPEG, PNG o WebP.';
+      }
+
       return NextResponse.json(
         {
           error: {
             code: 'UNSUPPORTED_MEDIA_TYPE',
-            message: `MIME type '${mimeType || 'unknown'}' is not supported. Allowed types: image/jpeg, image/png, image/webp.`,
+            message: customMsg,
           },
         },
         { status: 415 }

@@ -9,6 +9,7 @@ import styles from './PhotoUpload.module.css';
 export interface PhotoUploadProps {
   currentPhotoUrl?: string | null;
   onFileSelect?: (file: File | null) => void;
+  onNativeDetected?: (isNative: boolean) => void;
   disabled?: boolean;
   name?: string;
 }
@@ -16,6 +17,7 @@ export interface PhotoUploadProps {
 export const PhotoUpload: React.FC<PhotoUploadProps> = ({
   currentPhotoUrl,
   onFileSelect,
+  onNativeDetected,
   disabled = false,
   name = 'photo',
 }) => {
@@ -35,6 +37,10 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
     onFileSelect,
     disabled,
   });
+
+  React.useEffect(() => {
+    onNativeDetected?.(isNative);
+  }, [isNative, onNativeDetected]);
 
   const [isChoiceModalOpen, setIsChoiceModalOpen] = useState<boolean>(false);
 

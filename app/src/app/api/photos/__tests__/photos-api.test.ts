@@ -210,9 +210,44 @@ describe('Photo API Route Handlers (ATP-IMP-018)', () => {
       expect(data.error.code).toBe('UNSUPPORTED_MEDIA_TYPE');
     });
 
+    it('falls back to filename extension when mobile browser sends empty or generic MIME type', async () => {
+      const img = await createSampleImage('jpeg', 100, 100);
+      const formData = new FormData();
+      // Empty MIME type but filename with .jpg
+      formData.append('file', new File([new Uint8Array(img)], 'camera_photo.jpg', { type: '' }));
+      formData.append('permanentCode', 'AT-PL-001');
+
+      const req = new Request('http://localhost:3000/api/photos/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const response = await POST(req);
+      expect(response.status).toBe(201);
+      const data = await response.json();
+      expect(data.storageKey).toMatch(/^photos\/AT-PL-001\/[a-f0-9\-]+\.webp$/);
+    });
+
+    it('normalizes image/jpg MIME type to image/jpeg', async () => {
+      const img = await createSampleImage('jpeg', 100, 100);
+      const fakeFile = new Blob([new Uint8Array(img)], { type: 'image/jpg' });
+      const req = createMultipartRequest({ file: fakeFile, permanentCode: 'AT-PL-001' });
+      const response = await POST(req);
+      expect(response.status).toBe(201);
+    });
+
+    it('returns a descriptive 415 message for HEIC/HEIF files', async () => {
+      const fakeHeic = new Blob(['heic-content'], { type: 'image/heic' });
+      const req = createMultipartRequest({ file: fakeHeic, permanentCode: 'AT-PL-001' });
+      const response = await POST(req);
+      expect(response.status).toBe(415);
+      const data = await response.json();
+      expect(data.error.message).toContain('HEIC/HEIF');
+    });
+
     it('rejects files exceeding 20MB with 413', async () => {
       // Create a dummy Blob with size > 20MB without allocating real memory
-      const largeBlob = new Blob([Buffer.alloc(21 * 1024 * 1024)], { type: 'image/jpeg' });
+      const largeBlob = new Blob([new Uint8Array(Buffer.alloc(21 * 1024 * 1024))], { type: 'image/jpeg' });
 
       const formData = new FormData();
       formData.append('file', largeBlob, 'big.jpg');

@@ -32,16 +32,9 @@ export function usePhotoPicker(options: UsePhotoPickerOptions = {}) {
   const getIsNativeSynchronous = (): boolean => {
     if (typeof window === 'undefined') return false;
     const win = window as unknown as {
-      Capacitor?: { isNativePlatform?: () => boolean; isNative?: boolean; getPlatform?: () => string };
-      androidBridge?: unknown;
+      Capacitor?: { isNativePlatform?: () => boolean };
     };
-    if (win.androidBridge || win.Capacitor?.isNative) return true;
-    if (typeof win.Capacitor?.isNativePlatform === 'function') return win.Capacitor.isNativePlatform();
-    if (typeof win.Capacitor?.getPlatform === 'function') {
-      const p = win.Capacitor.getPlatform();
-      return p === 'android' || p === 'ios';
-    }
-    return false;
+    return typeof win.Capacitor?.isNativePlatform === 'function' && win.Capacitor.isNativePlatform() === true;
   };
 
   const [isNative, setIsNative] = useState<boolean>(getIsNativeSynchronous);

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -467,6 +467,120 @@ describe('Photo API Route Handlers (ATP-IMP-018)', () => {
       expect(metadata.format).toBe('webp');
       expect(metadata.width).toBe(500);
       expect(metadata.height).toBe(400);
+    });
+
+    it('successfully registers photo in DB when plantId and metadata are provided', async () => {
+      const { setPlantRepository, setPhotoRepository } = await import('@/infrastructure/services');
+      const mockPlant = {
+        id: 'test-plant-uuid-1',
+        permanent_code: 'AT-PL-005',
+        common_name: 'Calathea',
+      };
+      const mockPhoto = {
+        id: 'test-photo-uuid-1',
+        plant_id: mockPlant.id,
+        file_path: 'photos/AT-PL-005/test.webp',
+        is_primary: true,
+      };
+
+      const mockPlantRepo = {
+        findById: vi.fn().mockResolvedValue(mockPlant),
+        findByPermanentCode: vi.fn().mockResolvedValue(mockPlant),
+        findAll: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+        getNextSequenceValue: vi.fn(),
+      };
+      const mockPhotoRepo = {
+        findById: vi.fn(),
+        findByFilePath: vi.fn(),
+        listByPlant: vi.fn(),
+        findPrimaryByPlant: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockResolvedValue(mockPhoto),
+        updateMetadata: vi.fn(),
+        setPrimary: vi.fn(),
+        delete: vi.fn(),
+      };
+
+      setPlantRepository(mockPlantRepo as unknown as typeof mockPlantRepo & Parameters<typeof setPlantRepository>[0]);
+      setPhotoRepository(mockPhotoRepo as unknown as typeof mockPhotoRepo & Parameters<typeof setPhotoRepository>[0]);
+
+      const img = await createSampleImage('jpeg', 100, 100);
+      const req = createMultipartRequest({
+        photo: new Blob([new Uint8Array(img)], { type: 'image/jpeg' }),
+        plantId: 'test-plant-uuid-1',
+        caption: 'Brote de primavera',
+        make_primary: 'true',
+      });
+
+      const response = await POST(req);
+      expect(response.status).toBe(201);
+      const data = await response.json();
+      expect(data.success).toBe(true);
+      expect(data.photo).toBeDefined();
+      expect(mockPhotoRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          plant_id: 'test-plant-uuid-1',
+          caption: 'Brote de primavera',
+          is_primary: true,
+        })
+      );
+
+      // Clean up mock repositories
+      setPlantRepository(null);
+      setPhotoRepository(null);
+    });
+
+    it('performs compensatory cleanup deleting storage file if DB registration fails', async () => {
+      const { setPlantRepository, setPhotoRepository } = await import('@/infrastructure/services');
+      const mockPlant = {
+        id: 'test-plant-uuid-2',
+        permanent_code: 'AT-PL-006',
+        common_name: 'Pothos',
+      };
+
+      const mockPlantRepo = {
+        findById: vi.fn().mockResolvedValue(mockPlant),
+        findByPermanentCode: vi.fn().mockResolvedValue(mockPlant),
+        findAll: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+        getNextSequenceValue: vi.fn(),
+      };
+      const mockPhotoRepo = {
+        findById: vi.fn(),
+        findByFilePath: vi.fn(),
+        listByPlant: vi.fn(),
+        findPrimaryByPlant: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockRejectedValue(new Error('Postgres connection lost')),
+        updateMetadata: vi.fn(),
+        setPrimary: vi.fn(),
+        delete: vi.fn(),
+      };
+
+      setPlantRepository(mockPlantRepo as unknown as typeof mockPlantRepo & Parameters<typeof setPlantRepository>[0]);
+      setPhotoRepository(mockPhotoRepo as unknown as typeof mockPhotoRepo & Parameters<typeof setPhotoRepository>[0]);
+
+      const deleteFileSpy = vi.spyOn(localStorage, 'deleteFile');
+
+      const img = await createSampleImage('jpeg', 100, 100);
+      const req = createMultipartRequest({
+        file: new Blob([new Uint8Array(img)], { type: 'image/jpeg' }),
+        plantId: 'test-plant-uuid-2',
+        caption: 'Prueba fallo',
+      });
+
+      const response = await POST(req);
+      expect(response.status).toBe(500);
+      const data = await response.json();
+      expect(data.error.code).toBe('REGISTRATION_FAILED');
+      expect(deleteFileSpy).toHaveBeenCalledTimes(1);
+
+      // Clean up mock repositories
+      setPlantRepository(null);
+      setPhotoRepository(null);
     });
   });
 

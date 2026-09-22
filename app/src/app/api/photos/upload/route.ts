@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { isValidPermanentCode } from '@/core/domain/permanent-code';
 import { buildPhotoStorageKey } from '@/core/domain/services';
-import { generateUuid } from '@/core/domain/uuid';
+import { generateUUIDv7 } from '@/core/domain/uuid';
 import { ImageProcessingError, StorageUnavailableError } from '@/core/domain/errors';
-import { getFileStorageService } from '@/infrastructure/services';
+import { getFileStorageService, getPlantRepository, getPhotoRepository } from '@/infrastructure/services';
 import { createImageProcessingService } from '@/infrastructure/image/imageProcessingFactory';
+import { RegisterPlantPhotoUseCase } from '@/core/application/use-cases/RegisterPlantPhotoUseCase';
 
 export const runtime = 'nodejs';
 
@@ -33,8 +35,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Extract and validate file
-    const fileEntry = formData.get('file');
+    // 3. Extract and validate file (accept both 'file' and 'photo' keys)
+    const fileEntry = formData.get('file') || formData.get('photo');
     if (!fileEntry) {
       return NextResponse.json(
         { error: { code: 'MISSING_FILE', message: 'The file field is required.' } },
@@ -56,16 +58,45 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4. Extract and validate permanentCode
-    const permanentCode = formData.get('permanentCode');
-    if (!permanentCode || typeof permanentCode !== 'string') {
+    // 4. Extract and resolve plant identifiers (plantId and/or permanentCode)
+    const plantIdInput = formData.get('plantId');
+    const permanentCodeInput = formData.get('permanentCode');
+
+    let resolvedPlantId: string | undefined =
+      typeof plantIdInput === 'string' && plantIdInput.trim() !== '' ? plantIdInput.trim() : undefined;
+    let resolvedPermanentCode: string | undefined =
+      typeof permanentCodeInput === 'string' && permanentCodeInput.trim() !== '' ? permanentCodeInput.trim() : undefined;
+
+    const plantRepo = getPlantRepository();
+
+    if (!resolvedPermanentCode && resolvedPlantId) {
+      try {
+        const plant = await plantRepo.findById(resolvedPlantId);
+        if (plant) {
+          resolvedPermanentCode = plant.permanent_code;
+        }
+      } catch (err) {
+        console.warn('[upload photo] Could not resolve plant by plantId:', err);
+      }
+    } else if (resolvedPermanentCode && !resolvedPlantId) {
+      try {
+        const plant = await plantRepo.findByPermanentCode(resolvedPermanentCode);
+        if (plant) {
+          resolvedPlantId = plant.id;
+        }
+      } catch {
+        // Ignored, plant may not exist in DB during unit tests
+      }
+    }
+
+    if (!resolvedPermanentCode) {
       return NextResponse.json(
         { error: { code: 'MISSING_PERMANENT_CODE', message: 'The permanentCode field is required.' } },
         { status: 400 }
       );
     }
 
-    const trimmedCode = permanentCode.trim();
+    const trimmedCode = resolvedPermanentCode.trim();
     if (!isValidPermanentCode(trimmedCode)) {
       return NextResponse.json(
         { error: { code: 'INVALID_PERMANENT_CODE', message: 'The permanentCode format is invalid (must be AT-PL-XXX).' } },
@@ -135,7 +166,7 @@ export async function POST(request: Request) {
     }
 
     // 9. Generate fileId and build server-side storageKey
-    const fileId = generateUuid();
+    const fileId = generateUUIDv7();
     const storageKey = buildPhotoStorageKey(trimmedCode, fileId, 'webp');
 
     // 10. Persist to storage backend and resolve URL
@@ -156,19 +187,95 @@ export async function POST(request: Request) {
 
     const url = storageService.resolveUrl(storageKey);
 
-    // 11. Return HTTP 201 Created
+    // 11. Parse evolution photo metadata if provided
+    const takenAtStr = formData.get('taken_at');
+    let takenAt: Date | null = null;
+    if (typeof takenAtStr === 'string' && takenAtStr.trim() !== '') {
+      const parsed = new Date(takenAtStr);
+      if (!isNaN(parsed.getTime())) {
+        takenAt = parsed;
+      }
+    }
+
+    const captionInput = formData.get('caption');
+    const caption = typeof captionInput === 'string' && captionInput.trim() !== '' ? captionInput.trim() : null;
+
+    const makePrimaryInput = formData.get('make_primary');
+    const makePrimary = makePrimaryInput === 'true' || makePrimaryInput === 'on';
+
+    const originalFileName = (fileEntry as { name?: string }).name || `${fileId}.webp`;
+
+    // 12. Atomic DB registration if plant exists or identifiers provided
+    let registeredPhoto = null;
+    if (resolvedPlantId || formData.has('taken_at') || formData.has('caption') || formData.has('make_primary')) {
+      try {
+        const photoRepo = getPhotoRepository();
+        const registerUseCase = new RegisterPlantPhotoUseCase(plantRepo, photoRepo);
+
+        registeredPhoto = await registerUseCase.execute({
+          plant_id: resolvedPlantId,
+          permanent_code: trimmedCode,
+          storage_key: storageKey,
+          file_name: originalFileName,
+          mime_type: 'image/webp',
+          file_size: processedResult.size,
+          width: processedResult.width,
+          height: processedResult.height,
+          make_primary: makePrimary,
+          taken_at: takenAt,
+          caption,
+        });
+
+        // Revalidate affected cache paths only when a photo was registered
+        if (registeredPhoto) {
+          try {
+            revalidatePath('/');
+            revalidatePath('/inventory');
+            revalidatePath(`/plants/${trimmedCode}`);
+            if (resolvedPlantId) {
+              revalidatePath(`/plants/${resolvedPlantId}`);
+            }
+          } catch {
+            // Ignored in non-Next runtime/test environments where static store is absent
+          }
+        }
+      } catch (dbError) {
+        console.error('[upload photo] DB registration failed, executing compensatory storage rollback:', dbError);
+        // Compensatory cleanup: delete newly saved file from storage
+        try {
+          await storageService.deleteFile(storageKey);
+        } catch (cleanupErr) {
+          console.error('[upload photo] Compensatory storage delete error:', cleanupErr);
+        }
+
+        return NextResponse.json(
+          {
+            error: {
+              code: 'REGISTRATION_FAILED',
+              message: dbError instanceof Error ? dbError.message : 'Error al registrar los metadatos de la fotografía.',
+            },
+          },
+          { status: 500 }
+        );
+      }
+    }
+
+    // 13. Return HTTP 201 Created
     return NextResponse.json(
       {
+        success: true,
         storageKey,
         url,
         mimeType: 'image/webp',
         width: processedResult.width,
         height: processedResult.height,
         size: processedResult.size,
+        photo: registeredPhoto,
       },
       { status: 201 }
     );
-  } catch {
+  } catch (unexpectedError) {
+    console.error('[upload photo] Unexpected error:', unexpectedError);
     return NextResponse.json(
       { error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred.' } },
       { status: 500 }

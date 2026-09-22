@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Calendar, FileText, CheckCircle2 } from 'lucide-react';
 import { Modal, Button } from '@/components/ui';
 import { PhotoUpload } from './PhotoUpload';
-import { addPlantPhotoAction } from '../actions';
 import styles from './PlantPhotoUploadModal.module.css';
 
 export interface PlantPhotoUploadModalProps {
@@ -58,7 +57,9 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
 
     setErrorMessage(null);
     const formData = new FormData();
-    formData.append('photo', selectedFile);
+    formData.append('file', selectedFile);
+    formData.append('plantId', plantId);
+    formData.append('permanentCode', permanentCode);
     if (takenAt) {
       formData.append('taken_at', takenAt);
     }
@@ -70,13 +71,43 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
     }
 
     startTransition(async () => {
-      const result = await addPlantPhotoAction(plantId, null, formData);
-      if (result.success) {
-        onSuccessToast?.(result.message || 'Fotografía guardada con éxito.');
-        handleClose();
-        router.refresh();
-      } else {
-        setErrorMessage(result.message || 'No se pudo guardar la fotografía.');
+      try {
+        const response = await fetch('/api/photos/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        let data;
+        try {
+          data = await response.json();
+        } catch {
+          data = null;
+        }
+
+        if (response.ok && response.status === 201) {
+          onSuccessToast?.('Fotografía guardada con éxito.');
+          handleClose();
+          router.refresh();
+          return;
+        }
+
+        // Map explicit HTTP error statuses to user-friendly messages in Spanish
+        if (response.status === 413) {
+          setErrorMessage('La imagen supera el tamaño máximo permitido (20 MB).');
+        } else if (response.status === 415) {
+          setErrorMessage('Formato de imagen no compatible. Usá archivos JPEG, PNG o WebP.');
+        } else if (response.status === 422) {
+          setErrorMessage('La imagen no pudo ser procesada. Verificá que el archivo no esté dañado.');
+        } else if (response.status === 503) {
+          setErrorMessage('El almacenamiento de fotografías no está disponible en este momento. Intentá más tarde.');
+        } else if (data?.error?.message) {
+          setErrorMessage(data.error.message);
+        } else {
+          setErrorMessage('No se pudo guardar la fotografía. Intentá nuevamente.');
+        }
+      } catch (networkErr) {
+        console.error('[PlantPhotoUploadModal] Network error during photo upload:', networkErr);
+        setErrorMessage('Error de conexión al subir la imagen. Verificá tu red e intentá nuevamente.');
       }
     });
   };

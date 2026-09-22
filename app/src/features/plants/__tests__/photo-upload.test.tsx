@@ -5,6 +5,14 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
 import React from 'react';
 import { PhotoUpload } from '../components/PhotoUpload';
 
+const mockRefresh = vi.fn();
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    refresh: mockRefresh,
+    push: vi.fn(),
+  }),
+}));
+
 describe('PhotoUpload Component', () => {
   const originalCreateObjectURL = global.URL.createObjectURL;
   const originalRevokeObjectURL = global.URL.revokeObjectURL;
@@ -24,12 +32,12 @@ describe('PhotoUpload Component', () => {
 
     const galleryInput = container.querySelector('input[data-testid="photo-gallery-input"]') as HTMLInputElement;
     expect(galleryInput).toBeInTheDocument();
-    expect(galleryInput).toHaveAttribute('accept', 'image/jpeg,image/png,image/webp');
+    expect(galleryInput).toHaveAttribute('accept', 'image/*,.heic,.heif');
     expect(galleryInput).not.toHaveAttribute('capture');
 
     const cameraInput = container.querySelector('input[data-testid="photo-camera-input"]') as HTMLInputElement;
     expect(cameraInput).toBeInTheDocument();
-    expect(cameraInput).toHaveAttribute('accept', 'image/jpeg,image/png,image/webp');
+    expect(cameraInput).toHaveAttribute('accept', 'image/*');
     expect(cameraInput).toHaveAttribute('capture', 'environment');
   });
 
@@ -228,5 +236,126 @@ describe('PhotoUpload Component', () => {
     fireEvent.click(takePhotoBtn2);
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+});
+
+describe('PlantPhotoUploadModal Component (ATP-PHOTO-003)', () => {
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    global.fetch = vi.fn();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('uploads photo directly via fetch to /api/photos/upload and calls onSuccessToast', async () => {
+    const { PlantPhotoUploadModal } = await import('../components/PlantPhotoUploadModal');
+    const onClose = vi.fn();
+    const onSuccessToast = vi.fn();
+
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      status: 201,
+      json: async () => ({ success: true }),
+    });
+
+    const { container } = render(
+      <PlantPhotoUploadModal
+        isOpen={true}
+        onClose={onClose}
+        plantId="test-plant-id"
+        permanentCode="AT-PL-001"
+        hasExistingPhotos={false}
+        onSuccessToast={onSuccessToast}
+      />
+    );
+
+    const galleryInput = container.querySelector('input[data-testid="photo-gallery-input"]') as HTMLInputElement;
+    const testFile = new File(['fake-content'], 'plant.jpg', { type: 'image/jpeg' });
+    fireEvent.change(galleryInput, { target: { files: [testFile] } });
+
+    const submitBtn = screen.getByRole('button', { name: /guardar foto/i });
+    fireEvent.click(submitBtn);
+
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/photos/upload',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.any(FormData),
+      })
+    );
+
+    const callArgs = (global.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
+    const sentFormData = callArgs[1].body as FormData;
+    expect(sentFormData.get('file')).toBe(testFile);
+    expect(sentFormData.get('plantId')).toBe('test-plant-id');
+    expect(sentFormData.get('permanentCode')).toBe('AT-PL-001');
+
+    await new Promise((r) => setTimeout(r, 10));
+    expect(onSuccessToast).toHaveBeenCalledWith('Fotografía guardada con éxito.');
+  });
+
+  it('handles 413 Payload Too Large error cleanly with Spanish message', async () => {
+    const { PlantPhotoUploadModal } = await import('../components/PlantPhotoUploadModal');
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: false,
+      status: 413,
+      json: async () => ({ error: { code: 'PAYLOAD_TOO_LARGE' } }),
+    });
+
+    const { container } = render(
+      <PlantPhotoUploadModal
+        isOpen={true}
+        onClose={vi.fn()}
+        plantId="test-plant-id"
+        permanentCode="AT-PL-001"
+        hasExistingPhotos={true}
+      />
+    );
+
+    const galleryInput = container.querySelector('input[data-testid="photo-gallery-input"]') as HTMLInputElement;
+    const testFile = new File(['fake-content'], 'huge.jpg', { type: 'image/jpeg' });
+    fireEvent.change(galleryInput, { target: { files: [testFile] } });
+
+    const submitBtn = screen.getByRole('button', { name: /guardar foto/i });
+    fireEvent.click(submitBtn);
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(await screen.findByText(/supera el tamaño máximo permitido/i)).toBeInTheDocument();
+  });
+
+  it('handles 503 Storage Unavailable error cleanly with Spanish message', async () => {
+    const { PlantPhotoUploadModal } = await import('../components/PlantPhotoUploadModal');
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: false,
+      status: 503,
+      json: async () => ({ error: { code: 'STORAGE_UNAVAILABLE' } }),
+    });
+
+    const { container } = render(
+      <PlantPhotoUploadModal
+        isOpen={true}
+        onClose={vi.fn()}
+        plantId="test-plant-id"
+        permanentCode="AT-PL-001"
+        hasExistingPhotos={true}
+      />
+    );
+
+    const galleryInput = container.querySelector('input[data-testid="photo-gallery-input"]') as HTMLInputElement;
+    const testFile = new File(['fake-content'], 'photo.jpg', { type: 'image/jpeg' });
+    fireEvent.change(galleryInput, { target: { files: [testFile] } });
+
+    const submitBtn = screen.getByRole('button', { name: /guardar foto/i });
+    fireEvent.click(submitBtn);
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(await screen.findByText(/almacenamiento de fotografías no está disponible/i)).toBeInTheDocument();
   });
 });

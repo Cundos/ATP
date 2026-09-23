@@ -358,4 +358,34 @@ describe('PlantPhotoUploadModal Component (ATP-PHOTO-003)', () => {
 
     expect(await screen.findByText(/almacenamiento de fotografías no está disponible/i)).toBeInTheDocument();
   });
+
+  it('handles timeout/abort cleanly with Spanish message', async () => {
+    const { PlantPhotoUploadModal } = await import('../components/PlantPhotoUploadModal');
+    const abortError = new DOMException('The user aborted a request.', 'AbortError');
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(abortError);
+
+    const { container } = render(
+      <PlantPhotoUploadModal
+        isOpen={true}
+        onClose={vi.fn()}
+        plantId="test-plant-id"
+        permanentCode="AT-PL-001"
+        hasExistingPhotos={true}
+      />
+    );
+
+    const galleryInput = container.querySelector('input[data-testid="photo-gallery-input"]') as HTMLInputElement;
+    const testFile = new File(['fake-content'], 'photo.jpg', { type: 'image/jpeg' });
+    fireEvent.change(galleryInput, { target: { files: [testFile] } });
+
+    const submitBtn = screen.getByRole('button', { name: /guardar foto/i });
+    fireEvent.click(submitBtn);
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(
+      await screen.findByText(/La subida tardó demasiado y fue cancelada. Intentá nuevamente./i)
+    ).toBeInTheDocument();
+  });
 });
+

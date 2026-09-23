@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, FileText, CheckCircle2 } from 'lucide-react';
 import { Modal, Button } from '@/components/ui';
@@ -25,7 +25,7 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
   onSuccessToast,
 }) => {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isUploading, setIsUploading] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [takenAt, setTakenAt] = useState<string>(() => {
     return new Date().toISOString().split('T')[0];
@@ -44,88 +44,103 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
   };
 
   const handleClose = () => {
-    if (isPending) return;
+    if (isUploading) return;
     resetForm();
     onClose();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log('[PlantPhotoUploadModal] Before submit:', {
+    if (!selectedFile || isUploading) return;
+
+    console.log('[PhotoUpload] submit-start', {
       hasSelectedFile: selectedFile !== null,
-      fileName: selectedFile?.name,
-      fileType: selectedFile?.type,
-      fileSize: selectedFile?.size,
+      fileName: selectedFile.name,
+      fileType: selectedFile.type,
+      fileSize: selectedFile.size,
       isNative: isNativeDetected,
     });
 
-    if (!selectedFile) {
-      setErrorMessage('Por favor seleccioná una fotografía para subir.');
-      return;
-    }
-
+    setIsUploading(true);
     setErrorMessage(null);
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-    formData.append('plantId', plantId);
-    formData.append('permanentCode', permanentCode);
-    if (takenAt) {
-      formData.append('taken_at', takenAt);
-    }
-    if (caption.trim()) {
-      formData.append('caption', caption.trim());
-    }
-    if (makePrimary) {
-      formData.append('make_primary', 'true');
-    }
 
-    startTransition(async () => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45000);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('plantId', plantId);
+      formData.append('permanentCode', permanentCode);
+      if (takenAt) {
+        formData.append('taken_at', takenAt);
+      }
+      if (caption.trim()) {
+        formData.append('caption', caption.trim());
+      }
+      if (makePrimary) {
+        formData.append('make_primary', 'true');
+      }
+
+      console.log('[PhotoUpload] fetch-start');
+
+      const response = await fetch('/api/photos/upload', {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeout);
+      console.log('[PhotoUpload] fetch-response', response.status);
+
+      let data;
       try {
-        const response = await fetch('/api/photos/upload', {
-          method: 'POST',
-          body: formData,
-        });
+        data = await response.json();
+      } catch {
+        data = null;
+      }
 
-        let data;
-        try {
-          data = await response.json();
-        } catch {
-          data = null;
-        }
+      if (response.ok && response.status === 201) {
+        onSuccessToast?.('Fotografía guardada con éxito.');
+        handleClose();
+        router.refresh();
+        return;
+      }
 
-        if (response.ok && response.status === 201) {
-          onSuccessToast?.('Fotografía guardada con éxito.');
-          handleClose();
-          router.refresh();
-          return;
-        }
+      console.error('[PlantPhotoUploadModal] Upload failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        data,
+      });
 
-        console.error('[PlantPhotoUploadModal] Upload failed:', {
-          status: response.status,
-          statusText: response.statusText,
-          data,
-        });
+      // Map explicit HTTP error statuses to user-friendly messages in Spanish
+      if (response.status === 413) {
+        setErrorMessage('La imagen supera el tamaño máximo permitido (20 MB).');
+      } else if (response.status === 415) {
+        setErrorMessage('Formato de imagen no compatible. Usá archivos JPEG, PNG o WebP.');
+      } else if (response.status === 422) {
+        setErrorMessage('La imagen no pudo ser procesada. Verificá que el archivo no esté dañado.');
+      } else if (response.status === 503) {
+        setErrorMessage('El almacenamiento de fotografías no está disponible en este momento. Intentá más tarde.');
+      } else if (data?.error?.message) {
+        setErrorMessage(data.error.message);
+      } else {
+        setErrorMessage('No se pudo guardar la fotografía. Intentá nuevamente.');
+      }
+    } catch (err: unknown) {
+      clearTimeout(timeout);
+      console.error('[PhotoUpload] fetch-error', err);
 
-        // Map explicit HTTP error statuses to user-friendly messages in Spanish
-        if (response.status === 413) {
-          setErrorMessage('La imagen supera el tamaño máximo permitido (20 MB).');
-        } else if (response.status === 415) {
-          setErrorMessage('Formato de imagen no compatible. Usá archivos JPEG, PNG o WebP.');
-        } else if (response.status === 422) {
-          setErrorMessage('La imagen no pudo ser procesada. Verificá que el archivo no esté dañado.');
-        } else if (response.status === 503) {
-          setErrorMessage('El almacenamiento de fotografías no está disponible en este momento. Intentá más tarde.');
-        } else if (data?.error?.message) {
-          setErrorMessage(data.error.message);
-        } else {
-          setErrorMessage('No se pudo guardar la fotografía. Intentá nuevamente.');
-        }
-      } catch (networkErr) {
-        console.error('[PlantPhotoUploadModal] Network error during photo upload:', networkErr);
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setErrorMessage('La subida tardó demasiado y fue cancelada. Intentá nuevamente.');
+      } else {
         setErrorMessage('Error de conexión al subir la imagen. Verificá tu red e intentá nuevamente.');
       }
-    });
+    } finally {
+      console.log('[PhotoUpload] upload-finished');
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -137,19 +152,18 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
         description={`Subí una nueva foto para el ejemplar ${permanentCode} para registrar su desarrollo.`}
         footer={
           <>
-            <Button variant="ghost" onClick={handleClose} disabled={isPending}>
+            <Button variant="ghost" onClick={handleClose} disabled={isUploading}>
               Cancelar
             </Button>
             <Button
               form="plant-photo-upload-form"
               type="submit"
               variant="primary"
-              onClick={handleSubmit}
-              isLoading={isPending}
-              disabled={isPending || !selectedFile}
+              isLoading={isUploading}
+              disabled={isUploading || !selectedFile}
               leftIcon={<CheckCircle2 size={16} />}
             >
-              {isPending ? 'Guardando...' : 'Guardar Foto'}
+              {isUploading ? 'Guardando...' : 'Guardar Foto'}
             </Button>
           </>
         }
@@ -168,7 +182,7 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
                 if (file && errorMessage) setErrorMessage(null);
               }}
               onNativeDetected={setIsNativeDetected}
-              disabled={isPending}
+              disabled={isUploading}
             />
           </div>
 
@@ -184,7 +198,7 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
               value={takenAt}
               onChange={(e) => setTakenAt(e.target.value)}
               className={styles.input}
-              disabled={isPending}
+              disabled={isUploading}
             />
             <span className={styles.hint}>
               Podés registrar la fecha real en que fue tomada la fotografía.
@@ -204,7 +218,7 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
               placeholder="Ej: Trasplante a maceta de 15cm, brote nuevo de primavera, etc."
               maxLength={300}
               className={styles.textarea}
-              disabled={isPending}
+              disabled={isUploading}
             />
           </div>
 
@@ -214,7 +228,7 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
               checked={makePrimary}
               onChange={(e) => setMakePrimary(e.target.checked)}
               className={styles.checkbox}
-              disabled={isPending}
+              disabled={isUploading}
             />
             <span className={styles.checkboxLabel}>
               Establecer como fotografía principal de la planta

@@ -81,10 +81,35 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   // 5. All other routes (UI screens): require human authentication
   if (!isAuthenticated) {
+    // Check if request is an internal Next.js prefetch or RSC navigation
+    const isPrefetch =
+      request.headers.get('next-router-prefetch') === '1' ||
+      request.headers.get('purpose') === 'prefetch';
+    const isRSC =
+      request.headers.get('rsc') === '1' ||
+      Boolean(request.headers.get('next-router-state-tree'));
+
+    // For background prefetches without an active session:
+    // Return empty 204 No Content so Next.js router drops the prefetch cleanly
+    // instead of receiving a 307 HTML redirect that breaks React hydration/render tree.
+    if (isPrefetch) {
+      return applySecurityHeaders(new NextResponse(null, { status: 204 }));
+    }
+
     const loginUrl = new URL('/login', request.url);
     if (pathname !== '/') {
       loginUrl.searchParams.set('from', `${pathname}${search}`);
     }
+
+    // For active RSC requests (in-app client navigation):
+    // Instruct the Next.js App Router to perform a full redirect
+    if (isRSC) {
+      const rscRedirectResponse = new NextResponse(null, { status: 200 });
+      rscRedirectResponse.headers.set('x-middleware-redirect', loginUrl.toString());
+      return applySecurityHeaders(rscRedirectResponse);
+    }
+
+    // Standard human browser document navigation: 307 redirect
     return applySecurityHeaders(NextResponse.redirect(loginUrl));
   }
 

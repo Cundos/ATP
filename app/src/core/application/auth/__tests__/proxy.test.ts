@@ -70,6 +70,30 @@ describe('Next.js 16 Proxy Authentication (ATP-SEC-001R)', () => {
       expect(location).toBe('http://localhost:3000/login?from=%2Fplants%2FAT-PL-007');
     });
 
+    it('returns 204 No Content for unauthenticated prefetch requests to prevent breaking client React tree (ATP-AUTH-001)', async () => {
+      const req = new NextRequest('http://localhost:3000/plants/AT-PL-013/edit', {
+        headers: {
+          'next-router-prefetch': '1',
+        },
+      });
+      const res = await proxy(req);
+
+      expect(res.status).toBe(204);
+      expect(res.headers.get('location')).toBeNull();
+    });
+
+    it('returns x-middleware-redirect header for unauthenticated RSC client navigation requests', async () => {
+      const req = new NextRequest('http://localhost:3000/plants/AT-PL-013/edit', {
+        headers: {
+          rsc: '1',
+        },
+      });
+      const res = await proxy(req);
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get('x-middleware-redirect')).toBe('http://localhost:3000/login?from=%2Fplants%2FAT-PL-013%2Fedit');
+    });
+
     it('returns 401 JSON for unauthenticated /api/photos/upload', async () => {
       const req = new NextRequest('http://localhost:3000/api/photos/upload', {
         method: 'POST',

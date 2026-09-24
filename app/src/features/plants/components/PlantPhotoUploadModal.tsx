@@ -87,7 +87,7 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
 
     if (!selectedFile || isUploading) return;
 
-    let stage: 'SUBMIT' | 'PROBE' | 'FORMDATA' | 'FETCH' | 'XHR' = 'SUBMIT';
+    let stage: 'SUBMIT' | 'PROBE' | 'READ_FILE' | 'FORMDATA' | 'FETCH' | 'XHR' = 'SUBMIT';
 
     console.log('[PhotoUpload] submit-start', {
       hasSelectedFile: selectedFile !== null,
@@ -115,10 +115,30 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
         console.warn('[PhotoUpload] probe-failed', probeErr);
       }
 
-      // 3. Prepare FormData (clean minimal flow without entries iteration or instanceof checks)
+      // 3. Materialize and normalize File in memory before multipart (ATP-PHOTO-008)
+      stage = 'READ_FILE';
+      console.log('[PhotoUpload] read-file-start');
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      console.log('[PhotoUpload] read-file-success', { byteLength: arrayBuffer.byteLength });
+
+      const normalizedBlob = new Blob(
+        [arrayBuffer],
+        { type: selectedFile.type || 'application/octet-stream' }
+      );
+
+      const normalizedFile = new File(
+        [normalizedBlob],
+        selectedFile.name,
+        {
+          type: selectedFile.type || 'application/octet-stream',
+          lastModified: Date.now(),
+        }
+      );
+
+      // 4. Prepare FormData with normalized in-memory File
       stage = 'FORMDATA';
       const formData = new FormData();
-      formData.append('file', selectedFile, selectedFile.name);
+      formData.append('file', normalizedFile, normalizedFile.name);
       formData.append('plantId', plantId);
       formData.append('permanentCode', permanentCode);
       if (takenAt) {

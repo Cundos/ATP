@@ -87,6 +87,8 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
 
     if (!selectedFile || isUploading) return;
 
+    let stage: 'SUBMIT' | 'PROBE' | 'FORMDATA' | 'FETCH' | 'XHR' = 'SUBMIT';
+
     console.log('[PhotoUpload] submit-start', {
       hasSelectedFile: selectedFile !== null,
       fileName: selectedFile.name,
@@ -104,26 +106,19 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
 
     try {
       // 2. Pre-probe GET /api/photos/upload/probe
-      let probePassed = false;
-      let probeErrorDetails: string | null = null;
+      stage = 'PROBE';
+      console.log('[PhotoUpload] probe-start');
       try {
-        console.log('[PhotoUpload] probe-start');
         const probeRes = await fetch('/api/photos/upload/probe');
         console.log('[PhotoUpload] probe-response', probeRes.status);
-        if (probeRes.ok) {
-          probePassed = true;
-        } else {
-          probeErrorDetails = `Probe HTTP ${probeRes.status} ${probeRes.statusText}`;
-        }
       } catch (probeErr: unknown) {
-        const pErr = probeErr as Error;
-        probeErrorDetails = `Probe fetch exception: ${pErr?.name || 'Error'} - ${pErr?.message || String(pErr)}`;
         console.warn('[PhotoUpload] probe-failed', probeErr);
       }
 
-      // 3. Prepare and isolate FormData
+      // 3. Prepare FormData (clean minimal flow without entries iteration or instanceof checks)
+      stage = 'FORMDATA';
       const formData = new FormData();
-      formData.append('file', selectedFile);
+      formData.append('file', selectedFile, selectedFile.name);
       formData.append('plantId', plantId);
       formData.append('permanentCode', permanentCode);
       if (takenAt) {
@@ -136,40 +131,10 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
         formData.append('make_primary', 'true');
       }
 
-      // Local logging of FormData entries
-      const formEntriesLog: Array<Record<string, unknown>> = [];
-      for (const [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          formEntriesLog.push({
-            key,
-            type: 'File',
-            name: value.name,
-            mime: value.type,
-            size: value.size,
-          });
-        } else {
-          formEntriesLog.push({
-            key,
-            type: typeof value,
-          });
-        }
-      }
-      console.log('[PhotoUpload] formData-entries', formEntriesLog);
-
-      // Build common client metadata for diagnostics
-      const clientDiagnostics = [
-        `navigator.onLine: ${typeof navigator !== 'undefined' ? navigator.onLine : 'unknown'}`,
-        `selectedFile.name: ${selectedFile.name}`,
-        `selectedFile.type: ${selectedFile.type || '(empty string)'}`,
-        `selectedFile.size: ${selectedFile.size} bytes`,
-        `instanceof File: ${selectedFile instanceof File}`,
-        `instanceof Blob: ${selectedFile instanceof Blob}`,
-        `isNative: ${isNativeDetected}`,
-        `userAgent: ${typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 100) : 'unknown'}`,
-        `probePassed: ${probePassed}${probeErrorDetails ? ` (${probeErrorDetails})` : ''}`,
-      ].join('\n');
+      console.log('[PhotoUpload] multipart-ready');
 
       // 4. Primary attempt: fetch
+      stage = 'FETCH';
       let fetchClientError: Error | null = null;
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 45000);
@@ -222,9 +187,10 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
         fetchClientError = err instanceof Error ? err : new Error(String(err));
       }
 
-      // 5. Fallback controlled XHR if fetch threw client-side exception
+      // 5. Fallback controlled XHR ONLY if fetch was initiated and threw a client exception
       if (!uploadSucceeded && fetchClientError) {
-        console.warn('[PhotoUpload] fetch threw client-side exception, attempting controlled XHR fallback...', fetchClientError);
+        stage = 'XHR';
+        console.warn('[PhotoUpload] fetch threw client exception, attempting controlled XHR fallback...', fetchClientError);
 
         try {
           console.log('[PhotoUpload] xhr-start (multipart fallback)');
@@ -263,16 +229,31 @@ export const PlantPhotoUploadModal: React.FC<PlantPhotoUploadModalProps> = ({
           // Both fetch and XHR failed: show comprehensive diagnostic info
           setErrorMessage('Fallo en la subida de fotografía.');
           setDiagnosticInfo(
-            `PHOTO_CLIENT_UPLOAD_FAILED\n` +
+            `PHOTO_CLIENT_STAGE_ERROR\n` +
+            `stage: ${stage}\n` +
             `Fetch: [${fetchClientError.name}] ${fetchClientError.message}\n` +
             `XHR: [${xErr?.name || 'Error'}] ${xErr?.message || String(xErr)}\n` +
-            `------------------------------\n` +
-            clientDiagnostics
+            `fileName: ${selectedFile.name}\n` +
+            `fileType: ${selectedFile.type || '(empty string)'}\n` +
+            `fileSize: ${selectedFile.size}\n` +
+            `isNative: ${isNativeDetected}`
           );
         }
-      } else if (!uploadSucceeded && fetchClientError === null && !probePassed && !errorMessage) {
-        console.warn('[PhotoUpload] Probe state warning', { probePassed, probeErrorDetails });
       }
+    } catch (outerErr: unknown) {
+      console.error('[PhotoUpload] outer-catch-error', outerErr);
+      const oErr = outerErr as Error;
+      setErrorMessage('Error preparando o enviando la fotografía.');
+      setDiagnosticInfo(
+        `PHOTO_CLIENT_STAGE_ERROR\n` +
+        `stage: ${stage}\n` +
+        `name: ${oErr?.name || 'Error'}\n` +
+        `message: ${oErr?.message || String(oErr)}\n` +
+        `fileName: ${selectedFile.name}\n` +
+        `fileType: ${selectedFile.type || '(empty string)'}\n` +
+        `fileSize: ${selectedFile.size}\n` +
+        `isNative: ${isNativeDetected}`
+      );
     } finally {
       console.log('[PhotoUpload] upload-finished');
       setIsUploading(false);

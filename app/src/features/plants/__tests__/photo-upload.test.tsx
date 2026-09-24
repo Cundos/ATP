@@ -297,7 +297,8 @@ describe('PlantPhotoUploadModal Component (ATP-PHOTO-003)', () => {
 
     const callArgs = (global.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[1];
     const sentFormData = callArgs[1].body as FormData;
-    expect(sentFormData.get('file')).toBe(testFile);
+    const sentFile = sentFormData.get('file') as File;
+    expect(sentFile.name).toBe(testFile.name);
     expect(sentFormData.get('plantId')).toBe('test-plant-id');
     expect(sentFormData.get('permanentCode')).toBe('AT-PL-001');
 
@@ -407,8 +408,51 @@ describe('PlantPhotoUploadModal Component (ATP-PHOTO-003)', () => {
     await new Promise((r) => setTimeout(r, 30));
 
     expect(await screen.findByText(/Fallo en la subida de fotografía./i)).toBeInTheDocument();
-    expect(screen.getByTestId('upload-diagnostic-info')).toHaveTextContent('PHOTO_CLIENT_UPLOAD_FAILED');
+    expect(screen.getByTestId('upload-diagnostic-info')).toHaveTextContent('PHOTO_CLIENT_STAGE_ERROR');
+    expect(screen.getByTestId('upload-diagnostic-info')).toHaveTextContent('stage: XHR');
     expect(screen.getByTestId('upload-diagnostic-info')).toHaveTextContent('Fetch: [TypeError] Failed to fetch');
+  });
+
+  it('captures pre-fetch errors in outer catch with stage FORMDATA', async () => {
+    const { PlantPhotoUploadModal } = await import('../components/PlantPhotoUploadModal');
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ ok: true }),
+    });
+
+    const originalAppend = FormData.prototype.append;
+    FormData.prototype.append = vi.fn().mockImplementation(() => {
+      throw new Error('Simulated FormData append failure');
+    });
+
+    try {
+      const { container } = render(
+        <PlantPhotoUploadModal
+          isOpen={true}
+          onClose={vi.fn()}
+          plantId="test-plant-id"
+          permanentCode="AT-PL-001"
+          hasExistingPhotos={true}
+        />
+      );
+
+      const galleryInput = container.querySelector('input[data-testid="photo-gallery-input"]') as HTMLInputElement;
+      const testFile = new File(['fake-content'], 'photo.jpg', { type: 'image/jpeg' });
+      fireEvent.change(galleryInput, { target: { files: [testFile] } });
+
+      const submitBtn = screen.getByRole('button', { name: /guardar foto/i });
+      fireEvent.click(submitBtn);
+
+      await new Promise((r) => setTimeout(r, 30));
+
+      expect(await screen.findByText(/Error preparando o enviando la fotografía./i)).toBeInTheDocument();
+      expect(screen.getByTestId('upload-diagnostic-info')).toHaveTextContent('PHOTO_CLIENT_STAGE_ERROR');
+      expect(screen.getByTestId('upload-diagnostic-info')).toHaveTextContent('stage: FORMDATA');
+      expect(screen.getByTestId('upload-diagnostic-info')).toHaveTextContent('Simulated FormData append failure');
+    } finally {
+      FormData.prototype.append = originalAppend;
+    }
   });
 });
 

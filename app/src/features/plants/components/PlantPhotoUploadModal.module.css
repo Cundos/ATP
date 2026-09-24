@@ -78,3 +78,18 @@
   border-radius: var(--radius-sm);
   font-size: 0.875rem;
 }
+
+.diagnosticBox {
+  margin-top: 8px;
+  padding: 8px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-xs);
+  font-family: monospace;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--text-main);
+}
+

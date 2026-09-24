@@ -255,11 +255,17 @@ describe('PlantPhotoUploadModal Component (ATP-PHOTO-003)', () => {
     const onClose = vi.fn();
     const onSuccessToast = vi.fn();
 
-    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      status: 201,
-      json: async () => ({ success: true }),
-    });
+    (global.fetch as unknown as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ ok: true }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: async () => ({ success: true }),
+      });
 
     const { container } = render(
       <PlantPhotoUploadModal
@@ -289,7 +295,7 @@ describe('PlantPhotoUploadModal Component (ATP-PHOTO-003)', () => {
       })
     );
 
-    const callArgs = (global.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
+    const callArgs = (global.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[1];
     const sentFormData = callArgs[1].body as FormData;
     expect(sentFormData.get('file')).toBe(testFile);
     expect(sentFormData.get('plantId')).toBe('test-plant-id');
@@ -301,11 +307,17 @@ describe('PlantPhotoUploadModal Component (ATP-PHOTO-003)', () => {
 
   it('handles 413 Payload Too Large error cleanly with Spanish message', async () => {
     const { PlantPhotoUploadModal } = await import('../components/PlantPhotoUploadModal');
-    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: false,
-      status: 413,
-      json: async () => ({ error: { code: 'PAYLOAD_TOO_LARGE' } }),
-    });
+    (global.fetch as unknown as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ ok: true }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 413,
+        json: async () => ({ error: { code: 'PAYLOAD_TOO_LARGE' } }),
+      });
 
     const { container } = render(
       <PlantPhotoUploadModal
@@ -331,11 +343,17 @@ describe('PlantPhotoUploadModal Component (ATP-PHOTO-003)', () => {
 
   it('handles 503 Storage Unavailable error cleanly with Spanish message', async () => {
     const { PlantPhotoUploadModal } = await import('../components/PlantPhotoUploadModal');
-    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: false,
-      status: 503,
-      json: async () => ({ error: { code: 'STORAGE_UNAVAILABLE' } }),
-    });
+    (global.fetch as unknown as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ ok: true }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        json: async () => ({ error: { code: 'STORAGE_UNAVAILABLE' } }),
+      });
 
     const { container } = render(
       <PlantPhotoUploadModal
@@ -359,10 +377,15 @@ describe('PlantPhotoUploadModal Component (ATP-PHOTO-003)', () => {
     expect(await screen.findByText(/almacenamiento de fotografías no está disponible/i)).toBeInTheDocument();
   });
 
-  it('handles timeout/abort cleanly with Spanish message', async () => {
+  it('displays diagnostic box and error when both fetch and XHR fail', async () => {
     const { PlantPhotoUploadModal } = await import('../components/PlantPhotoUploadModal');
-    const abortError = new DOMException('The user aborted a request.', 'AbortError');
-    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(abortError);
+    (global.fetch as unknown as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ ok: true }),
+      })
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'));
 
     const { container } = render(
       <PlantPhotoUploadModal
@@ -381,11 +404,12 @@ describe('PlantPhotoUploadModal Component (ATP-PHOTO-003)', () => {
     const submitBtn = screen.getByRole('button', { name: /guardar foto/i });
     fireEvent.click(submitBtn);
 
-    await new Promise((r) => setTimeout(r, 20));
+    await new Promise((r) => setTimeout(r, 30));
 
-    expect(
-      await screen.findByText(/La subida tardó demasiado y fue cancelada. Intentá nuevamente./i)
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/Fallo en la subida de fotografía./i)).toBeInTheDocument();
+    expect(screen.getByTestId('upload-diagnostic-info')).toHaveTextContent('PHOTO_CLIENT_UPLOAD_FAILED');
+    expect(screen.getByTestId('upload-diagnostic-info')).toHaveTextContent('Fetch: [TypeError] Failed to fetch');
   });
 });
+
 

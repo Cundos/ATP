@@ -171,11 +171,16 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
 
           {/* Barra de Acciones Principales */}
           <section className={styles.actionsBar} aria-label="Acciones sobre el ejemplar">
-            <Link href={`/plants/${plant.permanent_code}/edit`} prefetch={false} className={styles.actionBtnLink}>
-              <Button variant="secondary" fullWidth leftIcon={<Edit size={16} />}>
-                Editar
-              </Button>
-            </Link>
+            <Button
+              variant="secondary"
+              fullWidth
+              leftIcon={<Edit size={16} />}
+              onClick={() => router.push(`/plants/${plant.permanent_code}/edit`)}
+              className={styles.actionBtnLink}
+              aria-label={`Editar ejemplar ${plant.permanent_code}`}
+            >
+              Editar
+            </Button>
             <Button
               variant="ghost"
               onClick={() => setIsArchiveModalOpen(true)}

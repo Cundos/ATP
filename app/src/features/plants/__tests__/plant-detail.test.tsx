@@ -5,9 +5,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { PlantDetailView } from '../components';
 import { PlantEntity } from '@/core/domain/entities';
 
+const mockPush = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: mockPush,
     refresh: vi.fn(),
   }),
 }));
@@ -118,10 +119,12 @@ describe('ATP-IMP-013: PlantDetailView (SCR-003) Tests', () => {
     expect(screen.getByText('Ubicada junto a la ventana este con luz filtrada.')).toBeDefined();
   });
 
-  it('el enlace Editar apunta a /plants/{permanent_code}/edit', () => {
+  it('el botón Editar navega a /plants/{permanent_code}/edit al hacer click', () => {
+    mockPush.mockClear();
     render(<PlantDetailView plant={mockPlantFull} />);
-    const editLink = screen.getByRole('link', { name: /editar/i });
-    expect(editLink.getAttribute('href')).toBe('/plants/AT-PL-001/edit');
+    const editBtn = screen.getByRole('button', { name: /editar/i });
+    fireEvent.click(editBtn);
+    expect(mockPush).toHaveBeenCalledWith('/plants/AT-PL-001/edit');
   });
 
   it('el enlace Volver al Inventario apunta a /inventory', () => {

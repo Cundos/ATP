@@ -81,16 +81,36 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   // 5. All other routes (UI screens): require human authentication
   if (!isAuthenticated) {
-    // Check if request is an internal Next.js prefetch or RSC navigation
+    if (pathname.includes('/edit') && pathname.startsWith('/plants/')) {
+      const userAgent = request.headers.get('user-agent') || '';
+      console.log('[Proxy:EditRoute]', {
+        pathname,
+        isAuthenticated,
+        nextRouterPrefetch: request.headers.get('next-router-prefetch'),
+        purpose: request.headers.get('purpose'),
+        secPurpose: request.headers.get('sec-purpose'),
+        rsc: request.headers.get('rsc'),
+        hasStateTree: Boolean(request.headers.get('next-router-state-tree')),
+        secFetchMode: request.headers.get('sec-fetch-mode'),
+        secFetchDest: request.headers.get('sec-fetch-dest'),
+        secFetchSite: request.headers.get('sec-fetch-site'),
+        userAgent: userAgent.slice(0, 100),
+      });
+    }
+
+    // Check if request is an internal Next.js prefetch or browser speculative prefetch
     const isPrefetch =
       request.headers.get('next-router-prefetch') === '1' ||
-      request.headers.get('purpose') === 'prefetch';
+      request.headers.get('purpose') === 'prefetch' ||
+      request.headers.get('sec-purpose')?.includes('prefetch') ||
+      request.headers.get('sec-purpose')?.includes('prerender');
     const isRSC =
       request.headers.get('rsc') === '1' ||
+      request.headers.get('accept')?.includes('text/x-component') === true ||
       Boolean(request.headers.get('next-router-state-tree'));
 
     // For background prefetches without an active session:
-    // Return empty 204 No Content so Next.js router drops the prefetch cleanly
+    // Return empty 204 No Content so Next.js router or browser drops the prefetch cleanly
     // instead of receiving a 307 HTML redirect that breaks React hydration/render tree.
     if (isPrefetch) {
       return applySecurityHeaders(new NextResponse(null, { status: 204 }));

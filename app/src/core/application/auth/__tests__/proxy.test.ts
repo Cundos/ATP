@@ -82,6 +82,18 @@ describe('Next.js 16 Proxy Authentication (ATP-SEC-001R)', () => {
       expect(res.headers.get('location')).toBeNull();
     });
 
+    it('returns 204 No Content for Chromium speculative prefetch with sec-purpose header (ATP-AUTH-002)', async () => {
+      const req = new NextRequest('http://localhost:3000/plants/AT-PL-013/edit', {
+        headers: {
+          'sec-purpose': 'prefetch;prerender',
+        },
+      });
+      const res = await proxy(req);
+
+      expect(res.status).toBe(204);
+      expect(res.headers.get('location')).toBeNull();
+    });
+
     it('returns x-middleware-redirect header for unauthenticated RSC client navigation requests', async () => {
       const req = new NextRequest('http://localhost:3000/plants/AT-PL-013/edit', {
         headers: {

@@ -171,6 +171,18 @@ describe('Next.js 16 Proxy Authentication (ATP-SEC-001R)', () => {
       expect(res.status).toBe(200);
     });
 
+    it('allows authenticated human request when multiple cookies exist in Cookie header (ATP-AUTH-003)', async () => {
+      const token = await createSessionToken(testSecret);
+      const req = new NextRequest('http://localhost:3000/plants/AT-PL-013/edit', {
+        headers: {
+          cookie: `other_cookie=123; ${SESSION_COOKIE_NAME}=${token}; yet_another=abc`,
+        },
+      });
+
+      const res = await proxy(req);
+      expect(res.status).toBe(200);
+    });
+
     it('redirects authenticated human from /login to /', async () => {
       const token = await createSessionToken(testSecret);
       const req = new NextRequest('http://localhost:3000/login', {

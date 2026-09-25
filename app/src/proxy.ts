@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifySessionToken, SESSION_COOKIE_NAME } from './core/application/auth/session';
+import { verifySessionTokenDetailed, SESSION_COOKIE_NAME } from './core/application/auth/session';
 
 export const config = {
   matcher: [
@@ -13,6 +13,23 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };
+
+function extractSessionCookie(request: NextRequest): { token?: string; source: 'cookies' | 'header' | 'none' } {
+  const fromCookies = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+  if (fromCookies) {
+    return { token: fromCookies, source: 'cookies' };
+  }
+
+  const rawCookie = request.headers.get('cookie');
+  if (rawCookie) {
+    const match = rawCookie.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE_NAME}=([^;]*)`));
+    if (match && match[1]) {
+      return { token: decodeURIComponent(match[1].trim()), source: 'header' };
+    }
+  }
+
+  return { source: 'none' };
+}
 
 // Security headers helper
 function applySecurityHeaders(response: NextResponse): NextResponse {
@@ -53,8 +70,36 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   }
 
   // 2. Check session validity (fail-closed if AUTH_SECRET is not configured)
-  const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
-  const isAuthenticated = await verifySessionToken(sessionCookie);
+  const cookieExtraction = extractSessionCookie(request);
+  const cookiePresent = Boolean(cookieExtraction.token);
+  const verification = await verifySessionTokenDetailed(cookieExtraction.token);
+  const isAuthenticated = verification.valid;
+
+  const host = request.headers.get('host') || request.nextUrl.host;
+  const xForwardedHost = request.headers.get('x-forwarded-host');
+
+  // Diagnostic logging for session tracking (ATP-AUTH-003: strictly NO sensitive data/cookies logged)
+  if (
+    pathname.startsWith('/plants/') ||
+    pathname.startsWith('/inventory') ||
+    pathname === '/login' ||
+    pathname === '/'
+  ) {
+    console.log('[Auth:SessionCheck]', {
+      pathname,
+      host,
+      xForwardedHost,
+      cookiePresent,
+      cookieSource: cookieExtraction.source,
+      hasRawCookieHeader: Boolean(request.headers.get('cookie')),
+      cookieLength: cookieExtraction.token ? cookieExtraction.token.length : 0,
+      sessionValid: isAuthenticated,
+      verificationReason: verification.reason,
+      tokenExp: verification.exp ?? null,
+      timeRemainingSec: verification.exp && verification.now ? verification.exp - verification.now : null,
+      userAgent: (request.headers.get('user-agent') || '').slice(0, 100),
+    });
+  }
 
   // 3. Login page handling
   if (pathname === '/login') {
@@ -83,9 +128,11 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   if (!isAuthenticated) {
     if (pathname.includes('/edit') && pathname.startsWith('/plants/')) {
       const userAgent = request.headers.get('user-agent') || '';
-      console.log('[Proxy:EditRoute]', {
+      console.log('[Proxy:EditRouteUnauthorized]', {
         pathname,
-        isAuthenticated,
+        host,
+        cookiePresent,
+        verificationReason: verification.reason,
         nextRouterPrefetch: request.headers.get('next-router-prefetch'),
         purpose: request.headers.get('purpose'),
         secPurpose: request.headers.get('sec-purpose'),

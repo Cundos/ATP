@@ -122,25 +122,44 @@ export async function createSessionToken(
   return `${payloadB64}.${signature}`;
 }
 
+export interface SessionVerificationResult {
+  valid: boolean;
+  reason: string;
+  exp?: number;
+  now?: number;
+}
+
 /**
- * Verify a signed session token using Web Crypto constant-time HMAC verification
+ * Verify a signed session token using Web Crypto constant-time HMAC verification with detailed diagnostics
  */
-export async function verifySessionToken(
+export async function verifySessionTokenDetailed(
   token: string | null | undefined,
   secret?: string
-): Promise<boolean> {
-  if (!token || typeof token !== 'string') return false;
+): Promise<SessionVerificationResult> {
+  if (!token || typeof token !== 'string') {
+    return { valid: false, reason: 'TOKEN_EMPTY' };
+  }
 
   const parts = token.split('.');
-  if (parts.length !== 2) return false;
+  if (parts.length !== 2) {
+    return { valid: false, reason: 'TOKEN_INVALID_PARTS_COUNT' };
+  }
 
   const [payloadB64, signature] = parts;
-  if (!payloadB64 || !signature) return false;
+  if (!payloadB64 || !signature) {
+    return { valid: false, reason: 'TOKEN_EMPTY_PARTS' };
+  }
 
   try {
-    const resolvedSecret = secret !== undefined ? secret : getAuthSecret();
+    let resolvedSecret: string;
+    try {
+      resolvedSecret = secret !== undefined ? secret : getAuthSecret();
+    } catch (secErr) {
+      return { valid: false, reason: `AUTH_SECRET_ERROR: ${(secErr as Error)?.message || String(secErr)}` };
+    }
+
     if (!isValidAuthSecret(resolvedSecret)) {
-      return false;
+      return { valid: false, reason: 'AUTH_SECRET_INVALID_ENTROPY' };
     }
 
     const enc = new TextEncoder();
@@ -158,12 +177,12 @@ export async function verifySessionToken(
     const isValidSignature = await crypto.subtle.verify(
       'HMAC',
       key,
-      signatureBytes.buffer as ArrayBuffer,
+      signatureBytes as unknown as BufferSource,
       enc.encode(payloadB64)
     );
 
     if (!isValidSignature) {
-      return false;
+      return { valid: false, reason: 'SIGNATURE_MISMATCH' };
     }
 
     const payloadBytes = base64UrlToBytes(payloadB64);
@@ -171,14 +190,31 @@ export async function verifySessionToken(
     const payload = JSON.parse(payloadStr) as SessionPayload;
 
     const now = Math.floor(Date.now() / 1000);
-    if (!payload.authenticated || typeof payload.exp !== 'number' || payload.exp < now) {
-      return false;
+    if (!payload.authenticated) {
+      return { valid: false, reason: 'PAYLOAD_NOT_AUTHENTICATED' };
+    }
+    if (typeof payload.exp !== 'number') {
+      return { valid: false, reason: 'PAYLOAD_EXP_INVALID' };
+    }
+    if (payload.exp < now) {
+      return { valid: false, reason: 'TOKEN_EXPIRED', exp: payload.exp, now };
     }
 
-    return true;
-  } catch {
-    return false;
+    return { valid: true, reason: 'OK', exp: payload.exp, now };
+  } catch (err: unknown) {
+    return { valid: false, reason: `EXCEPTION: ${(err as Error)?.name || 'Error'}: ${(err as Error)?.message || String(err)}` };
   }
+}
+
+/**
+ * Verify a signed session token using Web Crypto constant-time HMAC verification
+ */
+export async function verifySessionToken(
+  token: string | null | undefined,
+  secret?: string
+): Promise<boolean> {
+  const result = await verifySessionTokenDetailed(token, secret);
+  return result.valid;
 }
 
 
@@ -234,12 +270,14 @@ export async function requireAuthenticatedUser(): Promise<void> {
  */
 export async function setSessionCookie(token: string): Promise<void> {
   const cookieStore = await cookies();
+  const expires = new Date(Date.now() + SESSION_MAX_AGE * 1000);
   cookieStore.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
     maxAge: SESSION_MAX_AGE,
+    expires,
   });
 }
 
@@ -248,6 +286,13 @@ export async function setSessionCookie(token: string): Promise<void> {
  */
 export async function clearSessionCookie(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete(SESSION_COOKIE_NAME);
+  cookieStore.set(SESSION_COOKIE_NAME, '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+    expires: new Date(0),
+  });
 }
 

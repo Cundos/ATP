@@ -26,10 +26,11 @@
   align-items: center;
   gap: 10px;
   min-height: var(--touch-target-min);
-  padding: 0 14px;
+  padding: 0 16px;
   background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -39,7 +40,7 @@
 }
 
 .searchIcon {
-  color: var(--text-muted);
+  color: var(--brand-primary);
   flex-shrink: 0;
 }
 

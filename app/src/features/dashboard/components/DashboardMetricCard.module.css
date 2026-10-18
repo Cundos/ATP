@@ -2,19 +2,21 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 14px 16px;
+  padding: 18px 20px;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
-  min-height: 88px;
+  transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+  min-height: 96px;
 }
 
 .card:hover {
+  transform: translateY(-2px);
   border-color: var(--border-default);
-  background-color: var(--bg-surface-hover);
+  background-color: var(--bg-surface-subtle);
 }
 
 .card:focus-visible {
@@ -27,7 +29,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .labelGroup {
@@ -40,22 +42,21 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .label {
-  font-size: 0.8125rem;
-  font-weight: 500;
+  font-size: 0.84rem;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 
 .arrowIcon {
   display: none;
 }
-
 
 .body {
   display: flex;
@@ -65,21 +66,21 @@
 
 .value {
   font-family: var(--font-serif-family);
-  font-size: 1.625rem;
-  font-weight: 600;
+  font-size: 1.85rem;
+  font-weight: 700;
   line-height: 1;
-  color: var(--text-primary);
+  color: var(--brand-primary);
 }
 
 .unit {
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
 }
 
 /* Primary Highlight (Total Colección) */
 .primary {
-  background-color: var(--bg-surface);
-  border-color: var(--border-default);
+  background-color: var(--care-green-light);
+  border-color: var(--health-healthy-border);
 }
 
 .primary .value {
@@ -87,8 +88,8 @@
 }
 
 .primary .label {
-  color: var(--text-primary);
-  font-weight: 600;
+  color: var(--brand-primary);
+  font-weight: 700;
 }
 
 /* Health status variants */
@@ -107,3 +108,4 @@
 .unknown .icon {
   background-color: var(--health-unknown-dot);
 }
+

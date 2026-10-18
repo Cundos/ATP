@@ -1,14 +1,16 @@
 .card {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
   overflow: hidden;
 }
 
 .card:hover {
+  transform: translateY(-3px);
   border-color: var(--border-default);
-  background-color: var(--bg-surface-elevated);
+  box-shadow: 0 14px 30px rgba(42, 127, 88, 0.09);
 }
 
 .linkWrapper {
@@ -37,7 +39,7 @@
 .content {
   display: flex;
   flex-direction: column;
-  padding: 14px 16px 16px;
+  padding: 18px 20px 18px;
   flex: 1;
 }
 
@@ -46,50 +48,98 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .permanentCode {
   font-family: var(--font-mono-family);
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.72rem;
+  font-weight: 600;
   color: var(--brand-primary);
+  background-color: var(--care-green-light);
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
   letter-spacing: 0.04em;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-
 .commonName {
   margin: 0 0 4px 0;
   font-family: var(--font-serif-family);
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.3;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+  line-height: 1.25;
 }
 
 .scientificName {
-  margin: 0 0 6px 0;
+  margin: 0 0 8px 0;
   font-size: 0.875rem;
   font-style: italic;
   color: var(--text-secondary);
 }
 
 .cultivar {
-  margin: 0 0 8px 0;
+  margin: 0 0 10px 0;
   font-size: 0.8125rem;
   color: var(--text-muted);
 }
 
 .cultivarLabel {
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--brand-primary);
+}
+
+/* Plan Verde Care Snippets on Card */
+.careSnippets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 12px 0;
+  padding: 10px 12px;
+  background-color: var(--bg-surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+}
+
+.careRow {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.careLabel {
+  font-weight: 700;
+  color: var(--brand-primary);
+}
+
+.careText {
   color: var(--text-secondary);
+}
+
+/* Plan Verde .ojo Blush Pill on Card */
+.ojoBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 8px 11px;
+  background-color: var(--care-blush-bg);
+  border: 1px solid var(--health-attention-border);
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--care-blush-text);
 }
 
 .footer {
   margin-top: auto;
-  padding-top: 10px;
+  padding-top: 12px;
   border-top: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
@@ -101,13 +151,13 @@
   align-items: center;
   gap: 5px;
   font-size: 0.8125rem;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
 .locationIcon {
   flex-shrink: 0;
   color: var(--brand-primary);
-  opacity: 0.8;
 }
 
 .noLocation {
@@ -118,4 +168,5 @@
   color: var(--text-muted);
   font-style: italic;
 }
+
 

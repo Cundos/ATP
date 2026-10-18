@@ -1,59 +1,112 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 28px;
 }
 
 .welcomeSection {
-  margin-bottom: -4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.eyebrowPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background-color: var(--care-green-light);
+  color: var(--brand-primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .title {
   font-family: var(--font-serif-family);
-  font-size: 2rem;
-  font-weight: 500;
-  margin: 0 0 6px 0;
-  color: var(--text-primary);
+  font-size: 2.15rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--brand-primary);
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
 
 .subtitle {
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: 0.95rem;
   color: var(--text-secondary);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
-/* Inline Editorial Summary Banner */
+/* Plan Verde Editorial Summary Banner */
 .summaryBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.summaryBannerAlert {
+  background-color: var(--care-blush-bg);
+  border-color: var(--health-attention-border);
+  color: var(--care-blush-text);
+}
+
+.summaryBannerOk {
+  background-color: var(--care-green-light);
+  border-color: var(--health-healthy-border);
+}
+
+.bannerEmoji {
+  font-size: 1.25rem;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.bannerContent {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 12px 16px;
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-xs);
 }
 
 .bannerTitle {
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.9375rem;
+  font-weight: 700;
   color: var(--text-primary);
   margin: 0;
 }
 
+.summaryBannerAlert .bannerTitle {
+  color: var(--care-blush-text);
+}
+
+.summaryBannerOk .bannerTitle {
+  color: var(--brand-primary);
+}
+
 .bannerSubtitle {
-  font-size: 0.8125rem;
+  font-size: 0.84rem;
   color: var(--text-secondary);
   margin: 0;
+}
+
+.summaryBannerAlert .bannerSubtitle {
+  color: var(--care-blush-text);
+  opacity: 0.9;
 }
 
 /* Metrics Section */
 .metricsSection {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .totalRow {
@@ -63,7 +116,7 @@
 .healthGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 @media (min-width: 640px) {
@@ -91,7 +144,7 @@
 
   .healthGrid {
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    gap: 14px;
   }
 }
 
@@ -110,62 +163,66 @@
 
 .sectionTitle {
   font-family: var(--font-serif-family);
-  font-size: 1.25rem;
-  font-weight: 500;
+  font-size: 1.35rem;
+  font-weight: 700;
   margin: 0;
-  color: var(--text-primary);
+  color: var(--brand-primary);
   letter-spacing: -0.01em;
 }
 
 .seeAllLink {
-  font-size: 0.8125rem;
-  font-weight: 500;
+  font-size: 0.84rem;
+  font-weight: 600;
   color: var(--brand-primary);
+  background-color: var(--care-green-light);
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
   text-decoration: none;
-  transition: color 0.15s ease;
+  transition: opacity 0.15s ease;
 }
 
 .seeAllLink:hover {
-  text-decoration: underline;
-  color: var(--brand-primary-hover);
+  opacity: 0.88;
 }
 
 .attentionGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
+  gap: 12px;
 }
 
 @media (min-width: 640px) {
   .attentionGrid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    gap: 14px;
   }
 }
 
 @media (min-width: 1024px) {
   .attentionGrid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    gap: 18px;
   }
 }
 
 .attentionCard {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: 14px;
+  padding: 14px 16px;
   background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--health-attention-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
 .attentionCard:hover {
-  border-color: var(--border-default);
-  background-color: var(--bg-surface-hover);
+  transform: translateY(-2px);
+  border-color: var(--care-blush);
+  background-color: var(--care-blush-bg);
 }
 
 .attentionCard:focus-visible {
@@ -175,6 +232,7 @@
 
 .attentionThumbnail {
   flex-shrink: 0;
+  border-radius: var(--radius-pill);
 }
 
 .attentionInfo {
@@ -182,7 +240,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .attentionTop {
@@ -194,17 +252,21 @@
 
 .attentionCode {
   font-family: var(--font-mono-family);
-  font-size: 0.6875rem;
-  font-weight: 500;
-  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--brand-primary);
+  background-color: var(--care-green-light);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .attentionName {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-family: var(--font-serif-family);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--brand-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -215,7 +277,7 @@
   margin: 4px 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .ctaLink {
@@ -246,13 +308,27 @@
 .quickNavSection {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .quickNavGrid {
-  display: flex;
-  flex-direction: column;
-  border-top: 1px solid var(--border-subtle);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .quickNavGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .quickNavGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
 }
 
 .quickNavLink {
@@ -260,17 +336,21 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border-subtle);
-  background: transparent;
+  padding: 16px 18px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  background-color: var(--bg-surface);
+  box-shadow: var(--shadow-card);
   text-decoration: none;
   color: inherit;
-  transition: all 0.15s ease;
+  transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
   min-height: var(--touch-target-min);
 }
 
 .quickNavLink:hover {
-  color: var(--brand-primary);
+  transform: translateY(-2px);
+  border-color: var(--border-default);
+  background-color: var(--bg-surface-subtle);
 }
 
 .quickNavLink:focus-visible {
@@ -278,38 +358,17 @@
   box-shadow: var(--focus-ring);
 }
 
-@media (min-width: 1024px) {
-  .quickNavGrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    border-top: none;
-  }
-
-  .quickNavLink {
-    padding: 16px 18px;
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm);
-    background-color: var(--bg-surface);
-  }
-
-  .quickNavLink:hover {
-    border-color: var(--border-default);
-    background-color: var(--bg-surface-hover);
-  }
-}
-
 .quickNavText {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .quickNavTitle {
-  font-size: 0.9375rem;
-  font-weight: 500;
-  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--brand-primary);
 }
 
 .quickNavDesc {
@@ -318,12 +377,12 @@
 }
 
 .quickNavArrow {
-  color: var(--text-muted);
+  color: var(--brand-primary);
   flex-shrink: 0;
-  transition: transform 0.15s ease, color 0.15s ease;
+  transition: transform 0.15s ease;
 }
 
 .quickNavLink:hover .quickNavArrow {
   transform: translateX(3px);
-  color: var(--brand-primary);
 }
+

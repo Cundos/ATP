@@ -58,28 +58,40 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ plants }) => {
 
   return (
     <div className={styles.container}>
-      {/* Saludo y Cabecera */}
+      {/* Saludo y Cabecera Estilo Plan Verde */}
       <div className={styles.welcomeSection}>
+        <span className={styles.eyebrowPill}>🌿 Guía y Seguimiento Botánico</span>
         <h1 className={styles.title}>Mi Jardín Botánico</h1>
         <p className={styles.subtitle}>
-          {total === 1 ? '1 ejemplar en cultivo' : `${total} ejemplares en cultivo`}
+          {total === 1 ? '1 ejemplar en cultivo' : `${total} ejemplares en cultivo`} · Cuidados claros para tus plantas
         </p>
       </div>
 
-      {/* Mensaje Contextual de Síntesis */}
-      <div className={styles.summaryBanner} role="status" aria-live="polite">
-        <p className={styles.bannerTitle}>
-          {requiringAttentionCount > 0
-            ? `${requiringAttentionCount} ${
-                requiringAttentionCount === 1 ? 'ejemplar requiere' : 'ejemplares requieren'
-              } seguimiento`
-            : 'Colección sin alertas activas'}
-        </p>
-        <p className={styles.bannerSubtitle}>
-          {requiringAttentionCount > 0
-            ? `${counts.attention} en atención y ${counts.recovery} en recuperación.`
-            : 'Todos tus ejemplares evaluados se encuentran en estado saludable.'}
-        </p>
+      {/* Mensaje Contextual de Síntesis (Estilo Plan Verde .ojo / .bloque) */}
+      <div
+        className={`${styles.summaryBanner} ${
+          requiringAttentionCount > 0 ? styles.summaryBannerAlert : styles.summaryBannerOk
+        }`}
+        role="status"
+        aria-live="polite"
+      >
+        <span className={styles.bannerEmoji} aria-hidden="true">
+          {requiringAttentionCount > 0 ? '⚠️' : '✨'}
+        </span>
+        <div className={styles.bannerContent}>
+          <p className={styles.bannerTitle}>
+            {requiringAttentionCount > 0
+              ? `${requiringAttentionCount} ${
+                  requiringAttentionCount === 1 ? 'ejemplar requiere' : 'ejemplares requieren'
+                } seguimiento`
+              : 'Colección sin alertas activas'}
+          </p>
+          <p className={styles.bannerSubtitle}>
+            {requiringAttentionCount > 0
+              ? `${counts.attention} en atención y ${counts.recovery} en recuperación.`
+              : 'Todos tus ejemplares evaluados se encuentran en estado saludable.'}
+          </p>
+        </div>
       </div>
 
       {/* Métricas Principales */}

@@ -95,63 +95,7 @@
 
   /* Focus Ring */
   --focus-ring: 0 0 0 2px rgba(42, 127, 88, 0.35);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-app: #151815;
-    --bg-surface: #1E221E;
-    --bg-surface-elevated: #242924;
-    --bg-surface-subtle: #232823;
-    --bg-surface-hover: #2B322B;
-
-    --text-primary: #EAE6DF;
-    --text-secondary: #A8A59C;
-    --text-muted: #7E7C74;
-    --text-inverse: #151815;
-
-    --border-subtle: #2E342E;
-    --border-default: #3E463E;
-    --border-focus: #7A8E77;
-
-    --brand-primary: #7A8E77;
-    --brand-primary-hover: #8EA28B;
-    --brand-primary-active: #A2B69F;
-    --brand-primary-subtle: #232A23;
-    --brand-primary-contrast: #151815;
-    --brand-secondary: #5A6D57;
-
-    --health-healthy-bg: #1B291D;
-    --health-healthy-text: #96CCA0;
-    --health-healthy-border: #2A422D;
-    --health-healthy-dot: #74B57F;
-
-    --health-attention-bg: #2C2213;
-    --health-attention-text: #E5B26E;
-    --health-attention-border: #4D391A;
-    --health-attention-dot: #D69F54;
-
-    --health-recovery-bg: #2C1814;
-    --health-recovery-text: #E59585;
-    --health-recovery-border: #4D261E;
-    --health-recovery-dot: #D67A66;
-
-    --health-unknown-bg: #232823;
-    --health-unknown-text: #A8A59C;
-    --health-unknown-border: #2E342E;
-    --health-unknown-dot: #7E7C74;
-
-    --danger-bg: #331A1A;
-    --danger-text: #FCA5A5;
-    --danger-border: #5A2A2A;
-
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.5);
-    --shadow-bottom-nav: 0 -1px 4px rgba(0, 0, 0, 0.3);
-
-    --focus-ring: 0 0 0 2px rgba(122, 142, 119, 0.45);
-  }
+  color-scheme: light;
 }
 
 /* Reset & Box Sizing Global */
@@ -170,6 +114,7 @@ body {
   font-family: var(--font-sans-family);
   background-color: var(--bg-app);
   color: var(--text-primary);
+  color-scheme: light;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

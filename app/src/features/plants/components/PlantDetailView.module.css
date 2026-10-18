@@ -9,28 +9,31 @@
   align-items: center;
   gap: 6px;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--brand-primary);
   text-decoration: none;
-  padding: 4px 0;
-  transition: opacity 0.15s ease;
+  padding: 6px 12px;
+  background-color: var(--brand-primary-subtle);
+  border-radius: var(--radius-full);
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .backLink:hover {
-  opacity: 0.85;
+  opacity: 0.9;
+  transform: translateX(-2px);
 }
 
 .backLink:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-full);
 }
 
 /* Top 2-Column Hero Grid (Mobile-First Stack, 2 Columns on Desktop) */
 .heroGrid {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 @media (min-width: 1024px) {
@@ -48,10 +51,11 @@
 
 .photoBannerWrapper {
   width: 100%;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-card);
   overflow: hidden;
   background-color: var(--bg-surface-sunken);
   border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
 }
 
 .heroThumbnail {
@@ -68,12 +72,13 @@
   gap: 16px;
 }
 
-/* Header / Hero Card */
+/* Header / Hero Card (Plan Verde Style) */
 .headerCard {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 20px;
+  border-radius: var(--radius-card);
+  padding: 22px 24px;
+  box-shadow: var(--shadow-card);
   overflow: hidden;
 }
 
@@ -82,7 +87,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .permanentCodeBadge {
@@ -90,40 +95,76 @@
   align-items: center;
   gap: 5px;
   font-family: var(--font-mono-family);
-  font-size: 0.8125rem;
-  font-weight: 500;
+  font-size: 0.78rem;
+  font-weight: 600;
   color: var(--brand-primary);
+  background-color: var(--brand-primary-subtle);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
   letter-spacing: 0.04em;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-
 .commonName {
   font-family: var(--font-serif-family);
-  font-size: 1.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-size: 1.95rem;
+  font-weight: 700;
+  color: var(--brand-primary);
   margin: 0 0 6px 0;
   line-height: 1.2;
 }
 
 .scientificName {
-  font-size: 1.0625rem;
+  font-size: 1.05rem;
   font-style: italic;
   color: var(--text-secondary);
   margin: 0 0 8px 0;
 }
 
 .cultivarBadge {
-  margin: 0;
-  font-size: 0.875rem;
-  color: var(--text-muted);
+  display: inline-block;
+  margin: 0 0 12px 0;
+  padding: 3px 10px;
+  background-color: var(--bg-surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
 }
 
 .cultivarLabel {
-  font-weight: 500;
-  color: var(--text-secondary);
+  font-weight: 600;
+  color: var(--brand-primary);
+}
+
+/* Quick Meta Chips Row (Ubicación + Adquisición) */
+.quickMetaRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.quickMetaChip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  background-color: var(--bg-surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+}
+
+.quickMetaLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--brand-primary);
 }
 
 /* Actions Bar */
@@ -147,74 +188,170 @@
   background-color: var(--danger-bg);
 }
 
-/* Sections */
+/* Plan Verde Care Guide Card */
+.careGuideCard {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  padding: 22px 24px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.careGuideHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.careGuideTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+  margin: 0;
+}
+
+.careGuideSubtitle {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.careBlocksList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.careBlock {
+  padding: 12px 14px;
+  background-color: var(--bg-surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.careBlockLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+}
+
+.careEmoji {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.careBlockIcon {
+  color: var(--brand-secondary);
+  opacity: 0.85;
+}
+
+.careBlockText {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.emptyCareBox {
+  padding: 14px 16px;
+  background-color: var(--bg-surface-subtle);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-pill);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.emptyCareHint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Tip / Observaciones Box */
+.tipBox {
+  padding: 14px 16px;
+  background-color: var(--care-cream);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tipLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+}
+
+/* Plan Verde .ojo Soft Blush Warning Block */
+.ojoBox {
+  background-color: var(--care-blush-bg);
+  border: 1px solid var(--health-attention-border);
+  border-radius: var(--radius-pill);
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--care-blush-text);
+}
+
+.ojoIcon {
+  font-size: 1.05rem;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.ojoContent {
+  flex: 1;
+}
+
+/* General Sections */
 .sectionCard {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 18px 20px;
+  border-radius: var(--radius-card);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-card);
 }
 
 .sectionTitle {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--brand-primary);
   margin: 0 0 14px 0;
-  padding-bottom: 8px;
+  padding-bottom: 10px;
   border-bottom: 1px solid var(--border-subtle);
-}
-
-.dataList {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-}
-
-.dataRow {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.dataRow:last-child {
-  padding-bottom: 0;
-  border-bottom: none;
-}
-
-@media (min-width: 640px) {
-  .dataRow {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-}
-
-.dataTerm {
-  font-size: 0.8125rem;
-  color: var(--text-muted);
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.termWithIcon {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .dataValue {
   font-size: 0.9375rem;
   color: var(--text-primary);
   margin: 0;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .emptyText {
@@ -225,21 +362,15 @@
 }
 
 /* Location */
-.locationContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .locationName {
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.9375rem;
+  font-weight: 600;
   color: var(--text-primary);
   margin: 0;
 }
 
 .emptyLocation {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   color: var(--text-muted);
   font-style: italic;
   margin: 0;
@@ -254,7 +385,7 @@
 /* Notes */
 .notesText {
   font-size: 0.9375rem;
-  line-height: 1.6;
+  line-height: 1.55;
   color: var(--text-primary);
   margin: 0;
   white-space: pre-wrap;
@@ -268,7 +399,7 @@
   padding: 12px 14px;
   background-color: var(--health-attention-bg);
   border: 1px solid var(--health-attention-border);
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-pill);
   color: var(--health-attention-text);
 }
 
@@ -291,4 +422,5 @@
   align-items: center;
   padding: 8px 0;
 }
+
 

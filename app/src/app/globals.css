@@ -9,42 +9,52 @@
   --font-sans-family: var(--font-sans), 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono-family: var(--font-mono), 'JetBrains Mono', monospace;
 
-  /* Paleta Base & Superficies (Herbario Contemporáneo: Marfil / Pergamino / Blanco Cálido) */
-  --bg-app: #FAF8F5;
+  /* Paleta Base & Superficies (Herbario Contemporáneo + Plan Verde: Crema Cálida / Blanco Puro) */
+  --bg-app: #FBF8F3;
   --bg-surface: #FFFFFF;
   --bg-surface-elevated: #FFFFFF;
-  --bg-surface-subtle: #F3EFEA;
-  --bg-surface-hover: #ECE7DF;
+  --bg-surface-subtle: #F4F9F6;
+  --bg-surface-sunken: #F5F1EA;
+  --bg-surface-hover: #EAF4EE;
 
-  /* Texto (Carbón Profundo + Gris Cálido Terroso) */
-  --text-primary: #1C1E1B;
-  --text-secondary: #686B65;
-  --text-muted: #93968F;
+  /* Texto (Carbón Botánico + Gris Cálido Terroso) */
+  --text-primary: #2F352B;
+  --text-secondary: #5C6356;
+  --text-muted: #848B7E;
   --text-inverse: #FFFFFF;
 
-  /* Bordes & Separadores (Líneas Finas Sutiles) */
-  --border-subtle: #EBE7DF;
-  --border-default: #DCD7CC;
-  --border-focus: #364734;
+  /* Bordes & Separadores (Salvia Suave & Pergamino) */
+  --border-subtle: #E3F3EA;
+  --border-default: #D2E7DC;
+  --border-focus: #2A7F58;
 
-  /* Colores de Marca & Acento (Oliva Profundo + Salvia) */
-  --brand-primary: #364734;
-  --brand-primary-hover: #263325;
-  --brand-primary-active: #1A2419;
-  --brand-primary-subtle: #EDF1EC;
+  /* Colores de Marca & Acento (Verde Plan Verde + Salvia Botánico) */
+  --brand-primary: #2A7F58;
+  --brand-primary-hover: #216646;
+  --brand-primary-active: #194F36;
+  --brand-primary-subtle: #E3F3EA;
   --brand-primary-contrast: #FFFFFF;
-  --brand-secondary: #7A8E77;
+  --brand-secondary: #3AB07C;
+
+  /* Tokens de Guía de Cuidados (Inspiración Plan Verde) */
+  --care-green: #2A7F58;
+  --care-green-light: #E3F3EA;
+  --care-sage: #3AB07C;
+  --care-blush: #C98F8C;
+  --care-blush-bg: #F6E8E6;
+  --care-blush-text: #744340;
+  --care-cream: #FBF8F3;
 
   /* Colores Semánticos de Salud (Marcadores Sutiles y WCAG AA) */
-  --health-healthy-bg: #EDF3ED;
-  --health-healthy-text: #2F482F;
-  --health-healthy-border: #D5E2D5;
-  --health-healthy-dot: #446E43;
+  --health-healthy-bg: #E3F3EA;
+  --health-healthy-text: #1F6143;
+  --health-healthy-border: #C5E6D3;
+  --health-healthy-dot: #2A7F58;
 
-  --health-attention-bg: #F9F3EA;
-  --health-attention-text: #945922;
-  --health-attention-border: #EADBCA;
-  --health-attention-dot: #BA742E;
+  --health-attention-bg: #F6E8E6;
+  --health-attention-text: #7A4441;
+  --health-attention-border: #E8CFCB;
+  --health-attention-dot: #C98F8C;
 
   --health-recovery-bg: #F9ECE8;
   --health-recovery-text: #8C3B2B;
@@ -57,22 +67,25 @@
   --health-unknown-dot: #93968F;
 
   /* Estados de Error / Danger */
-  --danger-bg: #FBEBE8;
+  --danger-bg: #F6E8E6;
   --danger-text: #8C3B2B;
   --danger-border: #E8CBC4;
 
-  /* Radios */
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  /* Radios (Amables y Orgánicos) */
+  --radius-xs: 6px;
+  --radius-sm: 12px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-card: 18px;
+  --radius-pill: 12px;
   --radius-full: 9999px;
 
-  /* Sombras (Mínimas / Casi imperceptibles) */
-  --shadow-sm: 0 1px 2px rgba(28, 30, 27, 0.03);
-  --shadow-md: 0 2px 6px rgba(28, 30, 27, 0.05);
-  --shadow-lg: 0 4px 12px rgba(28, 30, 27, 0.06);
-  --shadow-bottom-nav: 0 -1px 4px rgba(28, 30, 27, 0.04);
+  /* Sombras (Suaves y Flotantes estilo Editorial) */
+  --shadow-sm: 0 2px 8px rgba(42, 127, 88, 0.04);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 26px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 10px 26px rgba(0, 0, 0, 0.05);
+  --shadow-bottom-nav: 0 -2px 10px rgba(0, 0, 0, 0.04);
 
   /* Espaciados & Dimensiones */
   --topbar-height: 56px;
@@ -81,7 +94,7 @@
   --touch-target-min: 44px;
 
   /* Focus Ring */
-  --focus-ring: 0 0 0 2px rgba(54, 71, 52, 0.35);
+  --focus-ring: 0 0 0 2px rgba(42, 127, 88, 0.35);
 }
 
 @media (prefers-color-scheme: dark) {

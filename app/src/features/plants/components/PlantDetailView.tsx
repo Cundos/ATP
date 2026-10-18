@@ -15,7 +15,6 @@ import {
   Layers,
   Box,
   AlertTriangle,
-  Info,
   Tag,
   QrCode,
 } from 'lucide-react';
@@ -145,7 +144,7 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
           </div>
         </div>
 
-        {/* Columna Derecha: Identidad, Acciones e Información General */}
+        {/* Columna Derecha: Identidad, Acciones y Guía Rápida de Cuidados */}
         <div className={styles.detailsColumn}>
           <header className={styles.headerCard}>
             <div className={styles.headerTop}>
@@ -167,6 +166,32 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
                 <span className={styles.cultivarLabel}>Cultivar:</span> {plant.cultivar}
               </p>
             )}
+
+            {/* Metadatos Rápidos Integrados (Ubicación y Adquisición) */}
+            <div className={styles.quickMetaRow} aria-label="Información General y Ubicación">
+              <div className={styles.quickMetaChip}>
+                <span className={styles.quickMetaLabel}>
+                  <MapPin size={14} aria-hidden="true" />
+                  <span>Ubicación</span>
+                </span>
+                <span className={plant.location ? styles.locationName : styles.emptyLocation}>
+                  {locationName}
+                </span>
+                {isLocationArchived && (
+                  <span className={styles.archivedLocationNote}>
+                    (Ubicación archivada en el catálogo)
+                  </span>
+                )}
+              </div>
+
+              <div className={styles.quickMetaChip}>
+                <span className={styles.quickMetaLabel}>
+                  <Calendar size={14} aria-hidden="true" />
+                  <span>Adquisición</span>
+                </span>
+                <span className={styles.dataValue}>{formattedAcquisitionDate}</span>
+              </div>
+            </div>
           </header>
 
           {/* Barra de Acciones Principales */}
@@ -192,141 +217,124 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
             </Button>
           </section>
 
-          {/* Sección: Taxonomía y Datos de Adquisición */}
-          <section className={styles.sectionCard} aria-labelledby="section-taxonomy-title">
-            <h2 id="section-taxonomy-title" className={styles.sectionTitle}>
-              <Info size={18} aria-hidden="true" />
-              <span>Información General</span>
-            </h2>
-            <dl className={styles.dataList}>
-              <div className={styles.dataRow}>
-                <dt className={styles.dataTerm}>Nombre Científico</dt>
-                <dd className={styles.dataValue}>
-                  {plant.scientific_name ? (
-                    <em>{plant.scientific_name}</em>
-                  ) : (
-                    <span className={styles.emptyText}>No registrado</span>
-                  )}
-                </dd>
-              </div>
-
-              <div className={styles.dataRow}>
-                <dt className={styles.dataTerm}>Cultivar / Variedad</dt>
-                <dd className={styles.dataValue}>
-                  {plant.cultivar || <span className={styles.emptyText}>No declarado</span>}
-                </dd>
-              </div>
-
-              <div className={styles.dataRow}>
-                <dt className={styles.dataTerm}>
-                  <span className={styles.termWithIcon}>
-                    <Calendar size={14} aria-hidden="true" /> Fecha de Adquisición
-                  </span>
-                </dt>
-                <dd className={styles.dataValue}>{formattedAcquisitionDate}</dd>
-              </div>
-            </dl>
-          </section>
-
-          {/* Sección: Ubicación Física */}
-          <section className={styles.sectionCard} aria-labelledby="section-location-title">
-            <h2 id="section-location-title" className={styles.sectionTitle}>
-              <MapPin size={18} aria-hidden="true" />
-              <span>Ubicación Física</span>
-            </h2>
-            <div className={styles.locationContainer}>
-              <p className={plant.location ? styles.locationName : styles.emptyLocation}>
-                {locationName}
-              </p>
-              {isLocationArchived && (
-                <span className={styles.archivedLocationNote}>
-                  (Ubicación archivada en el catálogo)
-                </span>
-              )}
+          {/* Sección Principal: Guía y Perfil de Cuidados (Estilo Plan Verde) */}
+          <section className={styles.careGuideCard} aria-labelledby="section-profile-title">
+            <div className={styles.careGuideHeader}>
+              <h2 id="section-profile-title" className={styles.careGuideTitle}>
+                <Droplets size={18} aria-hidden="true" />
+                <span>Guía de Cuidados del Ejemplar</span>
+              </h2>
+              <span className={styles.careGuideSubtitle}>Lo que más importa en el día a día</span>
             </div>
-          </section>
 
-          {/* Sección: Perfil de Cultivo */}
-          <section className={styles.sectionCard} aria-labelledby="section-profile-title">
-            <h2 id="section-profile-title" className={styles.sectionTitle}>
-              <Droplets size={18} aria-hidden="true" />
-              <span>Perfil de Cultivo</span>
-            </h2>
             {hasProfileData && profile ? (
-              <dl className={styles.dataList}>
-                {profile.pot_info && (
-                  <div className={styles.dataRow}>
-                    <dt className={styles.dataTerm}>
-                      <span className={styles.termWithIcon}>
-                        <Box size={14} aria-hidden="true" /> Maceta / Recipiente
-                      </span>
-                    </dt>
-                    <dd className={styles.dataValue}>{profile.pot_info}</dd>
-                  </div>
-                )}
-                {profile.substrate_info && (
-                  <div className={styles.dataRow}>
-                    <dt className={styles.dataTerm}>
-                      <span className={styles.termWithIcon}>
-                        <Layers size={14} aria-hidden="true" /> Sustrato
-                      </span>
-                    </dt>
-                    <dd className={styles.dataValue}>{profile.substrate_info}</dd>
-                  </div>
-                )}
+              <div className={styles.careBlocksList}>
                 {profile.light_conditions && (
-                  <div className={styles.dataRow}>
-                    <dt className={styles.dataTerm}>
-                      <span className={styles.termWithIcon}>
-                        <Sun size={14} aria-hidden="true" /> Condiciones Lumínicas
-                      </span>
-                    </dt>
-                    <dd className={styles.dataValue}>{profile.light_conditions}</dd>
+                  <div className={styles.careBlock}>
+                    <div className={styles.careBlockLabel}>
+                      <span className={styles.careEmoji} aria-hidden="true">☀️</span>
+                      <Sun size={14} aria-hidden="true" className={styles.careBlockIcon} />
+                      <span>Luz</span>
+                    </div>
+                    <p className={styles.careBlockText}>{profile.light_conditions}</p>
                   </div>
                 )}
+
                 {profile.watering_notes && (
-                  <div className={styles.dataRow}>
-                    <dt className={styles.dataTerm}>
-                      <span className={styles.termWithIcon}>
-                        <Droplets size={14} aria-hidden="true" /> Pautas de Riego
-                      </span>
-                    </dt>
-                    <dd className={styles.dataValue}>{profile.watering_notes}</dd>
+                  <div className={styles.careBlock}>
+                    <div className={styles.careBlockLabel}>
+                      <span className={styles.careEmoji} aria-hidden="true">💧</span>
+                      <Droplets size={14} aria-hidden="true" className={styles.careBlockIcon} />
+                      <span>Riego</span>
+                    </div>
+                    <p className={styles.careBlockText}>{profile.watering_notes}</p>
                   </div>
                 )}
-              </dl>
+
+                {profile.substrate_info && (
+                  <div className={styles.careBlock}>
+                    <div className={styles.careBlockLabel}>
+                      <span className={styles.careEmoji} aria-hidden="true">🌱</span>
+                      <Layers size={14} aria-hidden="true" className={styles.careBlockIcon} />
+                      <span>Sustrato</span>
+                    </div>
+                    <p className={styles.careBlockText}>{profile.substrate_info}</p>
+                  </div>
+                )}
+
+                {profile.pot_info && (
+                  <div className={styles.careBlock}>
+                    <div className={styles.careBlockLabel}>
+                      <span className={styles.careEmoji} aria-hidden="true">🪴</span>
+                      <Box size={14} aria-hidden="true" className={styles.careBlockIcon} />
+                      <span>Maceta / Recipiente</span>
+                    </div>
+                    <p className={styles.careBlockText}>{profile.pot_info}</p>
+                  </div>
+                )}
+              </div>
             ) : (
-              <p className={styles.emptyText}>Sin datos de cultivo</p>
+              <div className={styles.emptyCareBox}>
+                <p className={styles.emptyText}>Sin datos de cultivo</p>
+                <p className={styles.emptyCareHint}>
+                  Tocá <strong>Editar</strong> para anotar cuánta luz recibe, cada cuánto regarla y qué sustrato usa.
+                </p>
+              </div>
+            )}
+
+            {/* Observaciones / Tip Personal integrado en la guía */}
+            {plant.notes && (
+              <div className={styles.tipBox} aria-labelledby="section-notes-title">
+                <div id="section-notes-title" className={styles.tipLabel}>
+                  <span aria-hidden="true">✨</span>
+                  <FileText size={14} aria-hidden="true" />
+                  <span>Observaciones y Notas</span>
+                </div>
+                <p className={styles.notesText}>{plant.notes}</p>
+              </div>
+            )}
+
+            {/* Alerta Suave "Ojo con esto" (Estilo Plan Verde .ojo) */}
+            {(plant.health_status === 'ATTENTION' || plant.health_status === 'RECOVERY') && (
+              <div className={styles.ojoBox} role="note">
+                <span className={styles.ojoIcon} aria-hidden="true">⚠️</span>
+                <div className={styles.ojoContent}>
+                  <strong>A tener en cuenta:</strong>{' '}
+                  {plant.health_status === 'ATTENTION'
+                    ? 'Este ejemplar requiere seguimiento cercano. Revisá humedad del sustrato antes de volver a regar y observá el envés de las hojas.'
+                    : 'Ejemplar en recuperación activa. Evitá cambios bruscos de ubicación o fertilización hasta ver brotes nuevos.'}
+                </div>
+              </div>
             )}
           </section>
         </div>
       </div>
- 
-       {/* Sección: Evolución Visual / Historial de Fotografías (ATP-FEAT-002) */}
-       <PlantPhotoTimeline
-         plantId={plant.id}
-         permanentCode={plant.permanent_code}
-         photos={plant.photos}
-       />
-
-       {/* Sección: Estado en tiempo real / Telemetría Home Assistant (ATP-HA-002) */}
-      {liveTelemetry && (
-        <PlantLiveTelemetrySection telemetry={liveTelemetry} />
-      )}
 
       {/* Sección: Estado de Cuidado / Motor Determinista (ATP-CARE-001) */}
       {careContext && (
         <PlantCareContextSection careContext={careContext} />
       )}
 
-      {/* Sección: Actividad Reciente / Historial Operativo (ATP-HA-003) */}
-      {recentEvents && recentEvents.length > 0 && (
-        <PlantRecentActivitySection events={recentEvents} />
+      {/* Sección: Estado en tiempo real / Telemetría Home Assistant (ATP-HA-002) */}
+      {liveTelemetry && (
+        <PlantLiveTelemetrySection telemetry={liveTelemetry} />
       )}
 
       {/* Sección: Conocimiento Botánico de Referencia (ATP-IMP-025) */}
       {botanicalRefVm && (
         <BotanicalReferenceSection viewModel={botanicalRefVm} />
+      )}
+
+      {/* Sección: Evolución Visual / Historial de Fotografías (ATP-FEAT-002) */}
+      <PlantPhotoTimeline
+        plantId={plant.id}
+        permanentCode={plant.permanent_code}
+        photos={plant.photos}
+      />
+
+      {/* Sección: Actividad Reciente / Historial Operativo (ATP-HA-003) */}
+      {recentEvents && recentEvents.length > 0 && (
+        <PlantRecentActivitySection events={recentEvents} />
       )}
 
       {/* Sección: Identificación QR (ATP-FEAT-001) */}
@@ -339,17 +347,6 @@ export const PlantDetailView: React.FC<PlantDetailViewProps> = ({
           <PlantQrCode permanentCode={plant.permanent_code} />
         </div>
       </section>
-
-      {/* Sección: Observaciones y Notas */}
-      {plant.notes && (
-        <section className={styles.sectionCard} aria-labelledby="section-notes-title">
-          <h2 id="section-notes-title" className={styles.sectionTitle}>
-            <FileText size={18} aria-hidden="true" />
-            <span>Observaciones y Notas</span>
-          </h2>
-          <p className={styles.notesText}>{plant.notes}</p>
-        </section>
-      )}
 
       {/* Modal Accesible de Confirmación de Archivo */}
       <Modal

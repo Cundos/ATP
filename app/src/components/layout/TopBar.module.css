@@ -250,3 +250,86 @@
   background-color: var(--danger-bg);
 }
 
+.themeToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  margin-left: 4px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface-subtle);
+  color: var(--brand-primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.themeToggleBtn:hover {
+  background-color: var(--brand-primary-subtle);
+  border-color: var(--border-default);
+}
+
+.themeToggleBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.themeToggleLabel {
+  line-height: 1;
+}
+
+.mobileActionsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.themeToggleMobileBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--brand-primary);
+  cursor: pointer;
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  padding: 8px;
+  transition: all 0.15s ease;
+}
+
+.themeToggleMobileBtn:hover {
+  background-color: var(--brand-primary-subtle);
+}
+
+.themeToggleMobileBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.menuItemButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.12s ease;
+  min-height: var(--touch-target-min, 44px);
+}
+
+.menuItemButton:hover {
+  background-color: var(--bg-surface-subtle);
+  color: var(--brand-primary);
+}
+
+

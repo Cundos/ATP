@@ -98,6 +98,73 @@
   color-scheme: light;
 }
 
+/* Tema Oscuro Opcional (Activado manualmente con el botón de tema) */
+:root[data-theme='dark'] {
+  --bg-app: #121814;
+  --bg-surface: #1A231E;
+  --bg-surface-elevated: #212C25;
+  --bg-surface-subtle: #1F2B24;
+  --bg-surface-sunken: #151D18;
+  --bg-surface-hover: #26352C;
+
+  --text-primary: #EDF3EF;
+  --text-secondary: #A9B8AF;
+  --text-muted: #78897F;
+  --text-inverse: #121814;
+
+  --border-subtle: #28382F;
+  --border-default: #354A3E;
+  --border-focus: #52B788;
+
+  --brand-primary: #52B788;
+  --brand-primary-hover: #74C69D;
+  --brand-primary-active: #95D5B2;
+  --brand-primary-subtle: #1E3329;
+  --brand-primary-contrast: #121814;
+  --brand-secondary: #74C69D;
+
+  --care-green: #52B788;
+  --care-green-light: #1E3329;
+  --care-sage: #74C69D;
+  --care-blush: #E09F9B;
+  --care-blush-bg: #2D1F1E;
+  --care-blush-text: #F2C6C3;
+  --care-cream: #1D2620;
+
+  --health-healthy-bg: #1B3025;
+  --health-healthy-text: #95D5B2;
+  --health-healthy-border: #2B4C3B;
+  --health-healthy-dot: #52B788;
+
+  --health-attention-bg: #2D1F1E;
+  --health-attention-text: #F2C6C3;
+  --health-attention-border: #4D3230;
+  --health-attention-dot: #E09F9B;
+
+  --health-recovery-bg: #301C18;
+  --health-recovery-text: #F4A999;
+  --health-recovery-border: #522E27;
+  --health-recovery-dot: #E07A65;
+
+  --health-unknown-bg: #1F2B24;
+  --health-unknown-text: #A9B8AF;
+  --health-unknown-border: #28382F;
+  --health-unknown-dot: #78897F;
+
+  --danger-bg: #331C1C;
+  --danger-text: #FCA5A5;
+  --danger-border: #5A2A2A;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 26px rgba(0, 0, 0, 0.42);
+  --shadow-card: 0 10px 26px rgba(0, 0, 0, 0.38);
+  --shadow-bottom-nav: 0 -2px 10px rgba(0, 0, 0, 0.35);
+
+  --focus-ring: 0 0 0 2px rgba(82, 183, 136, 0.45);
+  color-scheme: dark;
+}
+
 /* Reset & Box Sizing Global */
 *,
 *::before,
@@ -114,7 +181,7 @@ body {
   font-family: var(--font-sans-family);
   background-color: var(--bg-app);
   color: var(--text-primary);
-  color-scheme: light;
+  transition: background-color 0.2s ease, color 0.2s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

@@ -3,15 +3,41 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sprout, Menu, X, MapPin, Archive, LogOut, Calendar } from 'lucide-react';
+import { Sprout, Menu, X, MapPin, Archive, LogOut, Calendar, Sun, Moon } from 'lucide-react';
 import { logoutAction } from '@/features/auth/actions';
 import styles from './TopBar.module.css';
 
 export const TopBar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState('');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = window.localStorage.getItem('atp-theme');
+        if (saved === 'dark' || saved === 'light') return saved;
+      } catch {
+        // ignore storage errors
+      }
+    }
+    return 'light';
+  });
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    try {
+      window.localStorage.setItem('atp-theme', nextTheme);
+    } catch {
+      // ignore storage errors
+    }
+  };
 
   // Cerrar menú al presionar Escape o hacer click fuera
   useEffect(() => {
@@ -116,6 +142,20 @@ export const TopBar: React.FC = () => {
             Archivadas
           </Link>
 
+          <button
+            type="button"
+            onClick={handleToggleTheme}
+            className={styles.themeToggleBtn}
+            aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            data-testid="theme-toggle-desktop"
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            <span className={styles.themeToggleLabel}>
+              {theme === 'dark' ? 'Claro' : 'Oscuro'}
+            </span>
+          </button>
+
           <form action={logoutAction} className={styles.logoutForm}>
             <button
               type="submit"
@@ -131,15 +171,28 @@ export const TopBar: React.FC = () => {
 
         {/* Mobile Secondary Navigation Menu Toggle (< 1024px) */}
         <div className={styles.menuWrapper} ref={menuRef}>
-          <button
-            type="button"
-            className={styles.menuTrigger}
-            onClick={() => setIsMenuOpen((prev) => !prev)}
-            aria-expanded={isMenuOpen}
-            aria-label={isMenuOpen ? 'Cerrar menú secundario' : 'Abrir menú secundario'}
-          >
-            {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
+          <div className={styles.mobileActionsRow}>
+            <button
+              type="button"
+              onClick={handleToggleTheme}
+              className={styles.themeToggleMobileBtn}
+              aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+              title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+              data-testid="theme-toggle-mobile"
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
+            <button
+              type="button"
+              className={styles.menuTrigger}
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+              aria-expanded={isMenuOpen}
+              aria-label={isMenuOpen ? 'Cerrar menú secundario' : 'Abrir menú secundario'}
+            >
+              {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
 
           {isMenuOpen && (
             <div className={styles.dropdownMenu} role="menu">
@@ -168,7 +221,19 @@ export const TopBar: React.FC = () => {
                 <Archive size={18} />
                 <span>Plantas Archivadas</span>
               </Link>
-              
+
+              <div className={styles.menuDivider} />
+
+              <button
+                type="button"
+                role="menuitem"
+                onClick={handleToggleTheme}
+                className={styles.menuItemButton}
+              >
+                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                <span>{theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}</span>
+              </button>
+
               <div className={styles.menuDivider} />
 
               <form action={logoutAction}>
@@ -189,3 +254,4 @@ export const TopBar: React.FC = () => {
     </header>
   );
 };
+
